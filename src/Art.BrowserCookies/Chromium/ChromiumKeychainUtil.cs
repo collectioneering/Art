@@ -89,28 +89,34 @@ internal static class ChromiumKeychainUtil
         }
         byte[] data20Sub = data20[4..];
         data20.AsSpan().Clear();
+        byte[] res20 = ProtectedData.Unprotect(ExecuteWCUnlockB("a", data20Sub, toolLogHandler), null, DataProtectionScope.CurrentUser);
+        data20Sub.AsSpan().Clear();
+        var keychain = new ChromiumWindowsKeychain(res10, res20, chromiumVariant);
+        res10.AsSpan().Clear();
+        res20.AsSpan().Clear();
+        return keychain;
+    }
+
+    internal static byte[] ExecuteWCUnlockB(string variant, byte[] input, IToolLogHandler? toolLogHandler)
+    {
         string tmpIn = Path.GetTempFileName();
         try
         {
             string tmpOut = Path.GetTempFileName();
             try
             {
-                File.WriteAllBytes(tmpIn, data20Sub);
-                data20Sub.AsSpan().Clear();
+                File.WriteAllBytes(tmpIn, input);
                 ProcessStartInfo psi = new() { FileName = "powershell", Verb = "runas", UseShellExecute = true };
                 psi.ArgumentList.Add("-Command");
                 psi.ArgumentList.Add(s_wcunlockB);
+                psi.ArgumentList.Add(variant);
                 psi.ArgumentList.Add(tmpIn);
                 psi.ArgumentList.Add(tmpOut);
                 toolLogHandler?.Log("Need Elevation", "Elevation is needed to decrypt keys. A UAC prompt may appear.", LogLevel.Information);
                 var process = Process.Start(psi);
                 toolLogHandler?.Log("Running cookie decryption helper...", null, LogLevel.Information);
                 process?.WaitForExit();
-                byte[] res20 = ProtectedData.Unprotect(File.ReadAllBytes(tmpOut), null, DataProtectionScope.CurrentUser);
-                var keychain = new ChromiumWindowsKeychain(res10, res20, chromiumVariant);
-                res10.AsSpan().Clear();
-                res20.AsSpan().Clear();
-                return keychain;
+                return File.ReadAllBytes(tmpOut);
             }
             finally
             {
