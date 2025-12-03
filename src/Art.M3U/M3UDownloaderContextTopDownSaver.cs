@@ -139,7 +139,7 @@ public partial class M3UDownloaderContextTopDownSaver : M3UDownloaderContextSave
         int idx = str.IndexOf('?');
         if (idx >= 0) str = str[..idx];
         Uri uri = new UriBuilder(new Uri(Context.MainUri, _nameTransform(str, _currentTop))) { Query = origUri.Query }.Uri;
-        Context.Tool.LogInformation($"Top-downloading segment {uri.Segments[^1]}...");
+        Context.Tool.LogInformation($"[{Context.Name}] Top-downloading segment {uri.Segments[^1]}...");
         try
         {
             long? msn;

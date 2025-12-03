@@ -21,8 +21,8 @@ public record WithChecksumArtifactResourceInfo(Checksum? ChecksumValue, Artifact
     public override bool CanGetStream => BaseArtifactResourceInfo.CanGetStream;
 
     /// <inheritdoc/>
-    public override ValueTask ExportStreamAsync(Stream targetStream, CancellationToken cancellationToken = default)
-        => BaseArtifactResourceInfo.ExportStreamAsync(targetStream, cancellationToken);
+    public override ValueTask ExportStreamAsync(Stream targetStream, bool useLogger = true, CancellationToken cancellationToken = default)
+        => BaseArtifactResourceInfo.ExportStreamAsync(targetStream, useLogger, cancellationToken);
 
     /// <inheritdoc/>
     public override ValueTask<Stream> GetStreamAsync(CancellationToken cancellationToken = default)

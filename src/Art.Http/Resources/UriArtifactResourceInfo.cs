@@ -16,16 +16,16 @@ namespace Art.Http.Resources;
 /// <param name="HttpRequestConfig">Custom request configuration.</param>
 /// <param name="DynamicFileNameFunction">Function to use for transforming retrieved filename.</param>
 public record UriArtifactResourceInfo(
-        HttpArtifactTool ArtifactTool,
-        Uri Uri,
-        HttpRequestConfig? HttpRequestConfig,
-        ArtifactResourceKey Key,
-        string? ContentType = "application/octet-stream",
-        DateTimeOffset? Updated = null,
-        DateTimeOffset? Retrieved = null,
-        string? Version = null,
-        Checksum? Checksum = null,
-        Func<string, string>? DynamicFileNameFunction = null)
+    HttpArtifactTool ArtifactTool,
+    Uri Uri,
+    HttpRequestConfig? HttpRequestConfig,
+    ArtifactResourceKey Key,
+    string? ContentType = "application/octet-stream",
+    DateTimeOffset? Updated = null,
+    DateTimeOffset? Retrieved = null,
+    string? Version = null,
+    Checksum? Checksum = null,
+    Func<string, string>? DynamicFileNameFunction = null)
     : QueryBaseArtifactResourceInfo(Key, ContentType, Updated, Retrieved, Version, Checksum, DynamicFileNameFunction)
 {
     /// <inheritdoc/>
@@ -38,10 +38,10 @@ public record UriArtifactResourceInfo(
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
     /// <exception cref="HttpRequestException">Thrown for issues with request excluding non-success server responses.</exception>
     /// <exception cref="ArtHttpResponseMessageException">Thrown on HTTP response indicating non-successful response.</exception>
-    public override async ValueTask ExportStreamAsync(Stream targetStream, CancellationToken cancellationToken = default)
+    public override async ValueTask ExportStreamAsync(Stream targetStream, bool useLogger = true, CancellationToken cancellationToken = default)
     {
         // M3U behaviour depends on calling this member, or any overload targeting the contained HttpClient. Don't change this.
-        await ArtifactTool.DownloadResourceAsync(Uri, targetStream, HttpRequestConfig, cancellationToken).ConfigureAwait(false);
+        await ArtifactTool.DownloadResourceAsync(Uri, targetStream, HttpRequestConfig, useLogger, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>

@@ -22,7 +22,7 @@ public record M3UDownloaderContextSaverArtifactResourceInfo(
     public override bool CanExportStream => true;
 
     /// <inheritdoc />
-    public override async ValueTask ExportStreamAsync(Stream targetStream, CancellationToken cancellationToken = default)
+    public override async ValueTask ExportStreamAsync(Stream targetStream, bool useLogger = true, CancellationToken cancellationToken = default)
     {
         await Saver.ExportAsync(targetStream, cancellationToken).ConfigureAwait(false);
     }

@@ -16,6 +16,7 @@ public partial class HttpArtifactTool
     /// <param name="requestUri">Uri to download from.</param>
     /// <param name="stream">Target stream.</param>
     /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="useLogger">If true, use logger for progress details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
@@ -25,6 +26,7 @@ public partial class HttpArtifactTool
         string requestUri,
         Stream stream,
         HttpRequestConfig? httpRequestConfig = null,
+        bool useLogger = true,
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
@@ -32,7 +34,15 @@ public partial class HttpArtifactTool
         ConfigureHttpRequest(req);
         using HttpResponseMessage res = await HttpClient.SendAsync(req, DownloadCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
-        await CopyToWithLoggerAsync(res, stream, cancellationToken).ConfigureAwait(false);
+        if (useLogger)
+        {
+            await CopyToWithLoggerAsync(res, stream, cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            var sourceStream = await res.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await sourceStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <summary>
@@ -41,6 +51,7 @@ public partial class HttpArtifactTool
     /// <param name="requestUri">Uri to download from.</param>
     /// <param name="key">Resource key.</param>
     /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="useLogger">If true, use logger for progress details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
@@ -50,12 +61,13 @@ public partial class HttpArtifactTool
         string requestUri,
         ArtifactResourceKey key,
         HttpRequestConfig? httpRequestConfig = null,
+        bool useLogger = true,
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
         HttpRequestMessage req = new(HttpMethod.Get, requestUri);
         ConfigureHttpRequest(req);
-        await DownloadResourceInternalAsync(req, httpRequestConfig, key, cancellationToken).ConfigureAwait(false);
+        await DownloadResourceInternalAsync(req, httpRequestConfig, key, useLogger, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -66,6 +78,7 @@ public partial class HttpArtifactTool
     /// <param name="key">Artifact key.</param>
     /// <param name="path">File path to prepend.</param>
     /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="useLogger">If true, use logger for progress details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
@@ -77,8 +90,9 @@ public partial class HttpArtifactTool
         ArtifactKey key,
         string path = "",
         HttpRequestConfig? httpRequestConfig = null,
+        bool useLogger = true,
         CancellationToken cancellationToken = default)
-        => DownloadResourceAsync(requestUri, new ArtifactResourceKey(key, file, path), httpRequestConfig, cancellationToken);
+        => DownloadResourceAsync(requestUri, new ArtifactResourceKey(key, file, path), httpRequestConfig, useLogger, cancellationToken);
 
     /// <summary>
     /// Gets a download stream for a resource.
@@ -111,6 +125,7 @@ public partial class HttpArtifactTool
     /// <param name="requestUri"><see cref="Uri"/> to download from.</param>
     /// <param name="stream">Target stream.</param>
     /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="useLogger">If true, use logger for progress details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
@@ -120,6 +135,7 @@ public partial class HttpArtifactTool
         Uri requestUri,
         Stream stream,
         HttpRequestConfig? httpRequestConfig = null,
+        bool useLogger = true,
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
@@ -128,7 +144,15 @@ public partial class HttpArtifactTool
         // M3U behaviour depends on members always using this instance's HttpClient.
         using HttpResponseMessage res = await HttpClient.SendAsync(req, DownloadCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
-        await CopyToWithLoggerAsync(res, stream, cancellationToken).ConfigureAwait(false);
+        if (useLogger)
+        {
+            await CopyToWithLoggerAsync(res, stream, cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            var sourceStream = await res.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await sourceStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <summary>
@@ -137,6 +161,7 @@ public partial class HttpArtifactTool
     /// <param name="requestUri"><see cref="Uri"/> to download from.</param>
     /// <param name="key">Resource key.</param>
     /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="useLogger">If true, use logger for progress details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
@@ -146,12 +171,13 @@ public partial class HttpArtifactTool
         Uri requestUri,
         ArtifactResourceKey key,
         HttpRequestConfig? httpRequestConfig = null,
+        bool useLogger = true,
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
         HttpRequestMessage req = new(HttpMethod.Get, requestUri);
         ConfigureHttpRequest(req);
-        await DownloadResourceInternalAsync(req, httpRequestConfig, key, cancellationToken).ConfigureAwait(false);
+        await DownloadResourceInternalAsync(req, httpRequestConfig, key, useLogger, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -162,6 +188,7 @@ public partial class HttpArtifactTool
     /// <param name="key">Artifact key.</param>
     /// <param name="path">File path to prepend.</param>
     /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="useLogger">If true, use logger for progress details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
@@ -173,8 +200,9 @@ public partial class HttpArtifactTool
         ArtifactKey key,
         string path = "",
         HttpRequestConfig? httpRequestConfig = null,
+        bool useLogger = true,
         CancellationToken cancellationToken = default)
-        => DownloadResourceAsync(requestUri, new ArtifactResourceKey(key, file, path), httpRequestConfig, cancellationToken);
+        => DownloadResourceAsync(requestUri, new ArtifactResourceKey(key, file, path), httpRequestConfig, useLogger, cancellationToken);
 
     /// <summary>
     /// Gets a download stream for a resource.
@@ -205,6 +233,7 @@ public partial class HttpArtifactTool
     /// <param name="requestMessage">Request to send.</param>
     /// <param name="stream">Target stream.</param>
     /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="useLogger">If true, use logger for progress details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
@@ -214,13 +243,22 @@ public partial class HttpArtifactTool
         HttpRequestMessage requestMessage,
         Stream stream,
         HttpRequestConfig? httpRequestConfig = null,
+        bool useLogger = true,
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
         // M3U behaviour depends on members always using this instance's HttpClient.
         using HttpResponseMessage res = await HttpClient.SendAsync(requestMessage, DownloadCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
-        await CopyToWithLoggerAsync(res, stream, cancellationToken).ConfigureAwait(false);
+        if (useLogger)
+        {
+            await CopyToWithLoggerAsync(res, stream, cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            var sourceStream = await res.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await sourceStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <summary>
@@ -229,6 +267,7 @@ public partial class HttpArtifactTool
     /// <param name="requestMessage">Request to send.</param>
     /// <param name="key">Resource key.</param>
     /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="useLogger">If true, use logger for progress details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
@@ -238,10 +277,11 @@ public partial class HttpArtifactTool
         HttpRequestMessage requestMessage,
         ArtifactResourceKey key,
         HttpRequestConfig? httpRequestConfig = null,
+        bool useLogger = true,
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        await DownloadResourceInternalAsync(requestMessage, httpRequestConfig, key, cancellationToken).ConfigureAwait(false);
+        await DownloadResourceInternalAsync(requestMessage, httpRequestConfig, key, useLogger, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -252,6 +292,7 @@ public partial class HttpArtifactTool
     /// <param name="key">Artifact key.</param>
     /// <param name="path">File path to prepend.</param>
     /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="useLogger">If true, use logger for progress details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
@@ -263,10 +304,11 @@ public partial class HttpArtifactTool
         ArtifactKey key,
         string path = "",
         HttpRequestConfig? httpRequestConfig = null,
+        bool useLogger = true,
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        return DownloadResourceInternalAsync(requestMessage, httpRequestConfig, new ArtifactResourceKey(key, file, path), cancellationToken);
+        return DownloadResourceInternalAsync(requestMessage, httpRequestConfig, new ArtifactResourceKey(key, file, path), useLogger, cancellationToken);
     }
 
     /// <summary>
@@ -274,19 +316,32 @@ public partial class HttpArtifactTool
     /// </summary>
     public virtual HttpCompletionOption DownloadCompletionOption => HttpCompletionOption.ResponseHeadersRead;
 
-    private async Task DownloadResourceInternalAsync(HttpRequestMessage requestMessage, HttpRequestConfig? httpRequestConfig, ArtifactResourceKey key, CancellationToken cancellationToken = default)
+    private async Task DownloadResourceInternalAsync(
+        HttpRequestMessage requestMessage,
+        HttpRequestConfig? httpRequestConfig,
+        ArtifactResourceKey key,
+        bool useLogger,
+        CancellationToken cancellationToken = default)
     {
         using HttpResponseMessage res = await HttpClient.SendAsync(requestMessage, DownloadCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
-        await StreamDownloadAsync(res, key, cancellationToken).ConfigureAwait(false);
+        await StreamDownloadAsync(res, key, useLogger, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task StreamDownloadAsync(HttpResponseMessage response, ArtifactResourceKey key, CancellationToken cancellationToken)
+    private async Task StreamDownloadAsync(HttpResponseMessage response, ArtifactResourceKey key, bool useLogger, CancellationToken cancellationToken)
     {
         OutputStreamOptions options = OutputStreamOptions.Default;
         if (response.Content.Headers.ContentLength is { } contentLength) options = options with { PreallocationSize = Math.Clamp(contentLength, 0, QueryBaseArtifactResourceInfo.MaxStreamDownloadPreallocationSize) };
         await using CommittableStream stream = await CreateOutputStreamAsync(key, options, cancellationToken).ConfigureAwait(false);
-        await CopyToWithLoggerAsync(response, stream, cancellationToken).ConfigureAwait(false);
+        if (useLogger)
+        {
+            await CopyToWithLoggerAsync(response, stream, cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            var sourceStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await sourceStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
+        }
         stream.ShouldCommit = true;
     }
 

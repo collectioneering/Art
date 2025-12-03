@@ -29,7 +29,7 @@ public record StringArtifactResourceInfo(
     public override bool CanGetStream => true;
 
     /// <inheritdoc/>
-    public override async ValueTask ExportStreamAsync(Stream targetStream, CancellationToken cancellationToken = default)
+    public override async ValueTask ExportStreamAsync(Stream targetStream, bool useLogger = true, CancellationToken cancellationToken = default)
     {
         await using StreamWriter sw = new(targetStream, Encoding.UTF8, leaveOpen: true);
         await sw.WriteAsync(Resource).ConfigureAwait(false);
@@ -40,7 +40,7 @@ public record StringArtifactResourceInfo(
     {
         // streaming serialization is not supported, just https://www.youtube.com/watch?v=VQqO20pVhpk it
         var ms = new MemoryStream();
-        await ExportStreamAsync(ms, cancellationToken).ConfigureAwait(false);
+        await ExportStreamAsync(ms, cancellationToken: cancellationToken).ConfigureAwait(false);
         ms.Position = 0;
         return ms;
     }

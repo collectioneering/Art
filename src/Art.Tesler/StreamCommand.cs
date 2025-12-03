@@ -84,7 +84,7 @@ public class StreamCommand : ToolCommandBase
         }
         var output = ToolLogHandlerProvider.GetOutStream();
         await using var output1 = output.ConfigureAwait(false);
-        await primaryResource.ExportStreamAsync(output, cancellationToken).ConfigureAwait(false);
+        await primaryResource.ExportStreamAsync(output, useLogger: false, cancellationToken: cancellationToken).ConfigureAwait(false);
         return 0;
     }
 }

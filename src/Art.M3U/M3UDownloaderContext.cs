@@ -13,7 +13,7 @@ namespace Art.M3U;
 /// </summary>
 /// <param name="PrimaryStream">Primary content stream.</param>
 /// <param name="AlternateStreams">Alternate streams that may be necessary for a full experience.</param>
-public record M3UDownloaderContextGroup(M3UDownloaderContext PrimaryStream, ImmutableArray<M3UDownloaderContext> AlternateStreams);
+public record M3UDownloaderContextGroup(M3UDownloaderContext PrimaryStream, ImmutableArray<M3UDownloaderContext> AlternateStreams, M3UFile M3UFile);
 
 /// <summary>
 /// Represents a downloader context.
@@ -42,6 +42,21 @@ public partial class M3UDownloaderContext
     /// Current tool.
     /// </summary>
     public HttpArtifactTool Tool { get; }
+
+    /// <summary>
+    /// If true, disable progress log.
+    /// </summary>
+    public bool DisableProgressLog { get; set; }
+
+    /// <summary>
+    /// If true, disable waiting log.
+    /// </summary>
+    public bool DisableWaitingLog { get; set; }
+
+    /// <summary>
+    /// Context name.
+    /// </summary>
+    public string Name { get; set; } = "M3U";
 
     /// <summary>
     /// Resolved timing.
@@ -73,12 +88,12 @@ public partial class M3UDownloaderContext
             tool.LogInformation($"Selected alternate {alternateStream.Path} ({alternateStream.Type}, {alternateStream.Language}, {alternateStream.Name})");
             alternateStreams.Add(new Uri(new Uri(config.URL), alternateStream.Path));
         }
-        return new SubStreamConfig(primaryStream, [..alternateStreams]);
+        return new SubStreamConfig(selectedStreams.M3UFile, primaryStream, [..alternateStreams]);
     }
 
-    private record SubStreamInfo(StreamInfo PrimaryStream, ImmutableArray<AlternateStreamInfo> AlternateStreams);
+    private record SubStreamInfo(M3UFile M3UFile, StreamInfo PrimaryStream, ImmutableArray<AlternateStreamInfo> AlternateStreams);
 
-    private record SubStreamConfig(Uri PrimaryStream, ImmutableArray<Uri> AlternateStreams);
+    private record SubStreamConfig(M3UFile M3UFile, Uri PrimaryStream, ImmutableArray<Uri> AlternateStreams);
 
     /// <summary>
     /// Sets configuration.
@@ -159,15 +174,24 @@ public partial class M3UDownloaderContext
     {
         tool.LogInformation($"Performing operation with consecutive retry limit {config.MaxConsecutiveRetries?.ToString() ?? "<unspecified>"}, total retry limit {config.MaxTotalRetries?.ToString() ?? "<unspecified>"}");
         tool.LogInformation("Getting stream info...");
-        (Uri primaryStream, ImmutableArray<Uri> alternateStreamsInput) = await SelectSubStreamAsync(tool, config, cancellationToken).ConfigureAwait(false);
+        (M3UFile m3UFile, Uri primaryStream, ImmutableArray<Uri> alternateStreamsInput) = await SelectSubStreamAsync(tool, config, cancellationToken).ConfigureAwait(false);
         tool.LogInformation("Getting sub stream info...");
         var mainConfig = await CreateContextAsync(tool, config, primaryStream, true, cancellationToken).ConfigureAwait(false);
         var alternateStreams = new List<M3UDownloaderContext>();
-        foreach (var alternateStream in alternateStreamsInput)
+        for (int i = 0; i < alternateStreamsInput.Length; i++)
         {
-            alternateStreams.Add(await CreateContextAsync(tool, config, alternateStream, false, cancellationToken).ConfigureAwait(false));
+            Uri? alternateStream = alternateStreamsInput[i];
+            var alternateStreamContext = await CreateContextAsync(tool, config, alternateStream, false, cancellationToken).ConfigureAwait(false);
+            alternateStreamContext.DisableProgressLog = true;
+            alternateStreamContext.Name = $"M3U-Alt-{i}";
+            alternateStreams.Add(alternateStreamContext);
         }
-        return new M3UDownloaderContextGroup(mainConfig, [..alternateStreams]);
+        if (alternateStreams.Count > 0)
+        {
+            mainConfig.DisableProgressLog = true;
+            mainConfig.Name = "M3U-Primary";
+        }
+        return new M3UDownloaderContextGroup(mainConfig, [..alternateStreams], m3UFile);
     }
 
     private static async Task<M3UDownloaderContext> CreateContextAsync(HttpArtifactTool tool, M3UDownloaderConfig config, Uri mainUri, bool allowLogging, CancellationToken cancellationToken = default)
@@ -365,7 +389,7 @@ public partial class M3UDownloaderContext
         {
             try
             {
-                await artifactResourceInfo.ExportStreamAsync(targetStream, cancellationToken).ConfigureAwait(false);
+                await artifactResourceInfo.ExportStreamAsync(targetStream, useLogger: !DisableProgressLog, cancellationToken: cancellationToken).ConfigureAwait(false);
                 break;
             }
             catch (TaskCanceledException e)
@@ -444,7 +468,7 @@ public partial class M3UDownloaderContext
                 }
             }
         }
-        return new SubStreamInfo(primarySubStream, [..alternateSubStreams]);
+        return new SubStreamInfo(ff, primarySubStream, [..alternateSubStreams]);
     }
 
     private static StreamInfo SelectPrimarySubStream(M3UFile ff, M3UDownloaderConfig config)

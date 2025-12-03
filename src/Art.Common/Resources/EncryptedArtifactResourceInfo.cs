@@ -24,11 +24,11 @@ public record EncryptedArtifactResourceInfo(EncryptionInfo EncryptionInfo, Artif
     public override bool CanGetStream => BaseArtifactResourceInfo.CanGetStream;
 
     /// <inheritdoc/>
-    public override async ValueTask ExportStreamAsync(Stream targetStream, CancellationToken cancellationToken = default)
+    public override async ValueTask ExportStreamAsync(Stream targetStream, bool useLogger = true, CancellationToken cancellationToken = default)
     {
         using SymmetricAlgorithm algorithm = EncryptionInfo.CreateSymmetricAlgorithm();
         await using CryptoStream cs = new(targetStream, algorithm.CreateDecryptor(), CryptoStreamMode.Write, true);
-        await BaseArtifactResourceInfo.ExportStreamAsync(cs, cancellationToken).ConfigureAwait(false);
+        await BaseArtifactResourceInfo.ExportStreamAsync(cs, useLogger, cancellationToken).ConfigureAwait(false);
         // crypto stream flushes on dispose, but do this too to be like... more sure
         if (!cs.HasFlushedFinalBlock) await cs.FlushFinalBlockAsync(cancellationToken).ConfigureAwait(false);
     }

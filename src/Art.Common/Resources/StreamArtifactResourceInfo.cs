@@ -36,7 +36,7 @@ public record StreamArtifactResourceInfo(
     }
 
     /// <inheritdoc/>
-    public override async ValueTask ExportStreamAsync(Stream targetStream, CancellationToken cancellationToken = default)
+    public override async ValueTask ExportStreamAsync(Stream targetStream, bool useLogger = true, CancellationToken cancellationToken = default)
     {
         long? position = Resource.CanSeek ? Resource.Position : null;
         try

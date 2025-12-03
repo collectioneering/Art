@@ -110,7 +110,7 @@ public abstract class M3UDownloaderContextProcessor
         if (ConsecutiveFailCounter > maxConsecutiveRetries) throw new AggregateException($"Encountered {ConsecutiveFailCounter} consecutive failures (threshold is {maxConsecutiveRetries})", exception);
         if (maxConsecutiveRetries is { } maxConsecutiveRetriesValue)
         {
-            Context.Tool.LogInformation($"Now at {ConsecutiveFailCounter} consecutive failures of {maxConsecutiveRetries} allowed");
+            Context.Tool.LogInformation($"Now at {ConsecutiveFailCounter} consecutive failures of {maxConsecutiveRetriesValue} allowed");
         }
     }
 
@@ -157,13 +157,16 @@ public abstract class M3UDownloaderContextProcessor
                 }
                 if (operationProgressContext == null)
                 {
-                    if (Context.Tool.LogHandler?.TryGetOperationProgressContext("Waiting for new segments", s_operationWaitingForResult, out var op) ?? false)
+                    if (!Context.DisableProgressLog)
                     {
-                        operationProgressContext = op;
-                    }
-                    else
-                    {
-                        operationProgressContext = null;
+                        if (Context.Tool.LogHandler?.TryGetOperationProgressContext("Waiting for new segments", s_operationWaitingForResult, out var op) ?? false)
+                        {
+                            operationProgressContext = op;
+                        }
+                        else
+                        {
+                            operationProgressContext = null;
+                        }
                     }
                 }
                 if (operationProgressContext != null)
@@ -172,7 +175,10 @@ public abstract class M3UDownloaderContextProcessor
                 }
                 else
                 {
-                    Context.Tool.LogInformation($"Waiting up to {remainingTimeout.TotalSeconds:F3}s for new segments...");
+                    if (!Context.DisableWaitingLog)
+                    {
+                        Context.Tool.LogInformation($"[{Context.Name}] Waiting up to {remainingTimeout.TotalSeconds:F3}s for new segments...");
+                    }
                 }
                 M3UFile m3;
                 while (true)

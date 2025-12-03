@@ -359,7 +359,7 @@ public static class ArtifactDumping
     {
         if (resource.CanExportStream)
         {
-            await resource.ExportStreamAsync(targetStream, cancellationToken).ConfigureAwait(false);
+            await resource.ExportStreamAsync(targetStream, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         else if (resource.CanGetStream)
         {
