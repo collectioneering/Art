@@ -22,17 +22,27 @@ public static class M3UReader
     private const string TAG_VERSION = "#EXT-X-VERSION:";
     private const string TAG_STREAM_INFO = "#EXT-X-STREAM-INF:";
     private const string TAG_KEY = "#EXT-X-KEY:";
+    private const string TAG_INDEPENDENT_SEGMENTS = "#EXT-X-INDEPENDENT-SEGMENTS";
     private const string TAG_MEDIA_SEQUENCE = "#EXT-X-MEDIA-SEQUENCE:";
+    private const string TAG_MEDIA = "#EXT-X-MEDIA:";
     private const string STREAM_INF_BANDWIDTH = "BANDWIDTH";
     private const string STREAM_INF_AVERAGE_BANDWIDTH = "AVERAGE-BANDWIDTH";
     private const string STREAM_INF_NAME = "NAME";
     private const string STREAM_INF_CODECS = "CODECS";
     private const string STREAM_INF_RESOLUTION = "RESOLUTION";
+    private const string STREAM_INF_AUDIO = "AUDIO";
+    private const string ALTERNATE_STREAM_INF_TYPE = "TYPE";
+    private const string ALTERNATE_STREAM_INF_URI = "URI";
+    private const string ALTERNATE_STREAM_INF_NAME = "NAME";
+    private const string ALTERNATE_STREAM_INF_LANGUAGE = "LANGUAGE";
+    private const string ALTERNATE_STREAM_INF_GROUP_ID = "GROUP-ID";
+    private const string ALTERNATE_STREAM_INF_DEFAULT = "DEFAULT";
+    private const string ALTERNATE_STREAM_INF_AUTOSELECT = "AUTOSELECT";
     private const string ENCRYPTION_INF_METHOD = "METHOD";
     private const string ENCRYPTION_INF_KEYFORMAT = "KEYFORMAT";
     private const string ENCRYPTION_INF_URI = "URI";
     private const string ENCRYPTION_INF_IV = "IV";
-    private static readonly string[] Tags = { TAG_VERSION, TAG_STREAM_INFO, TAG_KEY, TAG_MEDIA_SEQUENCE };
+    private static readonly string[] Tags = { TAG_VERSION, TAG_STREAM_INFO, TAG_KEY, TAG_INDEPENDENT_SEGMENTS, TAG_MEDIA_SEQUENCE, TAG_MEDIA };
 
     /// <summary>
     /// Parses M3U content.
@@ -103,7 +113,37 @@ public static class M3UReader
                 stream.ResolutionWidth = int.Parse(split[0], s_culture);
                 stream.ResolutionHeight = int.Parse(split[1], s_culture);
             }
+            if (TmpDict.TryGetValue(STREAM_INF_AUDIO, out string? audio))
+                stream.Audio = audio;
             file.AddStream(stream);
+        }
+        finally
+        {
+            TmpDict.Clear();
+        }
+    }
+
+    private static void ParseAlternateStreamInfo(M3UFile file, string tag, string line)
+    {
+        AlternateStreamInfo stream = new();
+        try
+        {
+            ParseKvsToDictionary(tag, line, TmpDict);
+            if (TmpDict.TryGetValue(ALTERNATE_STREAM_INF_TYPE, out string? type))
+                stream.Type = type;
+            if (TmpDict.TryGetValue(ALTERNATE_STREAM_INF_URI, out string? uri))
+                stream.Path = uri;
+            if (TmpDict.TryGetValue(ALTERNATE_STREAM_INF_NAME, out string? name))
+                stream.Name = name;
+            if (TmpDict.TryGetValue(ALTERNATE_STREAM_INF_LANGUAGE, out string? language))
+                stream.Language = language;
+            if (TmpDict.TryGetValue(ALTERNATE_STREAM_INF_GROUP_ID, out string? groupId))
+                stream.GroupId = groupId;
+            if (TmpDict.TryGetValue(ALTERNATE_STREAM_INF_DEFAULT, out string? isDefault))
+                stream.Default = isDefault == "YES";
+            if (TmpDict.TryGetValue(ALTERNATE_STREAM_INF_AUTOSELECT, out string? isAutoselect))
+                stream.Autoselect = isAutoselect == "YES";
+            file.AddAlternateStream(stream);
         }
         finally
         {
@@ -185,11 +225,20 @@ public static class M3UReader
             case TAG_VERSION:
                 file.Version = value;
                 break;
+            case TAG_INDEPENDENT_SEGMENTS:
+                file.HasIndependentSegments = true;
+                break;
             case TAG_STREAM_INFO:
                 ParseStreamInfo(file, tag, line);
                 break;
             case TAG_KEY:
                 ParseKey(file, tag, line);
+                break;
+            case TAG_MEDIA:
+                if (file.HasIndependentSegments)
+                {
+                    ParseAlternateStreamInfo(file, tag, line);
+                }
                 break;
             case TAG_MEDIA_SEQUENCE:
                 file.FirstMediaSequenceNumber = long.Parse(value, CultureInfo.InvariantCulture);

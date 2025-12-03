@@ -45,4 +45,9 @@ public class StreamInfo
     /// Resolution height.
     /// </summary>
     public int ResolutionHeight { get; internal set; }
+
+    /// <summary>
+    /// Audio group, when part of a parent stream with independent audio stream.
+    /// </summary>
+    public string? Audio { get; internal set; }
 }
