@@ -1,4 +1,4 @@
-﻿#define USE_PRESERIALIE
+﻿#define USE_PRESERIALIZE
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
