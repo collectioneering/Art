@@ -59,6 +59,11 @@ public partial class M3UDownloaderContext
     public string Name { get; set; } = "M3U";
 
     /// <summary>
+    /// Use registration manager to register resources and check for already downloaded items.
+    /// </summary>
+    public bool UseRegistrationManager { get; set; } = true;
+
+    /// <summary>
     /// Resolved timing.
     /// </summary>
     /// <remarks>
@@ -338,10 +343,14 @@ public partial class M3UDownloaderContext
     {
         string fn = GetFileName(uri);
         ArtifactResourceKey ark = new(Config.ArtifactKey, fn, Config.ArtifactKey.Id);
-        if (await Tool.RegistrationManager.TryGetResourceAsync(ark, cancellationToken).ConfigureAwait(false) != null)
+        bool useRegistrationManager = UseRegistrationManager;
+        if (useRegistrationManager)
         {
-            if (Config.SkipExistingSegments) return;
-            await Tool.RegistrationManager.RemoveResourceAsync(ark, cancellationToken).ConfigureAwait(false);
+            if (await Tool.RegistrationManager.TryGetResourceAsync(ark, cancellationToken).ConfigureAwait(false) != null)
+            {
+                if (Config.SkipExistingSegments) return;
+                await Tool.RegistrationManager.RemoveResourceAsync(ark, cancellationToken).ConfigureAwait(false);
+            }
         }
         // don't need to always write msn (only necessary for later dec) but do it anyway...
         if (mediaSequenceNumber is { } msn) await WriteAncillaryFileAsync($"{fn}.msn.txt", Encoding.UTF8.GetBytes(msn.ToString(CultureInfo.InvariantCulture)), cancellationToken).ConfigureAwait(false);
@@ -351,7 +360,10 @@ public partial class M3UDownloaderContext
             await StreamSegmentInternalAsync(ari, oStream, cancellationToken).ConfigureAwait(false);
             oStream.ShouldCommit = true;
         }
-        await Tool.RegistrationManager.AddResourceAsync(ari, cancellationToken).ConfigureAwait(false);
+        if (useRegistrationManager)
+        {
+            await Tool.RegistrationManager.AddResourceAsync(ari, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     private async Task StreamSegmentInternalAsync(Stream targetStream, Uri uri, M3UFile file, long? mediaSequenceNumber, SegmentSettings? segmentSettings, CancellationToken cancellationToken)
