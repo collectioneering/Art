@@ -13,6 +13,7 @@ namespace Art.M3U;
 /// </summary>
 /// <param name="PrimaryStream">Primary content stream.</param>
 /// <param name="AlternateStreams">Alternate streams that may be necessary for a full experience.</param>
+/// <param name="M3UFile">Root M3U file.</param>
 public record M3UDownloaderContextGroup(M3UDownloaderContext PrimaryStream, ImmutableArray<M3UDownloaderContext> AlternateStreams, M3UFile M3UFile);
 
 /// <summary>

@@ -18,11 +18,19 @@ public class ArtifactToolListProxyTests
             {
                 return v.CreateData($"{i}");
             }
+
             return null;
         });
         await tool.InitializeAsync(profile: profile);
         var proxy = new ArtifactToolListProxy(tool, new ArtifactToolListOptions(), null);
-        Assert.That(async () => await proxy.ListAsync().ToListAsync(), Throws.InstanceOf<NotSupportedException>());
+        Assert.That(async () =>
+        {
+#if NET10_0_OR_GREATER
+            return await AsyncEnumerable.ToListAsync(proxy.ListAsync());
+#else
+            return await proxy.ListAsync().ToListAsync();
+#endif
+        }, Throws.InstanceOf<NotSupportedException>());
     }
 
     [Test]
@@ -37,11 +45,16 @@ public class ArtifactToolListProxyTests
             {
                 return v.CreateData($"{i}");
             }
+
             return null;
         });
         await tool.InitializeAsync(profile: profile);
         var proxy = new ArtifactToolListProxy(tool, new ArtifactToolListOptions(), null);
+#if NET10_0_OR_GREATER
+        var results = await AsyncEnumerable.ToListAsync(proxy.ListAsync());
+#else
         var results = await proxy.ListAsync().ToListAsync();
+#endif
         Assert.That(results.Select(v => int.Parse(v.Info.Key.Id)), Is.EquivalentTo(new[] { 1, 2, 3 }));
     }
 
@@ -58,7 +71,11 @@ public class ArtifactToolListProxyTests
         });
         await tool.InitializeAsync(profile: profile);
         var proxy = new ArtifactToolListProxy(tool, new ArtifactToolListOptions(), null);
+#if NET10_0_OR_GREATER
+        var results = await AsyncEnumerable.ToListAsync(proxy.ListAsync());
+#else
         var results = await proxy.ListAsync().ToListAsync();
+#endif
         Assert.That(results.Select(v => int.Parse(v.Info.Key.Id)), Is.EquivalentTo(new[] { 1, 2, 3 }));
     }
 
@@ -76,7 +93,11 @@ public class ArtifactToolListProxyTests
         });
         await tool.InitializeAsync(profile: profile);
         var proxy = new ArtifactToolListProxy(tool, new ArtifactToolListOptions(), null);
+#if NET10_0_OR_GREATER
+        var results = await AsyncEnumerable.ToListAsync(proxy.ListAsync());
+#else
         var results = await proxy.ListAsync().ToListAsync();
+#endif
         Assert.That(results.Select(v => int.Parse(v.Info.Key.Id)), Is.EquivalentTo(new[] { 1, 2, 3 }));
     }
 
