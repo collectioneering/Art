@@ -32,7 +32,7 @@ public class CommandTestBase
     [MemberNotNull(nameof(Error))]
     [MemberNotNull(nameof(ToolOutput))]
     [MemberNotNull(nameof(TestConsole))]
-    internal void CreateStreamOutputs(out PlainToolLogHandlerProvider toolLogHandlerProvider, out TestConsole console, string? newLine = null, int windowWidth = 100, bool outputRedirected = true, bool errorRedirected = true, bool inputRedirected = true)
+    internal void CreateStreamOutputs(out PlainToolLogHandlerProvider toolLogHandlerProvider, out TestConsole console, string? newLine = null)
     {
         Out = new StringWriter();
         OutStream = new MemoryStream();
@@ -46,7 +46,7 @@ public class CommandTestBase
         }
         OutStream = new MemoryStream();
         ToolOutput = toolLogHandlerProvider = new PlainToolLogHandlerProvider(Out, Warn, Error, () => new NonDisposingStream(OutStream));
-        console = TestConsole = new TestConsole(Out, Error, windowWidth, outputRedirected, errorRedirected, inputRedirected);
+        console = TestConsole = new TestConsole(Out, Error);
     }
 
     [MemberNotNull(nameof(Out))]
@@ -54,7 +54,7 @@ public class CommandTestBase
     [MemberNotNull(nameof(Error))]
     [MemberNotNull(nameof(ToolOutput))]
     [MemberNotNull(nameof(TestConsole))]
-    internal void CreateOutputs(out PlainToolLogHandlerProvider toolLogHandlerProvider, out TestConsole console, string? newLine = null, int windowWidth = 100, bool outputRedirected = true, bool errorRedirected = true, bool inputRedirected = true)
+    internal void CreateOutputs(out PlainToolLogHandlerProvider toolLogHandlerProvider, out TestConsole console, string? newLine = null)
     {
         Out = new StringWriter();
         Warn = new StringWriter();
@@ -66,7 +66,7 @@ public class CommandTestBase
             Error.NewLine = newLine;
         }
         ToolOutput = toolLogHandlerProvider = new PlainToolLogHandlerProvider(Out, Warn, Error, () => throw new NotSupportedException());
-        console = TestConsole = new TestConsole(Out, Error, windowWidth, outputRedirected, errorRedirected, inputRedirected);
+        console = TestConsole = new TestConsole(Out, Error);
     }
 
     [MemberNotNull(nameof(Out))]
@@ -76,7 +76,7 @@ public class CommandTestBase
     [MemberNotNull(nameof(ErrorQueue))]
     [MemberNotNull(nameof(ToolOutput))]
     [MemberNotNull(nameof(TestConsole))]
-    internal void CreateObjectOutputs(out ObjectToolLogHandlerProvider toolLogHandlerProvider, out TestConsole console, string? newLine = null, int windowWidth = 100, bool outputRedirected = true, bool errorRedirected = true, bool inputRedirected = true)
+    internal void CreateObjectOutputs(out ObjectToolLogHandlerProvider toolLogHandlerProvider, out TestConsole console, string? newLine = null)
     {
         Out = new StringWriter();
         Warn = new StringWriter();
@@ -90,14 +90,14 @@ public class CommandTestBase
         OutQueue = new Queue<ObjectLog>();
         ErrorQueue = new Queue<ObjectLog>();
         ToolOutput = toolLogHandlerProvider = new ObjectToolLogHandlerProvider(Out, Warn, Error, () => throw new NotSupportedException(), OutQueue, ErrorQueue);
-        console = TestConsole = new TestConsole(Out, Error, windowWidth, outputRedirected, errorRedirected, inputRedirected);
+        console = TestConsole = new TestConsole(Out, Error);
     }
 
     [MemberNotNull(nameof(Warn))]
     [MemberNotNull(nameof(Error))]
     [MemberNotNull(nameof(ToolOutput))]
     [MemberNotNull(nameof(TestConsole))]
-    internal void CreateOutputs(out PlainToolLogHandlerProvider toolLogHandlerProvider, out TestConsole console, Stream outStream, string? newLine = null, int windowWidth = 100, bool outputRedirected = true, bool errorRedirected = true, bool inputRedirected = true)
+    internal void CreateOutputs(out PlainToolLogHandlerProvider toolLogHandlerProvider, out TestConsole console, Stream outStream, string? newLine = null)
     {
         var outWriter = new StreamWriter(outStream, leaveOpen: true);
         Warn = new StringWriter();
@@ -109,7 +109,7 @@ public class CommandTestBase
             Error.NewLine = newLine;
         }
         ToolOutput = toolLogHandlerProvider = new PlainToolLogHandlerProvider(outWriter, Warn, Error, () => new NonDisposingStream(outStream));
-        console = TestConsole = new TestConsole(outWriter, Error, windowWidth, outputRedirected, errorRedirected, inputRedirected);
+        console = TestConsole = new TestConsole(outWriter, Error);
     }
 
     private class NonDisposingStream : DelegatingStream
