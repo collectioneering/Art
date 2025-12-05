@@ -25,6 +25,9 @@ public static class ArtCommonExtensions
     /// <param name="enumerable">Enumerable to convert to list.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task returning list.</returns>
+#if NET10_0_OR_GREATER
+    [Obsolete("Use System.Linq.AsyncEnumerable.ToListAsync<T> from System.Linq.Async instead")]
+#endif
     public static async Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> enumerable, CancellationToken cancellationToken = default)
     {
         List<T> list = new();
@@ -71,6 +74,7 @@ public static class ArtCommonExtensions
             collection.Add(enumerator.Current);
             any = true;
         }
+
         return any;
     }
 
@@ -151,6 +155,7 @@ public static class ArtCommonExtensions
             if (await enumerator.MoveNextAsync()) throw new InvalidOperationException("More than one element contained in sequence");
             return value;
         }
+
         return default;
     }
 
@@ -170,6 +175,7 @@ public static class ArtCommonExtensions
             if (await enumerator.MoveNextAsync()) throw new InvalidOperationException("More than one element contained in sequence");
             return value;
         }
+
         return @default;
     }
 

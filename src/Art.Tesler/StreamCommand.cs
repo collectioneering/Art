@@ -51,37 +51,47 @@ public class StreamCommand : ToolCommandBase
         {
             throw new ArtUserException("No profiles were loaded from specified inputs, this command requires exactly one");
         }
+
         if (profiles.Count != 1)
         {
             throw new ArtUserException("Multiple profiles were loaded from specified inputs, this command requires exactly one");
         }
+
         var profile = PrepareProfile(context, profiles[0]);
         using var arm = new InMemoryArtifactRegistrationManager();
         using var adm = new InMemoryArtifactDataManager();
         (bool getArtifactRetrievalTimestamps, bool getResourceRetrievalTimestamps) = GetArtifactRetrievalOptions(context);
         using var tool = await GetToolAsync(profile, arm, adm, TimeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
         var listProxy = new ArtifactToolListProxy(tool, ArtifactToolListOptions.Default, l);
+#if NET10_0_OR_GREATER
+        var res = await AsyncEnumerable.ToListAsync(listProxy.ListAsync(cancellationToken), cancellationToken: cancellationToken).ConfigureAwait(false);
+#else
         var res = await listProxy.ListAsync(cancellationToken).ToListAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+#endif
         if (res.Count == 0)
         {
             l.Log($"No artifacts found for profile {profile}, this command requires exactly one", null, LogLevel.Error);
             return 77;
         }
+
         if (res.Count > 1)
         {
             l.Log($"Multiple artifacts found for profile {profile}, this command requires exactly one", null, LogLevel.Error);
             return 78;
         }
+
         var artifact = res[0];
         if (artifact.PrimaryResource is not { } primaryResource)
         {
             l.Log($"No primary resource available for artifact {artifact.Info.Key}, this command requires one", null, LogLevel.Error);
             return 79;
         }
+
         if (!primaryResource.CanExportStream)
         {
             l.Log($"Primary resource {primaryResource} does not support exporting, this command requires this functionality", null, LogLevel.Error);
         }
+
         var output = ToolLogHandlerProvider.GetOutStream();
         await using var output1 = output.ConfigureAwait(false);
         await primaryResource.ExportStreamAsync(output, useLogger: false, cancellationToken: cancellationToken).ConfigureAwait(false);
