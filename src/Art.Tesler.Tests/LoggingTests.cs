@@ -1,5 +1,4 @@
-﻿using System.CommandLine;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Art.Common;
 using Art.Common.Logging;
 using Art.Tesler.Properties;
@@ -100,7 +99,7 @@ public class LoggingTests : CommandTestBase
         var dataProvider = CreateSharedMemoryDataProvider();
         var registrationProvider = CreateSharedMemoryRegistrationProvider();
         InitCommandDefault(toolLogHandlerProvider, store, toolPropertyProvider, dataProvider, registrationProvider, new FakeTimeProvider());
-        return Command.Invoke(line, console);
+        return InvokeCommand(Command, line, console);
     }
 
     private static string ConstructOutput(string outputDelimiter, string toolString, string group, string? title, string? body, LogLevel logLevel)

@@ -1,5 +1,4 @@
-﻿using System.CommandLine;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Art.Tesler.Profiles;
 using Art.Tesler.Properties;
 using Microsoft.Extensions.Time.Testing;
@@ -36,7 +35,7 @@ public class ChecksumTests : CommandTestBase
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, dataProvider, registrationProvider, new FakeTimeProvider(), profileResolver);
         string[] line = { ProfileName };
-        Assert.That(Command.Invoke(line, console), Is.EqualTo(0));
+        Assert.That(InvokeCommand(Command, line, console), Is.EqualTo(0));
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(Error.ToString(), Is.Empty);
     }
@@ -52,7 +51,7 @@ public class ChecksumTests : CommandTestBase
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, dataProvider, registrationProvider, new FakeTimeProvider(), profileResolver);
         string[] line = { ProfileName, "--hash", "SHA256" };
-        Assert.That(Command.Invoke(line, console), Is.EqualTo(0));
+        Assert.That(InvokeCommand(Command, line, console), Is.EqualTo(0));
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(Error.ToString(), Is.Empty);
     }
@@ -68,7 +67,7 @@ public class ChecksumTests : CommandTestBase
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, dataProvider, registrationProvider, new FakeTimeProvider(), profileResolver);
         string[] line = { ProfileName, "--hash", "BAD_CHECKSUM" };
-        Assert.That(Command.Invoke(line, console), Is.Not.EqualTo(0));
+        Assert.That(InvokeCommand(Command, line, console), Is.Not.EqualTo(0));
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(Error.ToString(), Is.Not.Empty);
     }

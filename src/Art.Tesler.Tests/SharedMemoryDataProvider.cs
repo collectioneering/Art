@@ -1,5 +1,4 @@
 ﻿using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Art.Common.Management;
@@ -14,7 +13,7 @@ internal class SharedMemoryDataProvider : ITeslerDataProvider
     {
     }
 
-    public IArtifactDataManager CreateArtifactDataManager(InvocationContext context)
+    public IArtifactDataManager CreateArtifactDataManager(ParseResult parseResult)
     {
         return new PersistentProxyArtifactDataManager(_artifactDataManager);
     }

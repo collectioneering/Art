@@ -1,4 +1,5 @@
-﻿using System.CommandLine.Invocation;
+﻿using System.CommandLine;
+using System.CommandLine.Invocation;
 
 namespace Art.Tesler.Database;
 
@@ -17,9 +18,9 @@ public class DatabaseCommandCleanup : CommandBase
         RegistrationProvider.Initialize(this);
     }
 
-    protected override async Task<int> RunAsync(InvocationContext context, CancellationToken cancellationToken)
+    protected override async Task<int> RunAsync(ParseResult parseResult, CancellationToken cancellationToken)
     {
-        using var arm = RegistrationProvider.CreateArtifactRegistrationManager(context);
+        using var arm = RegistrationProvider.CreateArtifactRegistrationManager(parseResult);
         if (arm is not IArtifactRegistrationManagerCleanup armCleanup)
         {
             ToolOutput.Error.WriteLine($"Artifact registration provider {arm} does not support cleanup.");

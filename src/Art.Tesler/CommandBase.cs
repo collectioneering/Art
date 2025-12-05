@@ -1,5 +1,4 @@
 ﻿using System.CommandLine;
-using System.CommandLine.Invocation;
 
 namespace Art.Tesler;
 
@@ -10,14 +9,14 @@ public abstract class CommandBase : Command
     protected CommandBase(IOutputControl toolOutput, string name, string? description = null) : base(name, description)
     {
         ToolOutput = toolOutput;
-        this.SetHandler(RunInternalAsync);
+        SetAction(RunInternalAsync);
     }
 
-    private async Task<int> RunInternalAsync(InvocationContext context)
+    private async Task<int> RunInternalAsync(ParseResult parseResult)
     {
         try
         {
-            return await RunAsync(context, default).ConfigureAwait(false);
+            return await RunAsync(parseResult, default).ConfigureAwait(false);
         }
         catch (ArtUserException e)
         {
@@ -41,5 +40,5 @@ public abstract class CommandBase : Command
         console.Error.WriteLine(message);
     }
 
-    protected abstract Task<int> RunAsync(InvocationContext context, CancellationToken cancellationToken);
+    protected abstract Task<int> RunAsync(ParseResult parseResult, CancellationToken cancellationToken);
 }

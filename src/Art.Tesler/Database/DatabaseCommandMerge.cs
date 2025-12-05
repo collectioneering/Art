@@ -23,6 +23,7 @@ public class DatabaseCommandMerge : DatabaseCommandBase
         /// </summary>
         ForceAll
     }
+
     protected ITeslerRegistrationProvider InputRegistrationProvider;
 
     protected Option<bool> ListOption;
@@ -43,65 +44,65 @@ public class DatabaseCommandMerge : DatabaseCommandBase
     {
         InputRegistrationProvider = inputRegistrationProvider;
         InputRegistrationProvider.Initialize(this);
-        ListOption = new Option<bool>(new[] { "--list" }, "List items");
-        AddOption(ListOption);
-        AllOption = new Option<bool>(new[] { "--all" }, "Delete all items");
-        AddOption(AllOption);
-        DoMergeOption = new Option<bool>(new[] { "--do-merge" }, "Perform actual merge");
-        AddOption(DoMergeOption);
-        MergeFilterOption = new Option<MergeFilter>(new[] { "--merge-filter" }, "Filter artifacts to commit");
-        MergeFilterOption.SetDefaultValue(MergeFilter.Updated);
-        AddOption(MergeFilterOption);
-        AddValidator(result =>
+        ListOption = new Option<bool>("--list") { Description = "List items" };
+        Add(ListOption);
+        AllOption = new Option<bool>("--all") { Description = "Delete all items" };
+        Add(AllOption);
+        DoMergeOption = new Option<bool>("--do-merge") { Description = "Perform actual merge" };
+        Add(DoMergeOption);
+        MergeFilterOption = new Option<MergeFilter>("--merge-filter") { Description = "Filter artifacts to commit" };
+        MergeFilterOption.DefaultValueFactory = static _ => MergeFilter.Updated;
+        Add(MergeFilterOption);
+        Validators.Add(result =>
         {
             bool anyFilters = false;
-            anyFilters |= result.GetValueForOption(ToolOption) != null;
-            anyFilters |= result.GetValueForOption(GroupOption) != null;
-            anyFilters |= result.GetValueForOption(ToolLikeOption) != null;
-            anyFilters |= result.GetValueForOption(GroupLikeOption) != null;
-            anyFilters |= result.GetValueForOption(IdOption) != null;
-            anyFilters |= result.GetValueForOption(IdLikeOption) != null;
-            anyFilters |= result.GetValueForOption(NameLikeOption) != null;
-            if (result.GetValueForOption(AllOption))
+            anyFilters |= result.GetValue(ToolOption) != null;
+            anyFilters |= result.GetValue(GroupOption) != null;
+            anyFilters |= result.GetValue(ToolLikeOption) != null;
+            anyFilters |= result.GetValue(GroupLikeOption) != null;
+            anyFilters |= result.GetValue(IdOption) != null;
+            anyFilters |= result.GetValue(IdLikeOption) != null;
+            anyFilters |= result.GetValue(NameLikeOption) != null;
+            if (result.GetValue(AllOption))
             {
                 if (anyFilters)
                 {
-                    result.ErrorMessage = "Cannot specify --all when filters have been specified.";
+                    result.AddError("Cannot specify --all when filters have been specified.");
                 }
             }
             else if (!anyFilters)
             {
-                result.ErrorMessage = "At least one filter or --all must be specified.";
+                result.AddError("At least one filter or --all must be specified.");
             }
         });
     }
 
-    protected override async Task<int> RunAsync(InvocationContext context, CancellationToken cancellationToken)
+    protected override async Task<int> RunAsync(ParseResult parseResult, CancellationToken cancellationToken)
     {
-        using var arm = RegistrationProvider.CreateArtifactRegistrationManager(context);
-        using var inputArm = InputRegistrationProvider.CreateArtifactRegistrationManager(context);
+        using var arm = RegistrationProvider.CreateArtifactRegistrationManager(parseResult);
+        using var inputArm = InputRegistrationProvider.CreateArtifactRegistrationManager(parseResult);
         IEnumerable<ArtifactInfo> en;
-        if (context.ParseResult.GetValueForOption(AllOption))
+        if (parseResult.GetValue(AllOption))
         {
             en = await inputArm.ListArtifactsAsync(cancellationToken).ConfigureAwait(false);
         }
         else
         {
-            string? tool = context.ParseResult.GetValueForOption(ToolOption);
-            string? group = context.ParseResult.GetValueForOption(GroupOption);
-            string? toolLike = context.ParseResult.GetValueForOption(ToolLikeOption);
-            string? groupLike = context.ParseResult.GetValueForOption(GroupLikeOption);
-            string? id = context.ParseResult.GetValueForOption(IdOption);
-            string? idLike = context.ParseResult.GetValueForOption(IdLikeOption);
-            string? nameLike = context.ParseResult.GetValueForOption(NameLikeOption);
+            string? tool = parseResult.GetValue(ToolOption);
+            string? group = parseResult.GetValue(GroupOption);
+            string? toolLike = parseResult.GetValue(ToolLikeOption);
+            string? groupLike = parseResult.GetValue(GroupLikeOption);
+            string? id = parseResult.GetValue(IdOption);
+            string? idLike = parseResult.GetValue(IdLikeOption);
+            string? nameLike = parseResult.GetValue(NameLikeOption);
             en = (await inputArm.ListArtifactsOptionalsAsync(tool, group, cancellationToken: cancellationToken).ConfigureAwait(false)).WithFilters(tool, toolLike, group, groupLike, id, idLike, nameLike);
         }
-        MergeFilter mergeFilter = context.ParseResult.GetValueForOption(MergeFilterOption);
+        MergeFilter mergeFilter = parseResult.GetValue(MergeFilterOption);
         int v = 0;
-        bool list = context.ParseResult.GetValueForOption(ListOption);
-        bool doMerge = context.ParseResult.GetValueForOption(DoMergeOption);
-        bool listResource = context.ParseResult.GetValueForOption(ListResourceOption);
-        bool detailed = context.ParseResult.GetValueForOption(DetailedOption);
+        bool list = parseResult.GetValue(ListOption);
+        bool doMerge = parseResult.GetValue(DoMergeOption);
+        bool listResource = parseResult.GetValue(ListResourceOption);
+        bool detailed = parseResult.GetValue(DetailedOption);
         foreach (ArtifactInfo i in en.ToList())
         {
             ArtifactInfo? existing = await arm.TryGetArtifactAsync(i.Key, cancellationToken).ConfigureAwait(false);

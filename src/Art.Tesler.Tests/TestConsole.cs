@@ -1,7 +1,4 @@
-﻿using System.CommandLine;
-using System.CommandLine.IO;
-
-namespace Art.Tesler.Tests;
+﻿namespace Art.Tesler.Tests;
 
 public class TestConsole : IConsole
 {
@@ -16,18 +13,18 @@ public class TestConsole : IConsole
         _outputRedirected = outputRedirected;
         _errorRedirected = errorRedirected;
         _inputRedirected = inputRedirected;
-        Out = new TextWriterStandardStreamWriter(outWriter);
-        Error = new TextWriterStandardStreamWriter(errorWriter);
+        Out = outWriter;
+        Error = errorWriter;
     }
 
     /// <inheritdoc />
-    public IStandardStreamWriter Error { get; }
+    public TextWriter Error { get; }
 
     /// <inheritdoc />
     public bool IsErrorRedirected => _errorRedirected;
 
     /// <inheritdoc />
-    public IStandardStreamWriter Out { get; }
+    public TextWriter Out { get; }
 
     /// <inheritdoc />
     public bool IsOutputRedirected => _outputRedirected;

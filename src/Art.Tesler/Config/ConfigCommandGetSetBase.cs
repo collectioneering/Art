@@ -24,85 +24,79 @@ public abstract class ConfigCommandGetSetBase : CommandBase
         IOutputControl toolOutput,
         string name,
         string? description = null)
-    : base(toolOutput, name, description)
+        : base(toolOutput, name, description)
     {
-        ToolOption = new Option<string>(new[] { "-t", "--tool" }, "Tool for which to get/set configuration property")
-        {
-            ArgumentHelpName = "tool-string"
-        };
-        AddOption(ToolOption);
-        InputOption = new Option<string>(new[] { "-i", "--input" }, "Profile for which to get/set configuration property")
-        {
-            ArgumentHelpName = "profile-path"
-        };
-        AddOption(InputOption);
-        LocalOption = new Option<bool>(new[] { "-l", "--local" }, "Use local option scope");
-        AddOption(LocalOption);
-        GlobalOption = new Option<bool>(new[] { "-g", "--global" }, "Use global option scope");
-        AddOption(GlobalOption);
-        ProfileOption = new Option<bool>(new[] { "-p", "--profile" }, "Use profile option scope");
-        AddOption(ProfileOption);
-        KeyArgument = new Argument<string>("key", "Configuration property key") { HelpName = "key", Arity = ArgumentArity.ExactlyOne };
-        AddArgument(KeyArgument);
-        ProfileIndexOption = new Option<int?>(new[] { "--profile-index" }, "Profile index");
-        AddOption(ProfileIndexOption);
-        AddValidator(result =>
+        ToolOption = new Option<string>("-t", "--tool") { HelpName = "tool-string", Description = "Tool for which to get/set configuration property" };
+        Add(ToolOption);
+        InputOption = new Option<string>("-i", "--input") { HelpName = "profile-path", Description = "Profile for which to get/set configuration property" };
+        Add(InputOption);
+        LocalOption = new Option<bool>("-l", "--local") { Description = "Use local option scope" };
+        Add(LocalOption);
+        GlobalOption = new Option<bool>("-g", "--global") { Description = "Use global option scope" };
+        Add(GlobalOption);
+        ProfileOption = new Option<bool>("-p", "--profile") { Description = "Use profile option scope" };
+        Add(ProfileOption);
+        KeyArgument = new Argument<string>("key") { HelpName = "key", Arity = ArgumentArity.ExactlyOne, Description = "Configuration property key" };
+        Add(KeyArgument);
+        ProfileIndexOption = new Option<int?>("--profile-index") { Description = "Profile index" };
+        Add(ProfileIndexOption);
+        Validators.Add(result =>
         {
             HashSet<Option> optionSet = new();
-            if (result.GetValueForOption(ToolOption) != null)
+            if (result.GetValue(ToolOption) != null)
             {
                 optionSet.Add(ToolOption);
             }
 
-            if (result.GetValueForOption(InputOption) != null)
+            if (result.GetValue(InputOption) != null)
             {
                 optionSet.Add(InputOption);
             }
 
             if (optionSet.Count > 1)
             {
-                result.ErrorMessage = $"Only one option from {CommandHelper.GetOptionAliasList(new Option[] { ToolOption, InputOption })} may be specified";
+                result.AddError($"Only one option from {CommandHelper.GetOptionAliasList(new Option[] { ToolOption, InputOption })} may be specified");
                 return;
             }
 
             optionSet.Clear();
 
-            if (result.GetValueForOption(LocalOption))
+            if (result.GetValue(LocalOption))
             {
                 optionSet.Add(LocalOption);
             }
-            if (result.GetValueForOption(GlobalOption))
+            if (result.GetValue(GlobalOption))
             {
                 optionSet.Add(GlobalOption);
             }
-            if (result.GetValueForOption(ProfileOption))
+            if (result.GetValue(ProfileOption))
             {
                 optionSet.Add(ProfileOption);
             }
 
             if (optionSet.Count > 1)
             {
-                result.ErrorMessage = $"Only one option from {CommandHelper.GetOptionAliasList(new Option[] { LocalOption, GlobalOption, ProfileOption })} may be specified";
+                result.AddError($"Only one option from {CommandHelper.GetOptionAliasList(new Option[] { LocalOption, GlobalOption, ProfileOption })} may be specified");
                 return;
             }
 
-            if (result.GetValueForOption(ProfileOption) && result.GetValueForOption(InputOption) == null)
+            if (result.GetValue(ProfileOption) && result.GetValue(InputOption) == null)
             {
-                result.ErrorMessage = $"{CommandHelper.GetOptionAlias(ProfileOption)} may not be used without {CommandHelper.GetOptionAlias(InputOption)}";
+                result.AddError($"{CommandHelper.GetOptionAlias(ProfileOption)} may not be used without {CommandHelper.GetOptionAlias(InputOption)}");
                 return;
             }
 
-            if (result.GetValueForOption(ProfileIndexOption) != null && result.GetValueForOption(InputOption) == null)
+            if (result.GetValue(ProfileIndexOption) != null && result.GetValue(InputOption) == null)
             {
-                result.ErrorMessage = $"{CommandHelper.GetOptionAlias(ProfileIndexOption)} may not be used without {CommandHelper.GetOptionAlias(InputOption)}";
+                result.AddError($"{CommandHelper.GetOptionAlias(ProfileIndexOption)} may not be used without {CommandHelper.GetOptionAlias(InputOption)}");
                 return;
             }
 
-            if (result.GetValueForOption(InputOption) != null)
+            if (result.GetValue(InputOption) != null)
             {
-                if (result.GetValueForOption(LocalOption) && result.GetValueForOption(GlobalOption))
+                if (result.GetValue(LocalOption) && result.GetValue(GlobalOption))
                 {
-                    result.ErrorMessage = $"{CommandHelper.GetOptionAliasList(new Option[] { LocalOption, GlobalOption })} may not be specified when {CommandHelper.GetOptionAlias(InputOption)} is specified";
+                    result.AddError($"{CommandHelper.GetOptionAliasList(new Option[] { LocalOption, GlobalOption })} may not be specified when {CommandHelper.GetOptionAlias(InputOption)} is specified");
                     return;
                 }
             }
@@ -111,13 +105,13 @@ public abstract class ConfigCommandGetSetBase : CommandBase
 
     protected bool TryGetProfilesWithIndex(
         IProfileResolver profileResolver,
-        InvocationContext context,
+        ParseResult parseResult,
         [NotNullWhen(true)] out IResolvedProfiles? resolvedProfiles,
         out string profileString,
         out int selectedIndex,
         out int errorCode)
     {
-        profileString = context.ParseResult.GetValueForOption(InputOption)!;
+        profileString = parseResult.GetRequiredValue(InputOption);
         if (!profileResolver.TryGetProfiles(profileString, out resolvedProfiles, ProfileResolutionFlags.Files))
         {
             PrintErrorMessage($"Unable to identify profile file {profileString}", ToolOutput);
@@ -128,7 +122,7 @@ public abstract class ConfigCommandGetSetBase : CommandBase
         }
 
         var profileList = resolvedProfiles.Values;
-        if (context.ParseResult.GetValueForOption(ProfileIndexOption) is { } profileIndexResult)
+        if (parseResult.GetValue(ProfileIndexOption) is { } profileIndexResult)
         {
             selectedIndex = profileIndexResult;
         }
@@ -153,20 +147,20 @@ public abstract class ConfigCommandGetSetBase : CommandBase
         return true;
     }
 
-    protected ConfigScope GetConfigScope(InvocationContext context)
+    protected ConfigScope GetConfigScope(ParseResult parseResult)
     {
-        if (context.ParseResult.GetValueForOption(ProfileOption))
+        if (parseResult.GetValue(ProfileOption))
         {
             return ConfigScope.Profile;
         }
-        if (context.ParseResult.GetValueForOption(GlobalOption))
+        if (parseResult.GetValue(GlobalOption))
         {
             return ConfigScope.Global;
         }
-        if (context.ParseResult.GetValueForOption(LocalOption))
+        if (parseResult.GetValue(LocalOption))
         {
             return ConfigScope.Local;
         }
-        return context.ParseResult.HasOption(InputOption) ? ConfigScope.Profile : ConfigScope.Local;
+        return parseResult.GetValue(InputOption) is not null ? ConfigScope.Profile : ConfigScope.Local;
     }
 }

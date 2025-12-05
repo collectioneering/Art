@@ -50,23 +50,23 @@ public class ValidateCommand : ToolCommandBase
         RegistrationProvider = registrationProvider;
         RegistrationProvider.Initialize(this);
         TimeProvider = timeProvider;
-        HashOption = new Option<string>(new[] { "-h", "--hash" }, $"Checksum algorithm ({Common.ChecksumAlgorithms})");
-        HashOption.SetDefaultValue(Common.DefaultChecksumAlgorithm);
-        AddOption(HashOption);
-        ProfileFilesArg = new Argument<List<string>>("profile", "Profile file(s) to filter and repair with") { HelpName = "profile", Arity = ArgumentArity.ZeroOrMore };
-        AddArgument(ProfileFilesArg);
-        RepairOption = new Option<bool>(new[] { "--repair" }, "Re-obtain resources that failed validation (requires appropriate profiles)");
-        AddOption(RepairOption);
-        AddChecksumOption = new Option<bool>(new[] { "--add-checksum" }, "Add checksum to resources without checksum during validation");
-        AddOption(AddChecksumOption);
-        DetailedOption = new Option<bool>(new[] { "--detailed" }, "Show detailed information on entries");
-        AddOption(DetailedOption);
+        HashOption = new Option<string>("-h", "--hash") { Description = $"Checksum algorithm ({Common.ChecksumAlgorithms})" };
+        HashOption.DefaultValueFactory = static _ => Common.DefaultChecksumAlgorithm;
+        Add(HashOption);
+        ProfileFilesArg = new Argument<List<string>>("profile") { HelpName = "profile", Arity = ArgumentArity.ZeroOrMore, Description = "Profile file(s) to filter and repair with" };
+        Add(ProfileFilesArg);
+        RepairOption = new Option<bool>("--repair") { Description = "Re-obtain resources that failed validation (requires appropriate profiles)" };
+        Add(RepairOption);
+        AddChecksumOption = new Option<bool>("--add-checksum") { Description = "Add checksum to resources without checksum during validation" };
+        Add(AddChecksumOption);
+        DetailedOption = new Option<bool>("--detailed") { Description = "Show detailed information on entries" };
+        Add(DetailedOption);
     }
 
-    protected override async Task<int> RunAsync(InvocationContext context, CancellationToken cancellationToken)
+    protected override async Task<int> RunAsync(ParseResult parseResult, CancellationToken cancellationToken)
     {
         ChecksumSource? checksumSource;
-        string? hash = context.ParseResult.HasOption(HashOption) ? context.ParseResult.GetValueForOption(HashOption) : null;
+        string? hash = parseResult.GetValue(HashOption);
         hash = string.Equals(hash, "none", StringComparison.InvariantCultureIgnoreCase) ? null : hash;
         if (hash == null)
         {
@@ -82,12 +82,12 @@ public class ValidateCommand : ToolCommandBase
         }
         IToolLogHandler l = ToolLogHandlerProvider.GetDefaultToolLogHandler();
         List<ArtifactToolProfile> profiles = new();
-        foreach (string profileFile in context.ParseResult.GetValueForArgument(ProfileFilesArg))
+        foreach (string profileFile in parseResult.GetRequiredValue(ProfileFilesArg))
         {
             profiles.AddRange(ArtifactToolProfileUtil.DeserializeProfilesFromFile(profileFile));
         }
-        profiles = PrepareProfiles(context, profiles).ToList();
-        bool repair = context.ParseResult.GetValueForOption(RepairOption);
+        profiles = PrepareProfiles(parseResult, profiles).ToList();
+        bool repair = parseResult.GetValue(RepairOption);
         if (profiles.Count == 0)
         {
             if (repair)
@@ -97,11 +97,11 @@ public class ValidateCommand : ToolCommandBase
             }
             l.Log("No profiles provided, validating all artifacts and resources", null, LogLevel.Information);
         }
-        using var adm = DataProvider.CreateArtifactDataManager(context);
-        using var arm = RegistrationProvider.CreateArtifactRegistrationManager(context);
+        using var adm = DataProvider.CreateArtifactDataManager(parseResult);
+        using var arm = RegistrationProvider.CreateArtifactRegistrationManager(parseResult);
         var validationContext = new ValidationContext(PluginStore, arm, adm, l);
         ValidationProcessResult result;
-        ChecksumSource? checksumSourceForAdd = context.ParseResult.GetValueForOption(AddChecksumOption) ? checksumSource : null;
+        ChecksumSource? checksumSourceForAdd = parseResult.GetValue(AddChecksumOption) ? checksumSource : null;
         if (profiles.Count == 0)
         {
             result = await validationContext.ProcessAsync(await arm.ListArtifactsAsync(cancellationToken).ConfigureAwait(false), checksumSourceForAdd, cancellationToken).ConfigureAwait(false);
@@ -128,8 +128,8 @@ public class ValidateCommand : ToolCommandBase
         }
         l.Log($"{resourceFailCount} resources failed to validate and will be reacquired.", null, LogLevel.Information);
         var repairContext = validationContext.CreateRepairContext();
-        (bool getArtifactRetrievalTimestamps, bool getResourceRetrievalTimestamps) = GetArtifactRetrievalOptions(context);
-        await repairContext.RepairAsync(profiles, context.ParseResult.GetValueForOption(DetailedOption), checksumSource, TimeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, ToolOutput, cancellationToken).ConfigureAwait(false);
+        (bool getArtifactRetrievalTimestamps, bool getResourceRetrievalTimestamps) = GetArtifactRetrievalOptions(parseResult);
+        await repairContext.RepairAsync(profiles, parseResult.GetValue(DetailedOption), checksumSource, TimeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, ToolOutput, cancellationToken).ConfigureAwait(false);
         return 0;
     }
 }

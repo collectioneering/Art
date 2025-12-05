@@ -27,19 +27,18 @@ public class ConfigCommandSet : ConfigCommandGetSetBase
         _runnerPropertyProvider = runnerPropertyProvider;
         _toolPropertyProvider = toolPropertyProvider;
         _profileResolver = profileResolver;
-        ValueArgument = new Argument<string>("value", "Configuration property value") { HelpName = "value", Arity = ArgumentArity.ExactlyOne };
-        AddArgument(ValueArgument);
+        ValueArgument = new Argument<string>("value") { HelpName = "value", Arity = ArgumentArity.ExactlyOne, Description = "Configuration property value" };
+        Add(ValueArgument);
     }
 
-    protected override Task<int> RunAsync(InvocationContext context, CancellationToken cancellationToken)
+    protected override Task<int> RunAsync(ParseResult parseResult, CancellationToken cancellationToken)
     {
-        ConfigScope configScope = GetConfigScope(context);
-        string key = context.ParseResult.GetValueForArgument(KeyArgument);
-        JsonElement value = Common.ParsePropToJsonElement(context.ParseResult.GetValueForArgument(ValueArgument));
-        ConfigProperty property = new ConfigProperty(configScope, key, value);
-        if (context.ParseResult.HasOption(ToolOption))
+        ConfigScope configScope = GetConfigScope(parseResult);
+        string key = parseResult.GetRequiredValue(KeyArgument);
+        JsonElement value = Common.ParsePropToJsonElement(parseResult.GetRequiredValue(ValueArgument));
+        ConfigProperty property = new(configScope, key, value);
+        if (parseResult.GetValue(ToolOption) is { } toolString)
         {
-            string toolString = context.ParseResult.GetValueForOption(ToolOption)!;
             if (!ArtifactToolIDUtil.TryParseID(toolString, out var toolID))
             {
                 PrintErrorMessage($"Unable to parse tool string \"{toolString}\"", ToolOutput);
@@ -64,9 +63,9 @@ public class ConfigCommandSet : ConfigCommandGetSetBase
                     throw new InvalidOperationException($"Invalid config scope {configScope} for tool");
             }
         }
-        else if (context.ParseResult.HasOption(InputOption))
+        else if (parseResult.GetValue(InputOption) is not null)
         {
-            if (!TryGetProfilesWithIndex(_profileResolver, context, out var profiles, out string profileString, out int selectedIndex, out int errorCode))
+            if (!TryGetProfilesWithIndex(_profileResolver, parseResult, out var profiles, out string profileString, out int selectedIndex, out int errorCode))
             {
                 return Task.FromResult(errorCode);
             }
@@ -96,10 +95,7 @@ public class ConfigCommandSet : ConfigCommandGetSetBase
                     }
                     break;
                 case ConfigScope.Profile:
-                    List<ArtifactToolProfile> copy = new(profiles.Values)
-                    {
-                        [selectedIndex] = profile with { Options = TeslerPropertyUtility.GetOptionsMapWithAddedPair(profile.Options, key, value) }
-                    };
+                    List<ArtifactToolProfile> copy = new(profiles.Values) { [selectedIndex] = profile with { Options = TeslerPropertyUtility.GetOptionsMapWithAddedPair(profile.Options, key, value) } };
                     writableResolvedProfiles.WriteProfiles(copy);
                     break;
                 default:
@@ -134,7 +130,6 @@ public class ConfigCommandSet : ConfigCommandGetSetBase
             return false;
         }
         return true;
-
     }
 
     private void PrintFailureToSet(ConfigProperty property)

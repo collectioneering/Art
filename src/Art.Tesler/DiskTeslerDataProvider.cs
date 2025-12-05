@@ -10,8 +10,7 @@ public class DiskTeslerDataProvider : ITeslerDataProvider
 
     public DiskTeslerDataProvider()
     {
-        OutputOption = new Option<string>(new[] { "-o", "--output" }, "Output directory") { ArgumentHelpName = "directory" };
-        OutputOption.SetDefaultValue(Directory.GetCurrentDirectory());
+        OutputOption = new Option<string>("-o", "--output") { HelpName = "directory", Description = "Output directory", DefaultValueFactory = static _ => Directory.GetCurrentDirectory() };
     }
 
     public DiskTeslerDataProvider(Option<string> outputOption)
@@ -21,11 +20,11 @@ public class DiskTeslerDataProvider : ITeslerDataProvider
 
     public void Initialize(Command command)
     {
-        command.AddOption(OutputOption);
+        command.Add(OutputOption);
     }
 
-    public IArtifactDataManager CreateArtifactDataManager(InvocationContext context)
+    public IArtifactDataManager CreateArtifactDataManager(ParseResult parseResult)
     {
-        return new DiskArtifactDataManager(context.ParseResult.GetValueForOption(OutputOption)!);
+        return new DiskArtifactDataManager(parseResult.GetValue(OutputOption)!);
     }
 }

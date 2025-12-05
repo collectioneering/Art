@@ -35,22 +35,22 @@ internal class RehashCommand : CommandBase
         DataProvider.Initialize(this);
         RegistrationProvider = registrationProvider;
         RegistrationProvider.Initialize(this);
-        HashOption = new Option<string>(new[] { "-h", "--hash" }, $"Checksum algorithm ({Common.ChecksumAlgorithms})") { IsRequired = true };
-        AddOption(HashOption);
-        DetailedOption = new Option<bool>(new[] { "--detailed" }, "Show detailed information on entries");
-        AddOption(DetailedOption);
+        HashOption = new Option<string>("-h", "--hash") { Required = true, Description = $"Checksum algorithm ({Common.ChecksumAlgorithms})" };
+        Add(HashOption);
+        DetailedOption = new Option<bool>("--detailed") { Description = "Show detailed information on entries" };
+        Add(DetailedOption);
     }
 
-    protected override async Task<int> RunAsync(InvocationContext context, CancellationToken cancellationToken)
+    protected override async Task<int> RunAsync(ParseResult parseResult, CancellationToken cancellationToken)
     {
-        string hash = context.ParseResult.GetValueForOption(HashOption)!;
+        string hash = parseResult.GetRequiredValue(HashOption);
         if (!ChecksumSource.DefaultSources.ContainsKey(hash))
         {
             PrintErrorMessage(Common.GetInvalidHashMessage(hash), ToolOutput);
             return 2;
         }
-        using var adm = DataProvider.CreateArtifactDataManager(context);
-        using var arm = RegistrationProvider.CreateArtifactRegistrationManager(context);
+        using var adm = DataProvider.CreateArtifactDataManager(parseResult);
+        using var arm = RegistrationProvider.CreateArtifactRegistrationManager(parseResult);
         Dictionary<ArtifactKey, List<ArtifactResourceInfo>> failed = new();
         int rehashed = 0;
 
@@ -60,7 +60,7 @@ internal class RehashCommand : CommandBase
             list.Add(r);
         }
 
-        bool detailed = context.ParseResult.GetValueForOption(DetailedOption);
+        bool detailed = parseResult.GetValue(DetailedOption);
         foreach (ArtifactInfo inf in await arm.ListArtifactsAsync(cancellationToken).ConfigureAwait(false))
         foreach (ArtifactResourceInfo rInf in await arm.ListResourcesAsync(inf.Key, cancellationToken).ConfigureAwait(false))
         {

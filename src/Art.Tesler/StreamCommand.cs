@@ -38,15 +38,15 @@ public class StreamCommand : ToolCommandBase
     {
         TimeProvider = timeProvider;
         ProfileResolver = profileResolver;
-        ProfileFileArg = new Argument<string>("profile", "Profile file") { HelpName = "profile", Arity = ArgumentArity.ExactlyOne };
-        AddArgument(ProfileFileArg);
+        ProfileFileArg = new Argument<string>("profile") { HelpName = "profile", Arity = ArgumentArity.ExactlyOne, Description = "Profile file" };
+        Add(ProfileFileArg);
     }
 
-    protected override async Task<int> RunAsync(InvocationContext context, CancellationToken cancellationToken)
+    protected override async Task<int> RunAsync(ParseResult parseResult, CancellationToken cancellationToken)
     {
         IToolLogHandler l = ToolLogHandlerProvider.GetStreamToolLogHandler();
         List<ArtifactToolProfile> profiles = new();
-        ResolveAndAddProfiles(ProfileResolver, profiles, context.ParseResult.GetValueForArgument(ProfileFileArg));
+        ResolveAndAddProfiles(ProfileResolver, profiles, parseResult.GetRequiredValue(ProfileFileArg));
         if (profiles.Count == 0)
         {
             throw new ArtUserException("No profiles were loaded from specified inputs, this command requires exactly one");
@@ -57,10 +57,10 @@ public class StreamCommand : ToolCommandBase
             throw new ArtUserException("Multiple profiles were loaded from specified inputs, this command requires exactly one");
         }
 
-        var profile = PrepareProfile(context, profiles[0]);
+        var profile = PrepareProfile(parseResult, profiles[0]);
         using var arm = new InMemoryArtifactRegistrationManager();
         using var adm = new InMemoryArtifactDataManager();
-        (bool getArtifactRetrievalTimestamps, bool getResourceRetrievalTimestamps) = GetArtifactRetrievalOptions(context);
+        (bool getArtifactRetrievalTimestamps, bool getResourceRetrievalTimestamps) = GetArtifactRetrievalOptions(parseResult);
         using var tool = await GetToolAsync(profile, arm, adm, TimeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
         var listProxy = new ArtifactToolListProxy(tool, ArtifactToolListOptions.Default, l);
 #if NET10_0_OR_GREATER

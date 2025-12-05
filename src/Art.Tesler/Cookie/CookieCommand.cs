@@ -16,6 +16,6 @@ public class CookieCommand : Command
         string? description = null)
         : base(name, description)
     {
-        AddCommand(new CookieCommandExtract(toolLogHandlerProvider, "extract", "Extracts cookies."));
+        Add(new CookieCommandExtract(toolLogHandlerProvider, "extract", "Extracts cookies."));
     }
 }

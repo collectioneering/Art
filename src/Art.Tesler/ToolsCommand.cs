@@ -28,22 +28,22 @@ public class ToolsCommand : CommandBase
         : base(toolOutput, name, description)
     {
         PluginStore = pluginStore;
-        SearchOption = new Option<string>(new[] { "-s", "--search" }, "Search pattern") { ArgumentHelpName = "pattern" };
-        AddOption(SearchOption);
-        DetailedOption = new Option<bool>(new[] { "--detailed" }, "Show detailed information on entries");
-        AddOption(DetailedOption);
+        SearchOption = new Option<string>("-s", "--search") { HelpName = "pattern", Description = "Search pattern" };
+        Add(SearchOption);
+        DetailedOption = new Option<bool>("--detailed") { Description = "Show detailed information on entries" };
+        Add(DetailedOption);
     }
 
-    protected override Task<int> RunAsync(InvocationContext context, CancellationToken cancellationToken)
+    protected override Task<int> RunAsync(ParseResult parseResult, CancellationToken cancellationToken)
     {
         foreach (var plugin in PluginStore.LoadAllRegistries())
         {
-            string? search = context.ParseResult.GetValueForOption(SearchOption);
+            string? search = parseResult.GetValue(SearchOption);
             Regex? re = search != null ? Common.GetFilterRegex(search, false, false) : null;
             foreach (var desc in plugin.GetToolDescriptions()
                          .Where(v => re?.IsMatch(v.Id.GetToolString()) ?? true))
             {
-                Common.PrintFormat(desc.Id.GetToolString(), context.ParseResult.GetValueForOption(DetailedOption), () =>
+                Common.PrintFormat(desc.Id.GetToolString(), parseResult.GetValue(DetailedOption), () =>
                 {
                     bool canFind = desc.Type.IsAssignableTo(typeof(IArtifactFindTool));
                     bool canList = desc.Type.IsAssignableTo(typeof(IArtifactListTool));

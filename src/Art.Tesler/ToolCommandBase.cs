@@ -41,56 +41,56 @@ public abstract class ToolCommandBase : CommandBase
         ToolLogHandlerProvider = toolLogHandlerProvider;
         PluginStore = pluginStore;
         ToolPropertyProvider = toolPropertyProvider;
-        UserAgentOption = new Option<string>(new[] { "--user-agent" }, "Custom user agent string") { ArgumentHelpName = "user-agent" };
-        AddOption(UserAgentOption);
-        CookieFileOption = new Option<string>(new[] { "--cookie-file" }, "Cookie file") { ArgumentHelpName = "file" };
-        AddOption(CookieFileOption);
-        PropertiesOption = new Option<List<string>>(new[] { "-p", "--property" }, "Add a property") { ArgumentHelpName = "key:value", Arity = ArgumentArity.ZeroOrMore };
-        AddOption(PropertiesOption);
-        PropertyElementsOption = new Option<List<string>>(new[] { "--property-element" }, "Add an element to a list property") { ArgumentHelpName = "key:value", Arity = ArgumentArity.ZeroOrMore };
-        AddOption(PropertyElementsOption);
-        NoDefaultPropertiesOption = new Option<bool>(new[] { "--no-default-properties" }, "Don't apply default properties");
-        AddOption(NoDefaultPropertiesOption);
-        NoRetrievalTimestampsOption = new Option<bool>(new[] { "--no-retrieval-timestamps" }, "Don't apply retrieval timestamps");
-        AddOption(NoRetrievalTimestampsOption);
-        NoArtifactRetrievalTimestampsOption = new Option<bool>(new[] { "--no-artifact-retrieval-timestamps" }, "Don't apply artifact retrieval timestamps");
-        AddOption(NoArtifactRetrievalTimestampsOption);
-        NoResourceRetrievalTimestampsOption = new Option<bool>(new[] { "--no-resource-retrieval-timestamps" }, "Don't apply resource retrieval timestamps");
-        AddOption(NoResourceRetrievalTimestampsOption);
+        UserAgentOption = new Option<string>("--user-agent") { HelpName = "user-agent", Description = "Custom user agent string" };
+        Add(UserAgentOption);
+        CookieFileOption = new Option<string>("--cookie-file") { HelpName = "file", Description = "Cookie file" };
+        Add(CookieFileOption);
+        PropertiesOption = new Option<List<string>>("-p", "--property") { HelpName = "key:value", Arity = ArgumentArity.ZeroOrMore, Description = "Add a property" };
+        Add(PropertiesOption);
+        PropertyElementsOption = new Option<List<string>>("--property-element") { HelpName = "key:value", Arity = ArgumentArity.ZeroOrMore, Description = "Add an element to a list property" };
+        Add(PropertyElementsOption);
+        NoDefaultPropertiesOption = new Option<bool>("--no-default-properties") { Description = "Don't apply default properties" };
+        Add(NoDefaultPropertiesOption);
+        NoRetrievalTimestampsOption = new Option<bool>("--no-retrieval-timestamps") { Description = "Don't apply retrieval timestamps" };
+        Add(NoRetrievalTimestampsOption);
+        NoArtifactRetrievalTimestampsOption = new Option<bool>("--no-artifact-retrieval-timestamps") { Description = "Don't apply artifact retrieval timestamps" };
+        Add(NoArtifactRetrievalTimestampsOption);
+        NoResourceRetrievalTimestampsOption = new Option<bool>("--no-resource-retrieval-timestamps") { Description = "Don't apply resource retrieval timestamps" };
+        Add(NoResourceRetrievalTimestampsOption);
     }
 
-    protected ArtifactToolProfile PrepareProfile(InvocationContext context, ArtifactToolProfile artifactToolProfile)
+    protected ArtifactToolProfile PrepareProfile(ParseResult parseResult, ArtifactToolProfile artifactToolProfile)
     {
-        PopulateOutputs(context, out string? cookieFile, out string? userAgent, out IReadOnlyCollection<string> properties, out IReadOnlyCollection<string> propertyElements);
-        var toolPropertyProvider = GetOptionalToolPropertyProvider(context);
+        PopulateOutputs(parseResult, out string? cookieFile, out string? userAgent, out IReadOnlyCollection<string> properties, out IReadOnlyCollection<string> propertyElements);
+        var toolPropertyProvider = GetOptionalToolPropertyProvider(parseResult);
         return artifactToolProfile.GetWithConsoleOptions(PluginStore, toolPropertyProvider, properties, propertyElements, cookieFile, userAgent, ToolOutput);
     }
 
-    protected IEnumerable<ArtifactToolProfile> PrepareProfiles(InvocationContext context, IEnumerable<ArtifactToolProfile> artifactToolProfiles)
+    protected IEnumerable<ArtifactToolProfile> PrepareProfiles(ParseResult parseResult, IEnumerable<ArtifactToolProfile> artifactToolProfiles)
     {
-        PopulateOutputs(context, out string? cookieFile, out string? userAgent, out IReadOnlyCollection<string> properties, out IReadOnlyCollection<string> propertyElements);
-        var toolPropertyProvider = GetOptionalToolPropertyProvider(context);
+        PopulateOutputs(parseResult, out string? cookieFile, out string? userAgent, out IReadOnlyCollection<string> properties, out IReadOnlyCollection<string> propertyElements);
+        var toolPropertyProvider = GetOptionalToolPropertyProvider(parseResult);
         return artifactToolProfiles.Select(p => p.GetWithConsoleOptions(PluginStore, toolPropertyProvider, properties, propertyElements, cookieFile, userAgent, ToolOutput));
     }
 
     private void PopulateOutputs(
-        InvocationContext context,
+        ParseResult parseResult,
         out string? cookieFile,
         out string? userAgent,
         out IReadOnlyCollection<string> properties,
         out IReadOnlyCollection<string> propertyElements)
     {
-        cookieFile = context.ParseResult.HasOption(CookieFileOption) ? context.ParseResult.GetValueForOption(CookieFileOption) : null;
-        userAgent = context.ParseResult.HasOption(UserAgentOption) ? context.ParseResult.GetValueForOption(UserAgentOption) : null;
-        properties = context.ParseResult.HasOption(PropertiesOption) ? context.ParseResult.GetValueForOption(PropertiesOption)! : Array.Empty<string>();
-        propertyElements = context.ParseResult.HasOption(PropertyElementsOption) ? context.ParseResult.GetValueForOption(PropertyElementsOption)! : Array.Empty<string>();
+        cookieFile = parseResult.GetValue(CookieFileOption);
+        userAgent = parseResult.GetValue(UserAgentOption);
+        properties = (IReadOnlyCollection<string>?)parseResult.GetValue(PropertiesOption) ?? [];
+        propertyElements = (IReadOnlyCollection<string>?)parseResult.GetValue(PropertyElementsOption) ?? [];
     }
 
-    protected (bool getArtifactRetrievalTimestamps, bool getResourceRetrievalTimestamps) GetArtifactRetrievalOptions(InvocationContext context)
+    protected (bool getArtifactRetrievalTimestamps, bool getResourceRetrievalTimestamps) GetArtifactRetrievalOptions(ParseResult parseResult)
     {
-        bool noRetrievalTimestamps = context.ParseResult.GetValueForOption(NoRetrievalTimestampsOption);
-        bool noArtifactRetrievalTimestamps = noRetrievalTimestamps || context.ParseResult.GetValueForOption(NoArtifactRetrievalTimestampsOption);
-        bool noResourceRetrievalTimestamps = noRetrievalTimestamps || context.ParseResult.GetValueForOption(NoResourceRetrievalTimestampsOption);
+        bool noRetrievalTimestamps = parseResult.GetValue(NoRetrievalTimestampsOption);
+        bool noArtifactRetrievalTimestamps = noRetrievalTimestamps || parseResult.GetValue(NoArtifactRetrievalTimestampsOption);
+        bool noResourceRetrievalTimestamps = noRetrievalTimestamps || parseResult.GetValue(NoResourceRetrievalTimestampsOption);
         return (getArtifactRetrievalTimestamps: !noArtifactRetrievalTimestamps, getResourceRetrievalTimestamps: !noResourceRetrievalTimestamps);
     }
 
@@ -110,9 +110,9 @@ public abstract class ToolCommandBase : CommandBase
         return await ArtifactTool.PrepareToolAsync(plugin, artifactToolProfile, arm, adm, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
     }
 
-    protected IToolPropertyProvider? GetOptionalToolPropertyProvider(InvocationContext context)
+    protected IToolPropertyProvider? GetOptionalToolPropertyProvider(ParseResult parseResult)
     {
-        if (context.ParseResult.GetValueForOption(NoDefaultPropertiesOption))
+        if (parseResult.GetValue(NoDefaultPropertiesOption))
         {
             return null;
         }

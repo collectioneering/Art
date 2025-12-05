@@ -1,5 +1,4 @@
-﻿using System.CommandLine;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Art.TestsBase;
 
 namespace Art.Tesler.Tests;
@@ -19,7 +18,7 @@ public class ToolsCommandTests : CommandTestBase
     {
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, GetEmptyStore());
-        Assert.That(Command.Invoke(Array.Empty<string>(), console), Is.EqualTo(0));
+        Assert.That(InvokeCommand(Command, Array.Empty<string>(), console), Is.EqualTo(0));
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(Error.ToString(), Is.Empty);
     }
@@ -29,7 +28,7 @@ public class ToolsCommandTests : CommandTestBase
     {
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, GetSingleStore(ProgrammableArtifactDumpTool.CreateRegistryEntry(_ => { })));
-        Assert.That(Command.Invoke(Array.Empty<string>(), console), Is.EqualTo(0));
+        Assert.That(InvokeCommand(Command, Array.Empty<string>(), console), Is.EqualTo(0));
         Assert.That(Out.ToString(), Contains.Substring(nameof(ProgrammableArtifactDumpTool)));
         Assert.That(Error.ToString(), Is.Empty);
     }
@@ -40,7 +39,7 @@ public class ToolsCommandTests : CommandTestBase
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, GetSingleStore(ProgrammableArtifactDumpTool.CreateRegistryEntry(_ => { })));
         string[] line = { "-s", "$$NOT_A_REAL_TOOL$$" };
-        Assert.That(Command.Invoke(line, console), Is.EqualTo(0));
+        Assert.That(InvokeCommand(Command, line, console), Is.EqualTo(0));
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(Error.ToString(), Is.Empty);
     }
@@ -51,7 +50,7 @@ public class ToolsCommandTests : CommandTestBase
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, GetSingleStore(ProgrammableArtifactDumpTool.CreateRegistryEntry(_ => { })));
         string[] line = { "-s", nameof(ProgrammableArtifactDumpTool) };
-        Assert.That(Command.Invoke(line, console), Is.EqualTo(0));
+        Assert.That(InvokeCommand(Command, line, console), Is.EqualTo(0));
         Assert.That(Out.ToString(), Contains.Substring(nameof(ProgrammableArtifactDumpTool)));
         Assert.That(Error.ToString(), Is.Empty);
     }

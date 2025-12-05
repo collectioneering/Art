@@ -1,5 +1,4 @@
-﻿using System.CommandLine;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Art.Tesler.Profiles;
 using Art.Tesler.Properties;
 using Art.TestsBase;
@@ -38,7 +37,7 @@ public class ArcCommandTests : CommandTestBase
         var profileResolver = CreateDictionaryProfileResolver();
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, dataProvider, registrationProvider, new FakeTimeProvider(), profileResolver);
-        Assert.That(Command.Invoke(Array.Empty<string>(), console), Is.Not.EqualTo(0));
+        Assert.That(InvokeCommand(Command, Array.Empty<string>(), console), Is.Not.EqualTo(0));
         Assert.That(Out.ToString(), Is.Not.Empty);
         Assert.That(Error.ToString(), Is.Not.Empty);
     }
@@ -54,7 +53,7 @@ public class ArcCommandTests : CommandTestBase
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, dataProvider, registrationProvider, new FakeTimeProvider(), profileResolver);
         string[] line = { BadProfileName };
-        Assert.That(Command.Invoke(line, console), Is.Not.EqualTo(0));
+        Assert.That(InvokeCommand(Command, line, console), Is.Not.EqualTo(0));
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(Error.ToString(), Is.Not.Empty);
     }
@@ -70,7 +69,7 @@ public class ArcCommandTests : CommandTestBase
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, dataProvider, registrationProvider, new FakeTimeProvider(), profileResolver);
         string[] line = { ProfileName };
-        Assert.That(Command.Invoke(line, console), Is.EqualTo(0));
+        Assert.That(InvokeCommand(Command, line, console), Is.EqualTo(0));
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(Error.ToString(), Is.Empty);
     }
@@ -87,7 +86,7 @@ public class ArcCommandTests : CommandTestBase
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, dataProvider, registrationProvider, new FakeTimeProvider(), profileResolver);
         string[] line = { ProfileName };
-        Assert.That(Command.Invoke(line, console), Is.EqualTo(0));
+        Assert.That(InvokeCommand(Command, line, console), Is.EqualTo(0));
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(Error.ToString(), Is.Empty);
         Assert.That(ctr, Is.EqualTo(1));
@@ -105,7 +104,7 @@ public class ArcCommandTests : CommandTestBase
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, dataProvider, registrationProvider, new FakeTimeProvider(), profileResolver);
         string[] line = { ProfileName };
-        Assert.That(Command.Invoke(line, console), Is.Not.EqualTo(0));
+        Assert.That(InvokeCommand(Command, line, console), Is.Not.EqualTo(0));
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(Error.ToString(), Is.Not.Empty);
         Assert.That(ctr, Is.EqualTo(0));

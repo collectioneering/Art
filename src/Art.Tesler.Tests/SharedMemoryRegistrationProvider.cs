@@ -1,5 +1,4 @@
 ﻿using System.CommandLine;
-using System.CommandLine.Invocation;
 using Art.Common.Management;
 
 namespace Art.Tesler.Tests;
@@ -14,7 +13,7 @@ internal class SharedMemoryRegistrationProvider : ITeslerRegistrationProvider
 
     public Type GetArtifactRegistrationManagerType() => typeof(PersistentProxyArtifactRegistrationManager);
 
-    public IArtifactRegistrationManager CreateArtifactRegistrationManager(InvocationContext context)
+    public IArtifactRegistrationManager CreateArtifactRegistrationManager(ParseResult parseResult)
     {
         return new PersistentProxyArtifactRegistrationManager(_artifactRegistrationManager);
     }

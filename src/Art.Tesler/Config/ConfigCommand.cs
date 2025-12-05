@@ -33,7 +33,7 @@ public class ConfigCommand : Command
         string? description = null)
         : base(name, description)
     {
-        AddCommand(new ConfigCommandList(
+        Add(new ConfigCommandList(
             toolOutput,
             runnerPropertyProvider,
             toolPropertyProvider,
@@ -41,7 +41,7 @@ public class ConfigCommand : Command
             registryStore,
             "list",
             "Lists configuration properties."));
-        AddCommand(new ConfigCommandGet(
+        Add(new ConfigCommandGet(
             toolOutput,
             runnerPropertyProvider,
             toolPropertyProvider,
@@ -49,14 +49,14 @@ public class ConfigCommand : Command
             registryStore,
             "get",
             "Gets a configuration property."));
-        AddCommand(new ConfigCommandSet(
+        Add(new ConfigCommandSet(
             toolOutput,
             runnerPropertyProvider,
             toolPropertyProvider,
             profileResolver,
             "set",
             "Sets a configuration property."));
-        AddCommand(new ConfigCommandUnset(
+        Add(new ConfigCommandUnset(
             toolOutput,
             runnerPropertyProvider,
             toolPropertyProvider,

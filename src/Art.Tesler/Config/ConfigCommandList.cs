@@ -41,92 +41,85 @@ public class ConfigCommandList : CommandBase
         _toolPropertyProvider = toolPropertyProvider;
         _profileResolver = profileResolver;
         _registryStore = registryStore;
-        ToolOption = new Option<string>(new[] { "-t", "--tool" }, "Tool for which to get configuration properties")
-        {
-            ArgumentHelpName = "tool-string"
-        };
-        AddOption(ToolOption);
-        InputOption = new Option<string>(new[] { "-i", "--input" }, "Profile for which to get configuration properties")
-        {
-            ArgumentHelpName = "profile-path"
-        };
-        AddOption(InputOption);
-        LocalOption = new Option<bool>(new[] { "-l", "--local" }, "Get properties in local option scope");
-        AddOption(LocalOption);
-        GlobalOption = new Option<bool>(new[] { "-g", "--global" }, "Get properties in global option scope");
-        AddOption(GlobalOption);
-        ProfileOption = new Option<bool>(new[] { "-p", "--profile" }, "Get properties in profile option scope");
-        AddOption(ProfileOption);
-        AllOption = new Option<bool>(new[] { "-a", "--all" }, "Get properties in all option scopes");
-        AddOption(AllOption);
-        EffectiveOption = new Option<bool>(new[] { "-e", "--effective" }, "Gets effective config values (default)");
-        AddOption(EffectiveOption);
-        IgnoreBaseTypesOption = new Option<bool>(new[] { "--ignore-base-types" }, "(Tools and profiles) Ignores base types");
-        AddOption(IgnoreBaseTypesOption);
-        VerboseOption = new Option<bool>(new[] { "-v", "--verbose" }, "Use verbose output format");
-        AddOption(VerboseOption);
-        PrettyPrintOption = new Option<bool>(new[] { "--pretty-print" }, "Pretty-print values");
-        AddOption(PrettyPrintOption);
-        AddValidator(result =>
+        ToolOption = new Option<string>("-t", "--tool") { HelpName = "tool-string", Description = "Tool for which to get configuration properties" };
+        Add(ToolOption);
+        InputOption = new Option<string>("-i", "--input") { HelpName = "profile-path", Description = "Profile for which to get configuration properties" };
+        Add(InputOption);
+        LocalOption = new Option<bool>("-l", "--local") { Description = "Get properties in local option scope" };
+        Add(LocalOption);
+        GlobalOption = new Option<bool>("-g", "--global") { Description = "Get properties in global option scope" };
+        Add(GlobalOption);
+        ProfileOption = new Option<bool>("-p", "--profile") { Description = "Get properties in profile option scope" };
+        Add(ProfileOption);
+        AllOption = new Option<bool>("-a", "--all") { Description = "Get properties in all option scopes" };
+        Add(AllOption);
+        EffectiveOption = new Option<bool>("-e", "--effective") { Description = "Gets effective config values (default)" };
+        Add(EffectiveOption);
+        IgnoreBaseTypesOption = new Option<bool>("--ignore-base-types") { Description = "(Tools and profiles) Ignores base types" };
+        Add(IgnoreBaseTypesOption);
+        VerboseOption = new Option<bool>("-v", "--verbose") { Description = "Use verbose output format" };
+        Add(VerboseOption);
+        PrettyPrintOption = new Option<bool>("--pretty-print") { Description = "Pretty-print values" };
+        Add(PrettyPrintOption);
+        Validators.Add(result =>
         {
             var optionSet = new HashSet<Option>();
-            if (result.GetValueForOption(ToolOption) != null)
+            if (result.GetValue(ToolOption) != null)
             {
                 optionSet.Add(ToolOption);
             }
 
-            if (result.GetValueForOption(InputOption) != null)
+            if (result.GetValue(InputOption) != null)
             {
                 optionSet.Add(InputOption);
             }
 
             if (optionSet.Count > 1)
             {
-                result.ErrorMessage = $"Only one option from {CommandHelper.GetOptionAliasList(new Option[] { ToolOption, InputOption })} may be specified";
+                result.AddError($"Only one option from {CommandHelper.GetOptionAliasList(new Option[] { ToolOption, InputOption })} may be specified");
                 return;
             }
 
-            bool anyScopeSpecifiers = result.GetValueForOption(AllOption) || result.GetValueForOption(LocalOption) || result.GetValueForOption(GlobalOption) || result.GetValueForOption(ProfileOption);
+            bool anyScopeSpecifiers = result.GetValue(AllOption) || result.GetValue(LocalOption) || result.GetValue(GlobalOption) || result.GetValue(ProfileOption);
 
-            if (result.GetValueForOption(EffectiveOption))
+            if (result.GetValue(EffectiveOption))
             {
-                if (anyScopeSpecifiers || result.GetValueForOption(IgnoreBaseTypesOption))
+                if (anyScopeSpecifiers || result.GetValue(IgnoreBaseTypesOption))
                 {
-                    result.ErrorMessage = $"{CommandHelper.GetOptionAlias(EffectiveOption)} may not be used with options {CommandHelper.GetOptionAliasList(new Option[] { AllOption, LocalOption, GlobalOption, IgnoreBaseTypesOption })}";
+                    result.AddError($"{CommandHelper.GetOptionAlias(EffectiveOption)} may not be used with options {CommandHelper.GetOptionAliasList(new Option[] { AllOption, LocalOption, GlobalOption, IgnoreBaseTypesOption })}");
                     return;
                 }
             }
 
-            if (result.GetValueForOption(ProfileOption))
+            if (result.GetValue(ProfileOption))
             {
-                if (result.GetValueForOption(InputOption) == null)
+                if (result.GetValue(InputOption) == null)
                 {
-                    result.ErrorMessage = $"{CommandHelper.GetOptionAlias(ProfileOption)} must be used with {CommandHelper.GetOptionAlias(InputOption)}";
+                    result.AddError($"{CommandHelper.GetOptionAlias(ProfileOption)} must be used with {CommandHelper.GetOptionAlias(InputOption)}");
                     return;
                 }
             }
 
-            if (result.GetValueForOption(IgnoreBaseTypesOption))
+            if (result.GetValue(IgnoreBaseTypesOption))
             {
-                if (result.GetValueForOption(ToolOption) == null && result.GetValueForOption(InputOption) == null)
+                if (result.GetValue(ToolOption) == null && result.GetValue(InputOption) == null)
                 {
-                    result.ErrorMessage = $"{CommandHelper.GetOptionAlias(IgnoreBaseTypesOption)} must be used with {CommandHelper.GetOptionAlias(ToolOption)} or {CommandHelper.GetOptionAlias(InputOption)}";
+                    result.AddError($"{CommandHelper.GetOptionAlias(IgnoreBaseTypesOption)} must be used with {CommandHelper.GetOptionAlias(ToolOption)} or {CommandHelper.GetOptionAlias(InputOption)}");
                     return;
                 }
             }
         });
     }
 
-    protected override Task<int> RunAsync(InvocationContext context, CancellationToken cancellationToken)
+    protected override Task<int> RunAsync(ParseResult parseResult, CancellationToken cancellationToken)
     {
-        bool prettyPrint = context.ParseResult.GetValueForOption(PrettyPrintOption);
-        PropertyFormatter propertyFormatter = context.ParseResult.GetValueForOption(VerboseOption)
+        bool prettyPrint = parseResult.GetValue(PrettyPrintOption);
+        PropertyFormatter propertyFormatter = parseResult.GetValue(VerboseOption)
             ? new DefaultPropertyFormatter(prettyPrint)
             : new SimplePropertyFormatter(prettyPrint);
-        ListingSettings listingSettings = GetListingSettings(context);
-        if (context.ParseResult.HasOption(ToolOption))
+        ListingSettings listingSettings = GetListingSettings(parseResult);
+        if (parseResult.GetValue(ToolOption) is { } toolString)
         {
-            string toolString = context.ParseResult.GetValueForOption(ToolOption)!;
             if (!ArtifactToolIDUtil.TryParseID(toolString, out var toolID))
             {
                 PrintErrorMessage($"Unable to parse tool string \"{toolString}\"", ToolOutput);
@@ -170,9 +163,8 @@ public class ConfigCommandList : CommandBase
             }
             return Task.FromResult(0);
         }
-        else if (context.ParseResult.HasOption(InputOption))
+        else if (parseResult.GetValue(InputOption) is { } profileString)
         {
-            string profileString = context.ParseResult.GetValueForOption(InputOption)!;
             if (!_profileResolver.TryGetProfiles(profileString, out var profiles, ProfileResolutionFlags.Files))
             {
                 PrintErrorMessage($"Unable to identify profile file {profileString}", ToolOutput);
@@ -274,35 +266,37 @@ public class ConfigCommandList : CommandBase
     }
 
     private record ListingSettings;
+
     private record ScopedListingSettings(ConfigScopeFlags ConfigScopeFlags, bool IgnoreBaseTypes) : ListingSettings;
+
     private record EffectiveListingSettings : ListingSettings;
 
-    private ListingSettings GetListingSettings(InvocationContext context)
+    private ListingSettings GetListingSettings(ParseResult parseResult)
     {
-        if (context.ParseResult.GetValueForOption(EffectiveOption))
+        if (parseResult.GetValue(EffectiveOption))
         {
             return new EffectiveListingSettings();
         }
         ConfigScopeFlags? activeFlags = null;
-        if (context.ParseResult.GetValueForOption(AllOption))
+        if (parseResult.GetValue(AllOption))
         {
             activeFlags = (activeFlags ?? ConfigScopeFlags.None) | ConfigScopeFlags.All;
         }
-        if (context.ParseResult.GetValueForOption(LocalOption))
+        if (parseResult.GetValue(LocalOption))
         {
             activeFlags = (activeFlags ?? ConfigScopeFlags.None) | ConfigScopeFlags.Local;
         }
-        if (context.ParseResult.GetValueForOption(GlobalOption))
+        if (parseResult.GetValue(GlobalOption))
         {
             activeFlags = (activeFlags ?? ConfigScopeFlags.None) | ConfigScopeFlags.Global;
         }
-        if (context.ParseResult.GetValueForOption(ProfileOption))
+        if (parseResult.GetValue(ProfileOption))
         {
             activeFlags = (activeFlags ?? ConfigScopeFlags.None) | ConfigScopeFlags.Profile;
         }
         if (activeFlags is { } flags)
         {
-            return new ScopedListingSettings(flags, context.ParseResult.GetValueForOption(IgnoreBaseTypesOption));
+            return new ScopedListingSettings(flags, parseResult.GetValue(IgnoreBaseTypesOption));
         }
         return new EffectiveListingSettings();
     }

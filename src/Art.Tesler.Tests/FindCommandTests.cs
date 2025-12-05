@@ -1,5 +1,4 @@
-﻿using System.CommandLine;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Art.Common;
 using Art.Common.Resources;
 using Art.Tesler.Properties;
@@ -29,7 +28,7 @@ public class FindCommandTests : CommandTestBase
         var toolPropertyProvider = CreateInMemoryPropertyProvider();
         CreateObjectOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider());
-        int rc = Command.Invoke(Array.Empty<string>(), console);
+        int rc = InvokeCommand(Command, Array.Empty<string>(), console);
         Assert.That(Out.ToString(), Is.Not.Empty);
         Assert.That(OutQueue, Is.Empty);
         Assert.That(Error.ToString(), Is.Not.Empty);
@@ -45,7 +44,7 @@ public class FindCommandTests : CommandTestBase
         CreateObjectOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider());
         string[] line = { "-t", new ArtifactToolID("NOT_AN_ASSEMBLY", "MALO").GetToolString() };
-        int rc = Command.Invoke(line, console);
+        int rc = InvokeCommand(Command, line, console);
         Assert.That(Out.ToString(), Is.Not.Empty);
         Assert.That(OutQueue, Is.Empty);
         Assert.That(Error.ToString(), Is.Not.Empty);
@@ -61,7 +60,7 @@ public class FindCommandTests : CommandTestBase
         CreateObjectOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider());
         string[] line = { "-t", ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactFindTool>() };
-        int rc = Command.Invoke(line, console);
+        int rc = InvokeCommand(Command, line, console);
         Assert.That(Out.ToString(), Is.Not.Empty);
         Assert.That(OutQueue, Is.Empty);
         Assert.That(Error.ToString(), Is.Not.Empty);
@@ -78,7 +77,7 @@ public class FindCommandTests : CommandTestBase
         CreateObjectOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider());
         string[] line = { "-t", ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactFindTool>(), search };
-        int rc = Command.Invoke(line, console);
+        int rc = InvokeCommand(Command, line, console);
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(OutQueue, Is.Empty);
         Assert.That(Error.ToString(), Is.Not.Empty);
@@ -106,7 +105,7 @@ public class FindCommandTests : CommandTestBase
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider());
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactFindTool>();
         string[] line = { "-t", toolString, "-g", group, search };
-        int rc = Command.Invoke(line, console);
+        int rc = InvokeCommand(Command, line, console);
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(OutQueue, Has.Count.EqualTo(1));
         Assert.That(Error.ToString(), Is.Empty);

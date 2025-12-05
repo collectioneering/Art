@@ -63,30 +63,29 @@ public class ArcCommand : ToolCommandBase
         RegistrationProvider.Initialize(this);
         TimeProvider = timeProvider;
         ProfileResolver = profileResolver;
-        HashOption = new Option<string>(new[] { "-h", "--hash" }, $"Checksum algorithm ({Common.ChecksumAlgorithms})");
-        HashOption.SetDefaultValue(Common.DefaultChecksumAlgorithm);
-        AddOption(HashOption);
-        ProfileFilesArg = new Argument<List<string>>("profile", "Profile file(s)") { HelpName = "profile", Arity = ArgumentArity.OneOrMore };
-        AddArgument(ProfileFilesArg);
-        UpdateOption = new Option<ResourceUpdateMode>(new[] { "-u", "--update" }, $"Resource update mode ({Common.ResourceUpdateModes})") { ArgumentHelpName = "mode" };
-        UpdateOption.SetDefaultValue(ResourceUpdateMode.ArtifactHard);
-        AddOption(UpdateOption);
-        FullOption = new Option<bool>(new[] { "-f", "--full" }, "Only process full artifacts");
-        AddOption(FullOption);
-        SkipOption = new Option<ArtifactSkipMode>(new[] { "-s", "--skip" }, $"Skip artifacts ({Common.ArtifactSkipModes})");
-        SkipOption.ArgumentHelpName = "mode";
-        SkipOption.SetDefaultValue(ArtifactSkipMode.None);
-        AddOption(SkipOption);
-        FastExitOption = new Option<bool>(new[] { "-z", "--fast-exit" }, $"Equivalent to -s/--skip {nameof(ArtifactSkipMode.FastExit)}");
-        AddOption(FastExitOption);
-        NullOutputOption = new Option<bool>(new[] { "--null-output" }, "Send resources to the void");
-        AddOption(NullOutputOption);
+        HashOption = new Option<string>( "-h", "--hash" ) { Description = $"Checksum algorithm ({Common.ChecksumAlgorithms})", DefaultValueFactory = static _ => Common.DefaultChecksumAlgorithm };
+        Add(HashOption);
+        ProfileFilesArg = new Argument<List<string>>("profile") { HelpName = "profile", Arity = ArgumentArity.OneOrMore, Description =  "Profile file(s)"};
+        Add(ProfileFilesArg);
+        UpdateOption = new Option<ResourceUpdateMode>("-u", "--update" ) { HelpName = "mode", Description = $"Resource update mode ({Common.ResourceUpdateModes})"};
+        UpdateOption.DefaultValueFactory = static _ => (ResourceUpdateMode.ArtifactHard);
+        Add(UpdateOption);
+        FullOption = new Option<bool>("-f", "--full" ){Description = "Only process full artifacts"};
+        Add(FullOption);
+        SkipOption = new Option<ArtifactSkipMode>("-s", "--skip" ){Description = $"Skip artifacts ({Common.ArtifactSkipModes})"};
+        SkipOption.HelpName = "mode";
+        SkipOption.DefaultValueFactory = static _ => ArtifactSkipMode.None;
+        Add(SkipOption);
+        FastExitOption = new Option<bool>( "-z", "--fast-exit" ){Description = $"Equivalent to -s/--skip {nameof(ArtifactSkipMode.FastExit)}"};
+        Add(FastExitOption);
+        NullOutputOption = new Option<bool>( "--null-output" ){Description = "Send resources to the void"};
+        Add(NullOutputOption);
     }
 
-    protected override async Task<int> RunAsync(InvocationContext context, CancellationToken cancellationToken)
+    protected override async Task<int> RunAsync(ParseResult parseResult, CancellationToken cancellationToken)
     {
         ChecksumSource? checksumSource;
-        string? hash = context.ParseResult.HasOption(HashOption) ? context.ParseResult.GetValueForOption(HashOption) : null;
+        string? hash = parseResult.GetValue(HashOption);
         hash = string.Equals(hash, "none", StringComparison.InvariantCultureIgnoreCase) ? null : hash;
         if (hash == null)
         {
@@ -100,26 +99,28 @@ public class ArcCommand : ToolCommandBase
                 return 2;
             }
         }
-        ResourceUpdateMode update = context.ParseResult.GetValueForOption(UpdateOption);
-        bool full = context.ParseResult.GetValueForOption(FullOption);
-        ArtifactSkipMode skip = context.ParseResult.GetValueForOption(SkipOption);
-        bool fastExit = context.ParseResult.GetValueForOption(FastExitOption);
-        bool nullOutput = context.ParseResult.GetValueForOption(NullOutputOption);
+        ResourceUpdateMode update = parseResult.GetValue(UpdateOption);
+        bool full = parseResult.GetValue(FullOption);
+        ArtifactSkipMode skip = parseResult.GetValue(SkipOption);
+        bool fastExit = parseResult.GetValue(FastExitOption);
+        bool nullOutput = parseResult.GetValue(NullOutputOption);
         ArtifactToolDumpOptions options = new(update, !full, fastExit ? ArtifactSkipMode.FastExit : skip, checksumSource);
-        using var adm = nullOutput ? new NullArtifactDataManager() : DataProvider.CreateArtifactDataManager(context);
-        using var arm = RegistrationProvider.CreateArtifactRegistrationManager(context);
+        using var adm = nullOutput ? new NullArtifactDataManager() : DataProvider.CreateArtifactDataManager(parseResult);
+        using var arm = RegistrationProvider.CreateArtifactRegistrationManager(parseResult);
         IToolLogHandler l = ToolLogHandlerProvider.GetDefaultToolLogHandler();
         List<ArtifactToolProfile> profiles = new();
-        foreach (string profileFile in context.ParseResult.GetValueForArgument(ProfileFilesArg))
+        foreach (string profileFile in parseResult.GetRequiredValue(ProfileFilesArg))
         {
             ResolveAndAddProfiles(ProfileResolver, profiles, profileFile);
         }
-        (bool getArtifactRetrievalTimestamps, bool getResourceRetrievalTimestamps) = GetArtifactRetrievalOptions(context);
-        foreach (ArtifactToolProfile profile in PrepareProfiles(context, profiles))
+
+        (bool getArtifactRetrievalTimestamps, bool getResourceRetrievalTimestamps) = GetArtifactRetrievalOptions(parseResult);
+        foreach (ArtifactToolProfile profile in PrepareProfiles(parseResult, profiles))
         {
             using var tool = await GetToolAsync(profile, arm, adm, TimeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
             await new ArtifactToolDumpProxy(tool, options, l).DumpAsync(cancellationToken).ConfigureAwait(false);
         }
+
         return 0;
     }
 }

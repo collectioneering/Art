@@ -28,14 +28,13 @@ public class ConfigCommandUnset : ConfigCommandGetSetBase
         _profileResolver = profileResolver;
     }
 
-    protected override Task<int> RunAsync(InvocationContext context, CancellationToken cancellationToken)
+    protected override Task<int> RunAsync(ParseResult parseResult, CancellationToken cancellationToken)
     {
-        ConfigScope configScope = GetConfigScope(context);
-        string key = context.ParseResult.GetValueForArgument(KeyArgument);
+        ConfigScope configScope = GetConfigScope(parseResult);
+        string key = parseResult.GetRequiredValue(KeyArgument);
         ConfigPropertyIdentifier propertyIdentifier = new(configScope, key);
-        if (context.ParseResult.HasOption(ToolOption))
+        if (parseResult.GetValue(ToolOption) is { } toolString)
         {
-            string toolString = context.ParseResult.GetValueForOption(ToolOption)!;
             if (!ArtifactToolIDUtil.TryParseID(toolString, out var toolID))
             {
                 PrintErrorMessage($"Unable to parse tool string \"{toolString}\"", ToolOutput);
@@ -60,9 +59,9 @@ public class ConfigCommandUnset : ConfigCommandGetSetBase
                     throw new InvalidOperationException($"Invalid config scope {configScope} for tool");
             }
         }
-        else if (context.ParseResult.HasOption(InputOption))
+        else if (parseResult.GetValue(InputOption) is not null)
         {
-            if (!TryGetProfilesWithIndex(_profileResolver, context, out var profiles, out string profileString, out int selectedIndex, out int errorCode))
+            if (!TryGetProfilesWithIndex(_profileResolver, parseResult, out var profiles, out string profileString, out int selectedIndex, out int errorCode))
             {
                 return Task.FromResult(errorCode);
             }
@@ -92,10 +91,7 @@ public class ConfigCommandUnset : ConfigCommandGetSetBase
                     }
                     break;
                 case ConfigScope.Profile:
-                    List<ArtifactToolProfile> copy = new(profiles.Values)
-                    {
-                        [selectedIndex] = profile with { Options = TeslerPropertyUtility.GetOptionsMapWithRemovedKey(profile.Options, key) }
-                    };
+                    List<ArtifactToolProfile> copy = new(profiles.Values) { [selectedIndex] = profile with { Options = TeslerPropertyUtility.GetOptionsMapWithRemovedKey(profile.Options, key) } };
                     writableResolvedProfiles.WriteProfiles(copy);
                     break;
                 default:
@@ -130,7 +126,6 @@ public class ConfigCommandUnset : ConfigCommandGetSetBase
             return false;
         }
         return true;
-
     }
 
     private void PrintFailureToRemove(ConfigPropertyIdentifier configPropertyIdentifier)

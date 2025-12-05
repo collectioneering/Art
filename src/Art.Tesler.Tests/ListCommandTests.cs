@@ -1,5 +1,4 @@
-﻿using System.CommandLine;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Art.Common;
 using Art.Common.Resources;
 using Art.Tesler.Properties;
@@ -29,7 +28,7 @@ public class ListCommandTests : CommandTestBase
         var toolPropertyProvider = CreateInMemoryPropertyProvider();
         CreateObjectOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider());
-        int rc = Command.Invoke(Array.Empty<string>(), console);
+        int rc = InvokeCommand(Command, Array.Empty<string>(), console);
         Assert.That(Out.ToString(), Is.Not.Empty);
         Assert.That(OutQueue, Is.Empty);
         Assert.That(Error.ToString(), Is.Not.Empty);
@@ -45,7 +44,7 @@ public class ListCommandTests : CommandTestBase
         CreateObjectOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider());
         string[] line = { "-t", new ArtifactToolID("NOT_AN_ASSEMBLY", "MALO").GetToolString() };
-        int rc = Command.Invoke(line, console);
+        int rc = InvokeCommand(Command, line, console);
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(OutQueue, Is.Empty);
         Assert.That(Error.ToString(), Is.Not.Empty);
@@ -61,7 +60,7 @@ public class ListCommandTests : CommandTestBase
         CreateObjectOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider());
         string[] line = { "-t", ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactListTool>() };
-        int rc = Command.Invoke(line, console);
+        int rc = InvokeCommand(Command, line, console);
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(OutQueue, Is.Empty);
         Assert.That(Error.ToString(), Is.Empty);
@@ -86,7 +85,7 @@ public class ListCommandTests : CommandTestBase
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider());
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactListTool>();
         string[] line = { "-t", toolString, "-g", group };
-        int rc = Command.Invoke(line, console);
+        int rc = InvokeCommand(Command, line, console);
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(OutQueue, Has.Count.EqualTo(1));
         Assert.That(Error.ToString(), Is.Empty);
@@ -124,7 +123,7 @@ public class ListCommandTests : CommandTestBase
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider());
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactListTool>();
         string[] line = { "-t", toolString, "-g", group };
-        int rc = Command.Invoke(line, console);
+        int rc = InvokeCommand(Command, line, console);
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(OutQueue, Has.Count.EqualTo(2));
         Assert.That(Error.ToString(), Is.Empty);

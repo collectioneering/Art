@@ -1,4 +1,7 @@
 using System.Collections.Immutable;
+using System.CommandLine;
+using System.CommandLine.Help;
+using System.CommandLine.Invocation;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Art.Common;
@@ -208,5 +211,42 @@ public class CommandTestBase
     internal DictionaryProfileResolver CreateDictionaryProfileResolver(string profileName, params ArtifactToolProfile[] profiles)
     {
         return CreateDictionaryProfileResolver(new Dictionary<string, IReadOnlyList<ArtifactToolProfile>> { [profileName] = profiles });
+    }
+
+    protected static int InvokeCommand(Command command, IReadOnlyList<string> args, IConsole console)
+    {
+        if (command.Action is not { } action)
+        {
+            throw new InvalidOperationException();
+        }
+        var parseResult = command.Parse(args);
+        parseResult.InvocationConfiguration.Output = console.Out;
+        parseResult.InvocationConfiguration.Error = console.Error;
+        if (parseResult.Errors.Count > 0)
+        {
+            foreach (var error in parseResult.Errors)
+            {
+                console.Error.WriteLine(error.Message);
+            }
+            new HelpAction().Invoke(parseResult);
+            return -1;
+        }
+        try
+        {
+            switch (action)
+            {
+                case SynchronousCommandLineAction synchronousCommandLineAction:
+                    return synchronousCommandLineAction.Invoke(parseResult);
+                case AsynchronousCommandLineAction asynchronousCommandLineAction:
+                    return asynchronousCommandLineAction.InvokeAsync(parseResult).Result;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+        catch (Exception e)
+        {
+            console.Error.WriteLine(e.ToString());
+            return -2;
+        }
     }
 }

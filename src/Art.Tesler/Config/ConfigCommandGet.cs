@@ -31,25 +31,24 @@ public class ConfigCommandGet : ConfigCommandGetSetBase
         _toolPropertyProvider = toolPropertyProvider;
         _profileResolver = profileResolver;
         _registryStore = registryStore;
-        ExactScopeOption = new Option<bool>(new[] { "-e", "--exact-scope" }, "Only check at the exact scope");
-        AddOption(ExactScopeOption);
-        VerboseOption = new Option<bool>(new[] { "-v", "--verbose" }, "Use verbose output format");
-        AddOption(VerboseOption);
-        PrettyPrintOption = new Option<bool>(new[] { "--pretty-print" }, "Pretty-print values");
-        AddOption(PrettyPrintOption);
+        ExactScopeOption = new Option<bool>("-e", "--exact-scope") { Description = "Only check at the exact scope" };
+        Add(ExactScopeOption);
+        VerboseOption = new Option<bool>("-v", "--verbose") { Description = "Use verbose output format" };
+        Add(VerboseOption);
+        PrettyPrintOption = new Option<bool>("--pretty-print") { Description = "Pretty-print values" };
+        Add(PrettyPrintOption);
     }
 
-    protected override Task<int> RunAsync(InvocationContext context, CancellationToken cancellationToken)
+    protected override Task<int> RunAsync(ParseResult parseResult, CancellationToken cancellationToken)
     {
-        bool prettyPrint = context.ParseResult.GetValueForOption(PrettyPrintOption);
-        PropertyFormatter propertyFormatter = context.ParseResult.GetValueForOption(VerboseOption)
+        bool prettyPrint = parseResult.GetValue(PrettyPrintOption);
+        PropertyFormatter propertyFormatter = parseResult.GetValue(VerboseOption)
             ? new DefaultPropertyFormatter(prettyPrint)
             : new PropertyValueFormatter(prettyPrint);
-        ConfigScopeFlags configScopeFlags = GetConfigScopeFlags(context);
-        string key = context.ParseResult.GetValueForArgument(KeyArgument);
-        if (context.ParseResult.HasOption(ToolOption))
+        ConfigScopeFlags configScopeFlags = GetConfigScopeFlags(parseResult);
+        string key = parseResult.GetRequiredValue(KeyArgument);
+        if (parseResult.GetValue(ToolOption) is { } toolString)
         {
-            string toolString = context.ParseResult.GetValueForOption(ToolOption)!;
             if (!ArtifactToolIDUtil.TryParseID(toolString, out var toolID))
             {
                 PrintErrorMessage($"Unable to parse tool string \"{toolString}\"", ToolOutput);
@@ -60,9 +59,9 @@ public class ConfigCommandGet : ConfigCommandGetSetBase
                 ToolOutput.Out.WriteLine(propertyFormatter.FormatProperty(toolID, result));
             }
         }
-        else if (context.ParseResult.HasOption(InputOption))
+        else if (parseResult.GetValue(InputOption) is not null)
         {
-            if (!TryGetProfilesWithIndex(_profileResolver, context, out var profiles, out string profileString, out int selectedIndex, out int errorCode))
+            if (!TryGetProfilesWithIndex(_profileResolver, parseResult, out var profiles, out string profileString, out int selectedIndex, out int errorCode))
             {
                 return Task.FromResult(errorCode);
             }
@@ -91,10 +90,10 @@ public class ConfigCommandGet : ConfigCommandGetSetBase
         return Task.FromResult(0);
     }
 
-    private ConfigScopeFlags GetConfigScopeFlags(InvocationContext context)
+    private ConfigScopeFlags GetConfigScopeFlags(ParseResult parseResult)
     {
-        ConfigScope configScope = GetConfigScope(context);
-        bool exactScope = context.ParseResult.GetValueForOption(ExactScopeOption);
+        ConfigScope configScope = GetConfigScope(parseResult);
+        bool exactScope = parseResult.GetValue(ExactScopeOption);
         return configScope switch
         {
             ConfigScope.Global => exactScope ? ConfigScopeFlags.Global : ConfigScopeFlags.Global,

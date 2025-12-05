@@ -1,5 +1,4 @@
-﻿using System.CommandLine;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Art.Common.Resources;
 using Art.Tesler.Profiles;
 using Art.Tesler.Properties;
@@ -35,7 +34,7 @@ public class StreamCommandTests : CommandTestBase
         var profileResolver = CreateDictionaryProfileResolver();
         CreateStreamOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider(), profileResolver);
-        int rc = Command.Invoke(Array.Empty<string>(), console);
+        int rc = InvokeCommand(Command, Array.Empty<string>(), console);
         Assert.That(Out.ToString(), Is.Not.Empty);
         Assert.That(Error.ToString(), Is.Not.Empty);
         Assert.That(rc, Is.Not.EqualTo(0));
@@ -50,7 +49,7 @@ public class StreamCommandTests : CommandTestBase
         CreateStreamOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider(), profileResolver);
         string[] line = { BadProfileName };
-        int rc = Command.Invoke(line, console);
+        int rc = InvokeCommand(Command, line, console);
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(Error.ToString(), Is.Not.Empty);
         Assert.That(rc, Is.Not.EqualTo(0));
@@ -65,7 +64,7 @@ public class StreamCommandTests : CommandTestBase
         CreateStreamOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider(), profileResolver);
         string[] line = { ProfileName };
-        int rc = Command.Invoke(line, console);
+        int rc = InvokeCommand(Command, line, console);
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(Error.ToString(), Is.Not.Empty);
         Assert.That(rc, Is.Not.EqualTo(0));
@@ -80,7 +79,7 @@ public class StreamCommandTests : CommandTestBase
         CreateStreamOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider(), profileResolver);
         string[] line = { ProfileName };
-        int rc = Command.Invoke(line, console);
+        int rc = InvokeCommand(Command, line, console);
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(Error.ToString(), Is.Not.Empty);
         Assert.That(rc, Is.Not.EqualTo(0));
@@ -97,7 +96,7 @@ public class StreamCommandTests : CommandTestBase
         CreateStreamOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider(), profileResolver);
         string[] line = { ProfileName };
-        int rc = Command.Invoke(line, console);
+        int rc = InvokeCommand(Command, line, console);
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(Error.ToString(), Is.Empty);
         Assert.That(rc, Is.EqualTo(0));
@@ -114,7 +113,7 @@ public class StreamCommandTests : CommandTestBase
         CreateStreamOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider(), profileResolver);
         string[] line = { ProfileName };
-        int rc = Command.Invoke(line, console);
+        int rc = InvokeCommand(Command, line, console);
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(Error.ToString(), Is.Not.Empty);
         Assert.That(rc, Is.Not.EqualTo(0));
@@ -129,7 +128,7 @@ public class StreamCommandTests : CommandTestBase
         CreateStreamOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider(), profileResolver);
         string[] line = { ProfileName };
-        int rc = Command.Invoke(line, console);
+        int rc = InvokeCommand(Command, line, console);
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(Error.ToString(), Is.Not.Empty);
         Assert.That(rc, Is.Not.EqualTo(0));
@@ -144,7 +143,7 @@ public class StreamCommandTests : CommandTestBase
         CreateStreamOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider(), profileResolver);
         string[] line = { ProfileName };
-        int rc = Command.Invoke(line, console);
+        int rc = InvokeCommand(Command, line, console);
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(Error.ToString(), Is.Not.Empty);
         Assert.That(rc, Is.Not.EqualTo(0));
@@ -159,7 +158,7 @@ public class StreamCommandTests : CommandTestBase
         CreateStreamOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider(), profileResolver);
         string[] line = { ProfileName };
-        int rc = Command.Invoke(line, console);
+        int rc = InvokeCommand(Command, line, console);
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(Error.ToString(), Is.Not.Empty);
         Assert.That(rc, Is.Not.EqualTo(0));

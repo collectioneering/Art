@@ -53,45 +53,44 @@ public class DumpCommand : ToolCommandBase
         RegistrationProvider = registrationProvider;
         RegistrationProvider.Initialize(this);
         TimeProvider = timeProvider;
-        HashOption = new Option<string>(new[] { "-h", "--hash" }, $"Checksum algorithm ({Common.ChecksumAlgorithms})");
-        HashOption.SetDefaultValue(Common.DefaultChecksumAlgorithm);
-        AddOption(HashOption);
-        NoDatabaseOption = new Option<bool>(new[] { "--no-database" }, "Don't use database to track resources");
-        AddOption(NoDatabaseOption);
-        ProfileFileOption = new Option<string>(new[] { "-i", "--input" }, "Profile file") { ArgumentHelpName = "file" };
-        AddOption(ProfileFileOption);
-        ToolOption = new Option<string>(new[] { "-t", "--tool" }, "Tool to use or filter profiles by") { ArgumentHelpName = "name" };
-        AddOption(ToolOption);
-        GroupOption = new Option<string>(new[] { "-g", "--group" }, "Group to use or filter profiles by") { ArgumentHelpName = "name" };
-        AddOption(GroupOption);
-        AddValidator(v =>
+        HashOption = new Option<string>("-h", "--hash") { Description = $"Checksum algorithm ({Common.ChecksumAlgorithms})", DefaultValueFactory = static _ => Common.DefaultChecksumAlgorithm };
+        Add(HashOption);
+        NoDatabaseOption = new Option<bool>("--no-database") { Description = "Don't use database to track resources" };
+        Add(NoDatabaseOption);
+        ProfileFileOption = new Option<string>("-i", "--input") { HelpName = "file", Description = "Profile file" };
+        Add(ProfileFileOption);
+        ToolOption = new Option<string>("-t", "--tool") { HelpName = "name", Description = "Tool to use or filter profiles by" };
+        Add(ToolOption);
+        GroupOption = new Option<string>("-g", "--group") { HelpName = "name", Description = "Group to use or filter profiles by" };
+        Add(GroupOption);
+        Validators.Add(v =>
         {
-            if (v.GetValueForOption(ProfileFileOption) == null && v.GetValueForOption(ToolOption) == null)
+            if (v.GetValue(ProfileFileOption) == null && v.GetValue(ToolOption) == null)
             {
-                v.ErrorMessage = $"At least one of {ProfileFileOption.Aliases.First()} or {ToolOption.Aliases.First()} must be passed.";
+                v.AddError($"At least one of {ProfileFileOption.Aliases.First()} or {ToolOption.Aliases.First()} must be passed.");
             }
         });
     }
 
-    protected override async Task<int> RunAsync(InvocationContext context, CancellationToken cancellationToken)
+    protected override async Task<int> RunAsync(ParseResult parseResult, CancellationToken cancellationToken)
     {
-        using var adm = DataProvider.CreateArtifactDataManager(context);
-        if (context.ParseResult.GetValueForOption(NoDatabaseOption))
+        using var adm = DataProvider.CreateArtifactDataManager(parseResult);
+        if (parseResult.GetValue(NoDatabaseOption))
         {
             InMemoryArtifactRegistrationManager arm = new();
-            return await RunAsync(context, adm, arm, cancellationToken).ConfigureAwait(false);
+            return await RunAsync(parseResult, adm, arm, cancellationToken).ConfigureAwait(false);
         }
         else
         {
-            using var arm = RegistrationProvider.CreateArtifactRegistrationManager(context);
-            return await RunAsync(context, adm, arm, cancellationToken).ConfigureAwait(false);
+            using var arm = RegistrationProvider.CreateArtifactRegistrationManager(parseResult);
+            return await RunAsync(parseResult, adm, arm, cancellationToken).ConfigureAwait(false);
         }
     }
 
-    private async Task<int> RunAsync(InvocationContext context, IArtifactDataManager adm, IArtifactRegistrationManager arm, CancellationToken cancellationToken)
+    private async Task<int> RunAsync(ParseResult parseResult, IArtifactDataManager adm, IArtifactRegistrationManager arm, CancellationToken cancellationToken)
     {
         ChecksumSource? checksumSource;
-        string? hash = context.ParseResult.HasOption(HashOption) ? context.ParseResult.GetValueForOption(HashOption) : null;
+        string? hash = parseResult.GetValue(HashOption);
         hash = string.Equals(hash, "none", StringComparison.InvariantCultureIgnoreCase) ? null : hash;
         if (hash == null)
         {
@@ -105,25 +104,25 @@ public class DumpCommand : ToolCommandBase
                 return 2;
             }
         }
-        string? profileFile = context.ParseResult.HasOption(ProfileFileOption) ? context.ParseResult.GetValueForOption(ProfileFileOption) : null;
-        string? tool = context.ParseResult.HasOption(ToolOption) ? context.ParseResult.GetValueForOption(ToolOption) : null;
-        string? group = context.ParseResult.HasOption(GroupOption) ? context.ParseResult.GetValueForOption(GroupOption) : null;
-        (bool getArtifactRetrievalTimestamps, bool getResourceRetrievalTimestamps) = GetArtifactRetrievalOptions(context);
+        string? profileFile = parseResult.GetValue(ProfileFileOption);
+        string? tool = parseResult.GetValue(ToolOption);
+        string? group = parseResult.GetValue(GroupOption);
+        (bool getArtifactRetrievalTimestamps, bool getResourceRetrievalTimestamps) = GetArtifactRetrievalOptions(parseResult);
         if (profileFile == null)
         {
-            return await ExecAsync(context, new ArtifactToolProfile(tool!, group, null), arm, adm, checksumSource, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
+            return await ExecAsync(parseResult, new ArtifactToolProfile(tool!, group, null), arm, adm, checksumSource, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
         }
         int ec = 0;
         foreach (ArtifactToolProfile profile in ArtifactToolProfileUtil.DeserializeProfilesFromFile(profileFile))
         {
             if (group != null && group != profile.Group || tool != null && tool != profile.Tool) continue;
-            ec = Common.AccumulateErrorCode(await ExecAsync(context, profile, arm, adm, checksumSource, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false), ec);
+            ec = Common.AccumulateErrorCode(await ExecAsync(parseResult, profile, arm, adm, checksumSource, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false), ec);
         }
         return ec;
     }
 
     private async Task<int> ExecAsync(
-        InvocationContext context,
+        ParseResult parseResult,
         ArtifactToolProfile profile,
         IArtifactRegistrationManager arm,
         IArtifactDataManager adm,
@@ -133,7 +132,7 @@ public class DumpCommand : ToolCommandBase
         CancellationToken cancellationToken)
     {
         ArtifactToolDumpOptions options = new(ChecksumSource: checksumSource);
-        profile = PrepareProfile(context, profile);
+        profile = PrepareProfile(parseResult, profile);
         using var tool = await GetToolAsync(profile, arm, adm, TimeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
         ArtifactToolDumpProxy dProxy = new(tool, options, ToolLogHandlerProvider.GetDefaultToolLogHandler());
         await dProxy.DumpAsync(cancellationToken).ConfigureAwait(false);

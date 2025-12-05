@@ -1,6 +1,3 @@
-using System.CommandLine;
-using System.CommandLine.IO;
-
 namespace Art.Tesler;
 
 /// <summary>
@@ -17,20 +14,20 @@ public class ErrorOnlyConsole : IConsole
     /// </summary>
     public ErrorOnlyConsole(TextWriter textWriter, Func<bool> isOutputRedirected, Func<bool> isInputRedirected, Func<int> windowWidth)
     {
-        Out = Error = new TextWriterStandardStreamWriter(textWriter);
+        Out = Error = textWriter;
         _isOutputRedirected = isOutputRedirected;
         _isInputRedirected = isInputRedirected;
         _windowWidth = windowWidth;
     }
 
     /// <inheritdoc />
-    public IStandardStreamWriter Error { get; }
+    public TextWriter Error { get; }
 
     /// <inheritdoc />
     public bool IsErrorRedirected => _isOutputRedirected();
 
     /// <inheritdoc />
-    public IStandardStreamWriter Out { get; }
+    public TextWriter Out { get; }
 
     /// <inheritdoc />
     public bool IsOutputRedirected => _isOutputRedirected();
@@ -39,16 +36,4 @@ public class ErrorOnlyConsole : IConsole
     public bool IsInputRedirected => _isInputRedirected();
 
     internal int GetWindowWidth() => _isOutputRedirected() ? int.MaxValue : _windowWidth();
-
-    private class TextWriterStandardStreamWriter : IStandardStreamWriter
-    {
-        private readonly TextWriter _textWriter;
-
-        public TextWriterStandardStreamWriter(TextWriter textWriter)
-        {
-            _textWriter = textWriter;
-        }
-
-        public void Write(string? value) => _textWriter.Write(value);
-    }
 }

@@ -18,33 +18,33 @@ public class CookieCommandExtract : CommandBase
 
     public CookieCommandExtract(IToolLogHandlerProvider toolLogHandlerProvider, string name, string? description = null) : base(toolLogHandlerProvider, name, description)
     {
-        BrowserOption = new Option<string>(new[] { "-b", "--browser" }, "Browser name") { ArgumentHelpName = "name", IsRequired = true };
-        AddOption(BrowserOption);
-        BrowserProfileOption = new Option<string>(new[] { "-p", "--profile" }, "Browser profile") { ArgumentHelpName = "name" };
-        AddOption(BrowserProfileOption);
-        DomainsOption = new Option<List<string>>(new[] { "-d", "--domain" }, "Domain(s) to filter by") { ArgumentHelpName = "domain", IsRequired = true, Arity = ArgumentArity.OneOrMore };
-        AddOption(DomainsOption);
-        OutputOption = new Option<string>(new[] { "-o", "--output" }, "Output filename") { ArgumentHelpName = "file" };
-        AddOption(OutputOption);
-        NoSubdomainsOption = new Option<bool>(new[] { "--no-subdomains" }, "Do not include subdomains");
-        AddOption(NoSubdomainsOption);
+        BrowserOption = new Option<string>("-b", "--browser") { HelpName = "name", Required = true, Description = "Browser name" };
+        Add(BrowserOption);
+        BrowserProfileOption = new Option<string>("-p", "--profile") { HelpName = "name", Description = "Browser profile" };
+        Add(BrowserProfileOption);
+        DomainsOption = new Option<List<string>>("-d", "--domain") { HelpName = "domain", Required = true, Arity = ArgumentArity.OneOrMore, Description = "Domain(s) to filter by" };
+        Add(DomainsOption);
+        OutputOption = new Option<string>("-o", "--output") { HelpName = "file", Description = "Output filename" };
+        Add(OutputOption);
+        NoSubdomainsOption = new Option<bool>("--no-subdomains") { Description = "Do not include subdomains" };
+        Add(NoSubdomainsOption);
         _toolLogHandlerProvider = toolLogHandlerProvider;
     }
 
-    protected override async Task<int> RunAsync(InvocationContext context, CancellationToken cancellationToken)
+    protected override async Task<int> RunAsync(ParseResult parseResult, CancellationToken cancellationToken)
     {
-        string browserName = context.ParseResult.GetValueForOption(BrowserOption)!;
-        string? browserProfile = context.ParseResult.HasOption(BrowserProfileOption) ? context.ParseResult.GetValueForOption(BrowserProfileOption) : null;
-        List<string> domains = context.ParseResult.GetValueForOption(DomainsOption)!;
-        bool includeSubdomains = !context.ParseResult.GetValueForOption(NoSubdomainsOption);
+        string browserName = parseResult.GetRequiredValue(BrowserOption);
+        string? browserProfile = parseResult.GetValue(BrowserProfileOption);
+        List<string> domains = parseResult.GetRequiredValue(DomainsOption);
+        bool includeSubdomains = !parseResult.GetValue(NoSubdomainsOption);
         if (!CookieSource.TryGetBrowserFromName(browserName, out var source, browserProfile))
         {
             PrintErrorMessage(Common.GetInvalidCookieSourceBrowserMessage(browserName), ToolOutput);
             return 2;
         }
-        if (context.ParseResult.HasOption(OutputOption))
+        if (parseResult.GetValue(OutputOption) is { } outputPath)
         {
-            var output = File.CreateText(context.ParseResult.GetValueForOption(OutputOption)!);
+            var output = File.CreateText(outputPath);
             await using var output1 = output.ConfigureAwait(false);
             await ExportAsync(source, domains, includeSubdomains, output, cancellationToken).ConfigureAwait(false);
         }

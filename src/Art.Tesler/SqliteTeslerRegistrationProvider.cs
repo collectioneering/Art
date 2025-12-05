@@ -10,8 +10,8 @@ public class SqliteTeslerRegistrationProvider : ITeslerRegistrationProvider
 
     public SqliteTeslerRegistrationProvider()
     {
-        DatabaseOption = new Option<string>(new[] { "-d", "--database" }, "Sqlite database file") { ArgumentHelpName = "file" };
-        DatabaseOption.SetDefaultValue(Common.DefaultDbFile);
+        DatabaseOption = new Option<string>("-d", "--database") { HelpName = "file", Description = "Sqlite database file" };
+        DatabaseOption.DefaultValueFactory = static _ => Common.DefaultDbFile;
     }
 
     public SqliteTeslerRegistrationProvider(Option<string> databaseOption)
@@ -21,13 +21,13 @@ public class SqliteTeslerRegistrationProvider : ITeslerRegistrationProvider
 
     public void Initialize(Command command)
     {
-        command.AddOption(DatabaseOption);
+        command.Add(DatabaseOption);
     }
 
     public Type GetArtifactRegistrationManagerType() => typeof(SqliteArtifactRegistrationManager);
 
-    public IArtifactRegistrationManager CreateArtifactRegistrationManager(InvocationContext context)
+    public IArtifactRegistrationManager CreateArtifactRegistrationManager(ParseResult parseResult)
     {
-        return new SqliteArtifactRegistrationManager(context.ParseResult.GetValueForOption(DatabaseOption)!);
+        return new SqliteArtifactRegistrationManager(parseResult.GetRequiredValue(DatabaseOption));
     }
 }

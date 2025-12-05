@@ -9,5 +9,5 @@ public interface ITeslerRegistrationProvider
 
     Type GetArtifactRegistrationManagerType();
 
-    IArtifactRegistrationManager CreateArtifactRegistrationManager(InvocationContext context);
+    IArtifactRegistrationManager CreateArtifactRegistrationManager(ParseResult parseResult);
 }
