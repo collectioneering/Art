@@ -92,14 +92,14 @@ public class LoggingTests : CommandTestBase
         Assert.That(errorContent, Is.EqualTo(ConstructErrorOutput(OutputDelimiter, toolString, Group, Message, null, LogLevel.Error)));
     }
 
-    private int Execute(IToolLogHandlerProvider toolLogHandlerProvider, IConsole console, Action<ProgrammableArtifactDumpTool> action, string[] line)
+    private int Execute(IToolLogHandlerProvider toolLogHandlerProvider,TestConsole testConsole, Action<ProgrammableArtifactDumpTool> action, string[] line)
     {
         var store = GetSingleStore(ProgrammableArtifactDumpTool.CreateRegistryEntry(t => action(t)));
         var toolPropertyProvider = CreateInMemoryPropertyProvider();
         var dataProvider = CreateSharedMemoryDataProvider();
         var registrationProvider = CreateSharedMemoryRegistrationProvider();
         InitCommandDefault(toolLogHandlerProvider, store, toolPropertyProvider, dataProvider, registrationProvider, new FakeTimeProvider());
-        return InvokeCommand(Command, line, console);
+        return InvokeCommand(Command, line, testConsole);
     }
 
     private static string ConstructOutput(string outputDelimiter, string toolString, string group, string? title, string? body, LogLevel logLevel)

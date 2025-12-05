@@ -1,6 +1,6 @@
 ﻿namespace Art.Tesler.Tests;
 
-public class TestConsole : IConsole
+public class TestConsole
 {
     public TestConsole(TextWriter outWriter, TextWriter errorWriter)
     {
@@ -8,10 +8,8 @@ public class TestConsole : IConsole
         Error = errorWriter;
     }
 
-    /// <inheritdoc />
     public TextWriter Error { get; }
 
-    /// <inheritdoc />
     public TextWriter Out { get; }
 
 }

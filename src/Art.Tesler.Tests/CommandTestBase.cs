@@ -213,20 +213,20 @@ public class CommandTestBase
         return CreateDictionaryProfileResolver(new Dictionary<string, IReadOnlyList<ArtifactToolProfile>> { [profileName] = profiles });
     }
 
-    protected static int InvokeCommand(Command command, IReadOnlyList<string> args, IConsole console)
+    protected static int InvokeCommand(Command command, IReadOnlyList<string> args, TestConsole testConsole)
     {
         if (command.Action is not { } action)
         {
             throw new InvalidOperationException();
         }
         var parseResult = command.Parse(args);
-        parseResult.InvocationConfiguration.Output = console.Out;
-        parseResult.InvocationConfiguration.Error = console.Error;
+        parseResult.InvocationConfiguration.Output = testConsole.Out;
+        parseResult.InvocationConfiguration.Error = testConsole.Error;
         if (parseResult.Errors.Count > 0)
         {
             foreach (var error in parseResult.Errors)
             {
-                console.Error.WriteLine(error.Message);
+                testConsole.Error.WriteLine(error.Message);
             }
             new HelpAction().Invoke(parseResult);
             return -1;
@@ -245,7 +245,7 @@ public class CommandTestBase
         }
         catch (Exception e)
         {
-            console.Error.WriteLine(e.ToString());
+            testConsole.Error.WriteLine(e.ToString());
             return -2;
         }
     }
