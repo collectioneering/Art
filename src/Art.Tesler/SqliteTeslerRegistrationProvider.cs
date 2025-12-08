@@ -1,5 +1,4 @@
 ﻿using System.CommandLine;
-using System.CommandLine.Invocation;
 using Art.EF.Sqlite;
 
 namespace Art.Tesler;

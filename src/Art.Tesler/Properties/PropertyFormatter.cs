@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-namespace Art.Tesler.Properties;
+﻿namespace Art.Tesler.Properties;
 
 public abstract class PropertyFormatter
 {

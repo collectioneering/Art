@@ -1,8 +1,4 @@
 using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.CommandLine.Parsing;
-using System.Text;
-using System.Text.Json;
 using Art.Common;
 using Art.Tesler.Profiles;
 using Art.Tesler.Properties;
