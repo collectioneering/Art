@@ -22,7 +22,7 @@ public partial class HttpArtifactTool
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
     /// <exception cref="HttpRequestException">Thrown for issues with request excluding non-success server responses.</exception>
     /// <exception cref="ArtHttpResponseMessageException">Thrown on HTTP response indicating non-successful response.</exception>
-    public async Task DownloadResourceAsync(
+    public Task DownloadResourceAsync(
         string requestUri,
         Stream stream,
         HttpRequestConfig? httpRequestConfig = null,
@@ -32,17 +32,7 @@ public partial class HttpArtifactTool
         NotDisposed();
         HttpRequestMessage req = new(HttpMethod.Get, requestUri);
         ConfigureHttpRequest(req);
-        using HttpResponseMessage res = await HttpClient.SendAsync(req, DownloadCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
-        ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
-        if (useLogger)
-        {
-            await CopyToWithLoggerAsync(res, stream, cancellationToken).ConfigureAwait(false);
-        }
-        else
-        {
-            var sourceStream = await res.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            await sourceStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
-        }
+        return DownloadResourceAsync(req, stream, httpRequestConfig, useLogger, cancellationToken);
     }
 
     /// <summary>
@@ -104,7 +94,7 @@ public partial class HttpArtifactTool
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
     /// <exception cref="HttpRequestException">Thrown for issues with request excluding non-success server responses.</exception>
     /// <exception cref="ArtHttpResponseMessageException">Thrown on HTTP response indicating non-successful response.</exception>
-    public async Task<Stream> GetResourceDownloadStreamAsync(
+    public Task<Stream> GetResourceDownloadStreamAsync(
         Uri requestUri,
         HttpRequestConfig? httpRequestConfig = null,
         CancellationToken cancellationToken = default)
@@ -112,11 +102,7 @@ public partial class HttpArtifactTool
         NotDisposed();
         HttpRequestMessage req = new(HttpMethod.Get, requestUri);
         ConfigureHttpRequest(req);
-        // M3U behaviour depends on members always using this instance's HttpClient.
-        HttpResponseMessage res = await HttpClient.SendAsync(req, DownloadCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
-        ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
-        var stream = await res.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-        return new DelegatingStreamWithDisposableContext(stream, res);
+        return GetResourceDownloadStreamAsync(req, httpRequestConfig, cancellationToken);
     }
 
     /// <summary>
@@ -131,7 +117,7 @@ public partial class HttpArtifactTool
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
     /// <exception cref="HttpRequestException">Thrown for issues with request excluding non-success server responses.</exception>
     /// <exception cref="ArtHttpResponseMessageException">Thrown on HTTP response indicating non-successful response.</exception>
-    public async Task DownloadResourceAsync(
+    public Task DownloadResourceAsync(
         Uri requestUri,
         Stream stream,
         HttpRequestConfig? httpRequestConfig = null,
@@ -141,18 +127,7 @@ public partial class HttpArtifactTool
         NotDisposed();
         HttpRequestMessage req = new(HttpMethod.Get, requestUri);
         ConfigureHttpRequest(req);
-        // M3U behaviour depends on members always using this instance's HttpClient.
-        using HttpResponseMessage res = await HttpClient.SendAsync(req, DownloadCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
-        ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
-        if (useLogger)
-        {
-            await CopyToWithLoggerAsync(res, stream, cancellationToken).ConfigureAwait(false);
-        }
-        else
-        {
-            var sourceStream = await res.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            await sourceStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
-        }
+        return DownloadResourceAsync(req, stream, httpRequestConfig, useLogger, cancellationToken);
     }
 
     /// <summary>
@@ -250,15 +225,7 @@ public partial class HttpArtifactTool
         // M3U behaviour depends on members always using this instance's HttpClient.
         using HttpResponseMessage res = await HttpClient.SendAsync(requestMessage, DownloadCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
-        if (useLogger)
-        {
-            await CopyToWithLoggerAsync(res, stream, cancellationToken).ConfigureAwait(false);
-        }
-        else
-        {
-            var sourceStream = await res.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            await sourceStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
-        }
+        await CopyStreamAsync(res, stream, useLogger, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -333,6 +300,12 @@ public partial class HttpArtifactTool
         OutputStreamOptions options = OutputStreamOptions.Default;
         if (response.Content.Headers.ContentLength is { } contentLength) options = options with { PreallocationSize = Math.Clamp(contentLength, 0, QueryBaseArtifactResourceInfo.MaxStreamDownloadPreallocationSize) };
         await using CommittableStream stream = await CreateOutputStreamAsync(key, options, cancellationToken).ConfigureAwait(false);
+        await CopyStreamAsync(response, stream, useLogger, cancellationToken).ConfigureAwait(false);
+        stream.ShouldCommit = true;
+    }
+
+    private async Task CopyStreamAsync(HttpResponseMessage response, Stream stream, bool useLogger, CancellationToken cancellationToken)
+    {
         if (useLogger)
         {
             await CopyToWithLoggerAsync(response, stream, cancellationToken).ConfigureAwait(false);
@@ -342,7 +315,6 @@ public partial class HttpArtifactTool
             var sourceStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             await sourceStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
         }
-        stream.ShouldCommit = true;
     }
 
     private async Task CopyToWithLoggerAsync(HttpResponseMessage sourceMessage, Stream targetStream, CancellationToken cancellationToken)
