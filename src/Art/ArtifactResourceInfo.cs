@@ -35,10 +35,10 @@ public record ArtifactResourceInfo(ArtifactResourceKey Key, string? ContentType 
     /// Exports a resource.
     /// </summary>
     /// <param name="targetStream">Stream to write resource contents to.</param>
-    /// <param name="useLogger">If true, use logger for progress details.</param>
+    /// <param name="exportOptions">Options to use for export operation.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <exception cref="NotSupportedException">Thrown if this instance cannot be exported.</exception>
-    public virtual ValueTask ExportStreamAsync(Stream targetStream, bool useLogger = true, CancellationToken cancellationToken = default)
+    public virtual ValueTask ExportStreamAsync(Stream targetStream, ArtifactResourceExportOptions? exportOptions = null, CancellationToken cancellationToken = default)
     {
         throw new NotSupportedException($"Exporting a stream from this instance of {nameof(ArtifactResourceInfo)} is not supported");
     }

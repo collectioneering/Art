@@ -157,16 +157,17 @@ public abstract class M3UDownloaderContextProcessor
                 }
                 if (operationProgressContext == null)
                 {
-                    if (!Context.DisableProgressLog)
+                    string message = "Waiting for new segments";
+                    IOperationProgressContext? context;
+                    if (Context.IsConcurrent
+                            ? Context.Tool.LogHandler?.TryGetConcurrentOperationProgressContext(message, s_operationWaitingForResult, out context) ?? false
+                            : Context.Tool.LogHandler?.TryGetOperationProgressContext(message, s_operationWaitingForResult, out context) ?? false)
                     {
-                        if (Context.Tool.LogHandler?.TryGetOperationProgressContext("Waiting for new segments", s_operationWaitingForResult, out var op) ?? false)
-                        {
-                            operationProgressContext = op;
-                        }
-                        else
-                        {
-                            operationProgressContext = null;
-                        }
+                        operationProgressContext = context;
+                    }
+                    else
+                    {
+                        operationProgressContext = null;
                     }
                 }
                 if (operationProgressContext != null)

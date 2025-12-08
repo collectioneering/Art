@@ -45,9 +45,9 @@ public partial class M3UDownloaderContext
     public HttpArtifactTool Tool { get; }
 
     /// <summary>
-    /// If true, disable progress log.
+    /// If true, is one of multiple concurrent streams that must be retrieved simultaneously.
     /// </summary>
-    public bool DisableProgressLog { get; set; }
+    public bool IsConcurrent { get; set; }
 
     /// <summary>
     /// If true, disable waiting log.
@@ -188,13 +188,13 @@ public partial class M3UDownloaderContext
         {
             Uri? alternateStream = alternateStreamsInput[i];
             var alternateStreamContext = await CreateContextAsync(tool, config, alternateStream, false, cancellationToken).ConfigureAwait(false);
-            alternateStreamContext.DisableProgressLog = true;
+            alternateStreamContext.IsConcurrent = true;
             alternateStreamContext.Name = $"M3U-Alt-{i}";
             alternateStreams.Add(alternateStreamContext);
         }
         if (alternateStreams.Count > 0)
         {
-            mainConfig.DisableProgressLog = true;
+            mainConfig.IsConcurrent = true;
             mainConfig.Name = "M3U-Primary";
         }
         return new M3UDownloaderContextGroup(mainConfig, [..alternateStreams], m3UFile);
@@ -402,7 +402,7 @@ public partial class M3UDownloaderContext
         {
             try
             {
-                await artifactResourceInfo.ExportStreamAsync(targetStream, useLogger: !DisableProgressLog, cancellationToken: cancellationToken).ConfigureAwait(false);
+                await artifactResourceInfo.ExportStreamAsync(targetStream, ArtifactResourceExportOptions.Default with { IsConcurrent = IsConcurrent }, cancellationToken: cancellationToken).ConfigureAwait(false);
                 break;
             }
             catch (TaskCanceledException e)

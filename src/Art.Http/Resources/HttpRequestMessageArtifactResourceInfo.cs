@@ -38,9 +38,9 @@ public record HttpRequestMessageArtifactResourceInfo(
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
     /// <exception cref="HttpRequestException">Thrown for issues with request excluding non-success server responses.</exception>
     /// <exception cref="ArtHttpResponseMessageException">Thrown on HTTP response indicating non-successful response.</exception>
-    public override async ValueTask ExportStreamAsync(Stream targetStream, bool useLogger = true, CancellationToken cancellationToken = default)
+    public override async ValueTask ExportStreamAsync(Stream targetStream, ArtifactResourceExportOptions? exportOptions = null, CancellationToken cancellationToken = default)
     {
-        await ArtifactTool.DownloadResourceAsync(Request, targetStream, HttpRequestConfig, useLogger, cancellationToken).ConfigureAwait(false);
+        await ArtifactTool.DownloadResourceAsync(Request, targetStream, HttpRequestConfig, exportOptions, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>

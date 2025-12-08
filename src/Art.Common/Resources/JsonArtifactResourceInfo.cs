@@ -34,7 +34,7 @@ public record JsonArtifactResourceInfo<T>(
     public override bool CanGetStream => true;
 
     /// <inheritdoc/>
-    public override async ValueTask ExportStreamAsync(Stream targetStream, bool useLogger = true, CancellationToken cancellationToken = default)
+    public override async ValueTask ExportStreamAsync(Stream targetStream, ArtifactResourceExportOptions? exportOptions = null, CancellationToken cancellationToken = default)
     {
         await JsonSerializer.SerializeAsync(targetStream, Resource, SerializerOptions, cancellationToken).ConfigureAwait(false);
     }
@@ -71,7 +71,7 @@ public record JsonWithJsonTypeInfoArtifactResourceInfo<T>(T Resource, JsonTypeIn
     public override bool CanGetStream => true;
 
     /// <inheritdoc/>
-    public override async ValueTask ExportStreamAsync(Stream targetStream, bool useLogger = true, CancellationToken cancellationToken = default)
+    public override async ValueTask ExportStreamAsync(Stream targetStream, ArtifactResourceExportOptions? exportOptions = null, CancellationToken cancellationToken = default)
     {
         await JsonSerializer.SerializeAsync(targetStream, Resource, JsonTypeInfo, cancellationToken).ConfigureAwait(false);
     }

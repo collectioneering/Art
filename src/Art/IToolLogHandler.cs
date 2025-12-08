@@ -18,13 +18,26 @@ public interface IToolLogHandler : ILogHandler
     void Log(string tool, string group, string? title, string? body, LogLevel level);
 
     /// <summary>
-    /// Gets an operation progress context if possible.
+    /// Gets an operation progress context.
     /// </summary>
     /// <param name="operationName">A human-readable description for the operation.</param>
     /// <param name="operationGuid">GUID that identifies operation type.</param>
     /// <param name="operationProgressContext">Context that can be used to report progress.</param>
     /// <returns>True if successful.</returns>
     bool TryGetOperationProgressContext(string operationName, Guid operationGuid, [NotNullWhen(true)] out IOperationProgressContext? operationProgressContext)
+    {
+        operationProgressContext = null;
+        return false;
+    }
+
+    /// <summary>
+    /// Gets an operation progress context that operates concurrently with other operations.
+    /// </summary>
+    /// <param name="operationName">A human-readable description for the operation.</param>
+    /// <param name="operationGuid">GUID that identifies operation type.</param>
+    /// <param name="operationProgressContext">Context that can be used to report progress.</param>
+    /// <returns>True if successful.</returns>
+    bool TryGetConcurrentOperationProgressContext(string operationName, Guid operationGuid, [NotNullWhen(true)] out IOperationProgressContext? operationProgressContext)
     {
         operationProgressContext = null;
         return false;

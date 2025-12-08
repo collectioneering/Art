@@ -38,10 +38,10 @@ public record UriArtifactResourceInfo(
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
     /// <exception cref="HttpRequestException">Thrown for issues with request excluding non-success server responses.</exception>
     /// <exception cref="ArtHttpResponseMessageException">Thrown on HTTP response indicating non-successful response.</exception>
-    public override async ValueTask ExportStreamAsync(Stream targetStream, bool useLogger = true, CancellationToken cancellationToken = default)
+    public override async ValueTask ExportStreamAsync(Stream targetStream, ArtifactResourceExportOptions? exportOptions = null, CancellationToken cancellationToken = default)
     {
         // M3U behaviour depends on calling this member, or any overload targeting the contained HttpClient. Don't change this.
-        await ArtifactTool.DownloadResourceAsync(Uri, targetStream, HttpRequestConfig, useLogger, cancellationToken).ConfigureAwait(false);
+        await ArtifactTool.DownloadResourceAsync(Uri, targetStream, HttpRequestConfig, exportOptions, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>

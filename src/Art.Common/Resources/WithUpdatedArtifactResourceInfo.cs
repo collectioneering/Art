@@ -20,8 +20,8 @@ public record WithUpdatedArtifactResourceInfo(DateTimeOffset? UpdatedValue, Arti
     public override bool CanGetStream => BaseArtifactResourceInfo.CanGetStream;
 
     /// <inheritdoc/>
-    public override ValueTask ExportStreamAsync(Stream targetStream, bool useLogger = true, CancellationToken cancellationToken = default)
-        => BaseArtifactResourceInfo.ExportStreamAsync(targetStream, useLogger, cancellationToken);
+    public override ValueTask ExportStreamAsync(Stream targetStream, ArtifactResourceExportOptions? exportOptions = null, CancellationToken cancellationToken = default)
+        => BaseArtifactResourceInfo.ExportStreamAsync(targetStream, exportOptions, cancellationToken);
 
     /// <inheritdoc/>
     public override ValueTask<Stream> GetStreamAsync(CancellationToken cancellationToken = default)

@@ -25,10 +25,10 @@ public record PaddedArtifactResourceInfo(ArtPaddingMode ArtPaddingMode, int? Blo
     public override bool CanGetStream => BaseArtifactResourceInfo.CanGetStream;
 
     /// <inheritdoc/>
-    public override ValueTask ExportStreamAsync(Stream targetStream, bool useLogger = true, CancellationToken cancellationToken = default)
+    public override ValueTask ExportStreamAsync(Stream targetStream, ArtifactResourceExportOptions? exportOptions = null, CancellationToken cancellationToken = default)
     {
         var dp = GetDepaddingHandler();
-        return ExportStreamWithDepaddingHandlerAsync(dp, targetStream, useLogger, cancellationToken);
+        return ExportStreamWithDepaddingHandlerAsync(dp, targetStream, exportOptions, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -89,10 +89,10 @@ public record PaddedArtifactResourceInfo(ArtPaddingMode ArtPaddingMode, int? Blo
         return blockSizeBits / 8;
     }
 
-    private async ValueTask ExportStreamWithDepaddingHandlerAsync(DepaddingHandler handler, Stream targetStream, bool useLogger, CancellationToken cancellationToken)
+    private async ValueTask ExportStreamWithDepaddingHandlerAsync(DepaddingHandler handler, Stream targetStream, ArtifactResourceExportOptions? exportOptions, CancellationToken cancellationToken)
     {
         await using DepaddingWriteStream ds = new(handler, targetStream, true);
-        await BaseArtifactResourceInfo.ExportStreamAsync(ds, useLogger, cancellationToken).ConfigureAwait(false);
+        await BaseArtifactResourceInfo.ExportStreamAsync(ds, exportOptions, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
