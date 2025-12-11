@@ -14,14 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="NOTICE.Art.Tesler.md">
-      <Link>NOTICE.Art.Tesler.md</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackagePath>contentFiles/any/any/</PackagePath>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="ConFormat" />
     <PackageReference Include="EA" />
     <PackageReference Include="System.CommandLine" />
