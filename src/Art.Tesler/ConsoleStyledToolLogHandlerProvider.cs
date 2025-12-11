@@ -204,6 +204,7 @@ public class ConsoleStyledLogHandler : StyledLogHandler, IOperationProgressConte
                 _registeredMultiObjects.Clear();
                 if (_multiBarContext != null)
                 {
+                    _multiBarContext.ClearAll();
                     _multiBarContext.Dispose();
                     _multiBarContext = null;
                 }
@@ -216,6 +217,7 @@ public class ConsoleStyledLogHandler : StyledLogHandler, IOperationProgressConte
             _registeredMultiObjects.Remove(guid);
             if (_multiObjects.Count == 0 && _multiBarContext != null)
             {
+                _multiBarContext.ClearAll();
                 _multiBarContext.Dispose();
                 _multiBarContext = null;
             }
