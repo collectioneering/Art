@@ -53,7 +53,7 @@ public class ArtifactContext : DbContext
         try
         {
             ((string tool, string group, string id), string? _, DateTimeOffset? date, DateTimeOffset? updateDate, DateTimeOffset? retrievalDate, bool full) = artifactInfo;
-            ArtifactInfoModel? model = await ArtifactInfoModels.FindAsync(new object?[] { tool, group, id }, cancellationToken).ConfigureAwait(false);
+            ArtifactInfoModel? model = await ArtifactInfoModels.FindAsync([tool, group, id], cancellationToken).ConfigureAwait(false);
             if (model == null)
             {
                 ArtifactInfoModels.Add(artifactInfo);
@@ -206,9 +206,9 @@ public class ArtifactContext : DbContext
         try
         {
             (((string tool, string group, string id), string file, string path), string? contentType, DateTimeOffset? updated, DateTimeOffset? retrieved, string? version, Checksum? checksum) = artifactResourceInfo;
-            ArtifactInfoModel? model = await ArtifactInfoModels.FindAsync(new object?[] { tool, group, id }, cancellationToken).ConfigureAwait(false);
+            ArtifactInfoModel? model = await ArtifactInfoModels.FindAsync([tool, group, id], cancellationToken).ConfigureAwait(false);
             if (model == null) throw new InvalidOperationException("Can't add resource for missing artifact");
-            ArtifactResourceInfoModel? model2 = await ArtifactResourceInfoModels.FindAsync(new object?[] { tool, group, id, file, path }, cancellationToken).ConfigureAwait(false);
+            ArtifactResourceInfoModel? model2 = await ArtifactResourceInfoModels.FindAsync([tool, group, id, file, path], cancellationToken).ConfigureAwait(false);
             if (model2 == null)
             {
                 ArtifactResourceInfoModels.Add(artifactResourceInfo);
@@ -272,7 +272,7 @@ public class ArtifactContext : DbContext
         try
         {
             (string tool, string group, string id) = key;
-            ArtifactInfoModel? model = await ArtifactInfoModels.FindAsync(new object?[] { tool, group, id }, cancellationToken).ConfigureAwait(false);
+            ArtifactInfoModel? model = await ArtifactInfoModels.FindAsync([tool, group, id], cancellationToken).ConfigureAwait(false);
             return model != null ? (ArtifactInfo)model : null;
         }
         finally
@@ -297,7 +297,7 @@ public class ArtifactContext : DbContext
         try
         {
             ((string tool, string group, string id), string file, string path) = key;
-            ArtifactResourceInfoModel? model = await ArtifactResourceInfoModels.FindAsync(new object?[] { tool, group, id, file, path }, cancellationToken).ConfigureAwait(false);
+            ArtifactResourceInfoModel? model = await ArtifactResourceInfoModels.FindAsync([tool, group, id, file, path], cancellationToken).ConfigureAwait(false);
             return model != null ? (ArtifactResourceInfo)model : null;
         }
         finally
@@ -322,7 +322,7 @@ public class ArtifactContext : DbContext
         try
         {
             (string tool, string group, string id) = key;
-            ArtifactInfoModel? model = await ArtifactInfoModels.FindAsync(new object?[] { tool, group, id }, cancellationToken).ConfigureAwait(false);
+            ArtifactInfoModel? model = await ArtifactInfoModels.FindAsync([tool, group, id], cancellationToken).ConfigureAwait(false);
             if (model != null)
             {
                 ArtifactInfoModels.Remove(model);
@@ -351,7 +351,7 @@ public class ArtifactContext : DbContext
         try
         {
             ((string tool, string group, string id), string file, string path) = key;
-            ArtifactResourceInfoModel? model = await ArtifactResourceInfoModels.FindAsync(new object?[] { tool, group, id, file, path }, cancellationToken).ConfigureAwait(false);
+            ArtifactResourceInfoModel? model = await ArtifactResourceInfoModels.FindAsync([tool, group, id, file, path], cancellationToken).ConfigureAwait(false);
             if (model != null)
             {
                 ArtifactResourceInfoModels.Remove(model);

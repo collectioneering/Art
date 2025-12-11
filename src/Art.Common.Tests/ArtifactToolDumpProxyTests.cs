@@ -47,7 +47,7 @@ public class ArtifactToolDumpProxyTests
         await tool.InitializeAsync(config: config, profile: profile);
         var proxy = new ArtifactToolDumpProxy(tool, new ArtifactToolDumpOptions(), null);
         await proxy.DumpAsync();
-        Assert.That((await arm.ListArtifactsAsync()).Select(v => int.Parse(v.Key.Id)), Is.EquivalentTo(new[] { 1, 2, 3 }));
+        Assert.That((await arm.ListArtifactsAsync()).Select(v => int.Parse(v.Key.Id)), Is.EquivalentTo([1, 2, 3]));
     }
 
     private record CustomExportArtifactResourceInfo(
@@ -119,12 +119,11 @@ public class ArtifactToolDumpProxyTests
         await proxy.DumpAsync();
         Assert.That((await arm.ListArtifactsAsync())
             .Select(v => (id: int.Parse(v.Key.Id), timestamp: v.RetrievalDate)),
-            Is.EquivalentTo(new[]
-            {
+            Is.EquivalentTo([
                 (id: 1, timestamp: dict[(1, null)]), //
                 (id: 2, timestamp: dict[(2, null)]), //
                 (id: 3, timestamp: dict[(3, null)]) //
-            }));
+            ]));
         for (int i = 1; i <= 3; i++)
         {
             var res = (await arm.ListResourcesAsync(dict2[i]))[0];
@@ -149,7 +148,7 @@ public class ArtifactToolDumpProxyTests
         await tool.InitializeAsync(config: config, profile: profile);
         var proxy = new ArtifactToolDumpProxy(tool, new ArtifactToolDumpOptions(), null);
         await proxy.DumpAsync();
-        Assert.That((await arm.ListArtifactsAsync()).Select(v => int.Parse(v.Key.Id)), Is.EquivalentTo(new[] { 1, 2, 3 }));
+        Assert.That((await arm.ListArtifactsAsync()).Select(v => int.Parse(v.Key.Id)), Is.EquivalentTo([1, 2, 3]));
     }
 
     [Test]
@@ -169,7 +168,7 @@ public class ArtifactToolDumpProxyTests
         await tool.InitializeAsync(config: config, profile: profile);
         var proxy = new ArtifactToolDumpProxy(tool, new ArtifactToolDumpOptions(), null);
         await proxy.DumpAsync();
-        Assert.That((await arm.ListArtifactsAsync()).Select(v => int.Parse(v.Key.Id)), Is.EquivalentTo(new[] { 1, 2, 3 }));
+        Assert.That((await arm.ListArtifactsAsync()).Select(v => int.Parse(v.Key.Id)), Is.EquivalentTo([1, 2, 3]));
     }
 
     // TODO prioritisation tests

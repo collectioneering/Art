@@ -43,7 +43,7 @@ public static class CookieFile
 
     private static void AddLine(CookieContainer cc, string line, int i)
     {
-        string[] elem = line.Split(new[] { '\t' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        string[] elem = line.Split(['\t'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (elem.Length == 0 || elem[0].StartsWith('#')) return;
         if (elem.Length < 6 || elem.Length > 7) throw new InvalidDataException($"Line {i} had invalid number of elements {elem.Length}");
         string domain = elem[0];

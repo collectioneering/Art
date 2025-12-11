@@ -21,7 +21,7 @@ public class SelectableToolProfileResolver : IProfileResolver
         }
         if (_selectableRegistries == null)
         {
-            _selectableRegistries = new List<IArtifactToolSelectableRegistry<string>>();
+            _selectableRegistries = [];
             foreach (var registry in _pluginStore.LoadAllRegistries())
             {
                 if (registry is IArtifactToolSelectableRegistry<string> selectableRegistry)
@@ -35,7 +35,7 @@ public class SelectableToolProfileResolver : IProfileResolver
             resolvedProfiles = null;
             return false;
         }
-        resolvedProfiles = new DefaultResolvedProfiles(new[] { profile });
+        resolvedProfiles = new DefaultResolvedProfiles([profile]);
         return true;
     }
 }

@@ -11,13 +11,13 @@ public abstract record ChromiumCookieSource : CookieSource
     /// <inheritdoc />
     public override void LoadCookies(CookieContainer cookieContainer, CookieFilter domain, IToolLogHandler? toolLogHandler)
     {
-        LoadCookies(cookieContainer, new[] { domain }, toolLogHandler);
+        LoadCookies(cookieContainer, [domain], toolLogHandler);
     }
 
     /// <inheritdoc />
     public override Task LoadCookiesAsync(CookieContainer cookieContainer, CookieFilter domain, IToolLogHandler? toolLogHandler = null, CancellationToken cancellationToken = default)
     {
-        return LoadCookiesAsync(cookieContainer, new[] { domain }, toolLogHandler, cancellationToken);
+        return LoadCookiesAsync(cookieContainer, [domain], toolLogHandler, cancellationToken);
     }
 
     /// <inheritdoc />

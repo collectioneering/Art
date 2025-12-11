@@ -19,8 +19,8 @@ internal class BlowfishSymmetricAlgorithm : SymmetricAlgorithm
 
     public BlowfishSymmetricAlgorithm(int keySizeValue = DefaultKeySize)
     {
-        LegalKeySizesValue = new KeySizes[] { new(4 * 8, 56 * 8, 8) };
-        LegalBlockSizesValue = new KeySizes[] { new(8 * 8, 8 * 8, 8) };
+        LegalKeySizesValue = [new(4 * 8, 56 * 8, 8)];
+        LegalBlockSizesValue = [new(8 * 8, 8 * 8, 8)];
         KeySizeValue = keySizeValue;
         ModeValue = CipherMode.ECB;
     }

@@ -40,7 +40,7 @@ public abstract class ConfigCommandGetSetBase : CommandBase
         Add(ProfileIndexOption);
         Validators.Add(result =>
         {
-            HashSet<Option> optionSet = new();
+            HashSet<Option> optionSet = [];
             if (result.GetValue(ToolOption) != null)
             {
                 optionSet.Add(ToolOption);
@@ -53,7 +53,7 @@ public abstract class ConfigCommandGetSetBase : CommandBase
 
             if (optionSet.Count > 1)
             {
-                result.AddError($"Only one option from {CommandHelper.GetOptionAliasList(new Option[] { ToolOption, InputOption })} may be specified");
+                result.AddError($"Only one option from {CommandHelper.GetOptionAliasList([ToolOption, InputOption])} may be specified");
                 return;
             }
 
@@ -74,7 +74,7 @@ public abstract class ConfigCommandGetSetBase : CommandBase
 
             if (optionSet.Count > 1)
             {
-                result.AddError($"Only one option from {CommandHelper.GetOptionAliasList(new Option[] { LocalOption, GlobalOption, ProfileOption })} may be specified");
+                result.AddError($"Only one option from {CommandHelper.GetOptionAliasList([LocalOption, GlobalOption, ProfileOption])} may be specified");
                 return;
             }
 
@@ -94,7 +94,7 @@ public abstract class ConfigCommandGetSetBase : CommandBase
             {
                 if (result.GetValue(LocalOption) && result.GetValue(GlobalOption))
                 {
-                    result.AddError($"{CommandHelper.GetOptionAliasList(new Option[] { LocalOption, GlobalOption })} may not be specified when {CommandHelper.GetOptionAlias(InputOption)} is specified");
+                    result.AddError($"{CommandHelper.GetOptionAliasList([LocalOption, GlobalOption])} may not be specified when {CommandHelper.GetOptionAlias(InputOption)} is specified");
                 }
             }
         });

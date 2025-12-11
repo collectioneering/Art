@@ -8,8 +8,8 @@ internal class XorSymmetricAlgorithm : SymmetricAlgorithm
 
     public XorSymmetricAlgorithm(int keySizeValue = DefaultKeySize)
     {
-        LegalKeySizesValue = new KeySizes[] { new(8, int.MaxValue, 8) };
-        LegalBlockSizesValue = new KeySizes[] { new(8, int.MaxValue, 8) };
+        LegalKeySizesValue = [new(8, int.MaxValue, 8)];
+        LegalBlockSizesValue = [new(8, int.MaxValue, 8)];
         KeySizeValue = keySizeValue;
     }
 

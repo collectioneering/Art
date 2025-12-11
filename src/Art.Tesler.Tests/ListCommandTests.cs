@@ -24,11 +24,11 @@ public class ListCommandTests : CommandTestBase
     [Test]
     public void EmptyInvocation_Fails()
     {
-        var store = GetSingleStore(ProgrammableArtifactListTool.CreateRegistryEntry(_ => new List<IArtifactData>()));
+        var store = GetSingleStore(ProgrammableArtifactListTool.CreateRegistryEntry(_ => []));
         var toolPropertyProvider = CreateInMemoryPropertyProvider();
         CreateObjectOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider());
-        int rc = InvokeCommand(Command, Array.Empty<string>(), console);
+        int rc = InvokeCommand(Command, [], console);
         Assert.That(Out.ToString(), Is.Not.Empty);
         Assert.That(OutQueue, Is.Empty);
         Assert.That(Error.ToString(), Is.Not.Empty);
@@ -39,11 +39,11 @@ public class ListCommandTests : CommandTestBase
     [Test]
     public void MissingTool_Fails()
     {
-        var store = GetSingleStore(ProgrammableArtifactListTool.CreateRegistryEntry(_ => new List<IArtifactData>()));
+        var store = GetSingleStore(ProgrammableArtifactListTool.CreateRegistryEntry(_ => []));
         var toolPropertyProvider = CreateInMemoryPropertyProvider();
         CreateObjectOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider());
-        string[] line = { "-t", new ArtifactToolID("NOT_AN_ASSEMBLY", "MALO").GetToolString() };
+        string[] line = ["-t", new ArtifactToolID("NOT_AN_ASSEMBLY", "MALO").GetToolString()];
         int rc = InvokeCommand(Command, line, console);
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(OutQueue, Is.Empty);
@@ -55,11 +55,11 @@ public class ListCommandTests : CommandTestBase
     [Test]
     public void NoResults_Success()
     {
-        var store = GetSingleStore(ProgrammableArtifactListTool.CreateRegistryEntry(_ => new List<IArtifactData>()));
+        var store = GetSingleStore(ProgrammableArtifactListTool.CreateRegistryEntry(_ => []));
         var toolPropertyProvider = CreateInMemoryPropertyProvider();
         CreateObjectOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider());
-        string[] line = { "-t", ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactListTool>() };
+        string[] line = ["-t", ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactListTool>()];
         int rc = InvokeCommand(Command, line, console);
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(OutQueue, Is.Empty);
@@ -84,7 +84,7 @@ public class ListCommandTests : CommandTestBase
         CreateObjectOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider());
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactListTool>();
-        string[] line = { "-t", toolString, "-g", group };
+        string[] line = ["-t", toolString, "-g", group];
         int rc = InvokeCommand(Command, line, console);
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(OutQueue, Has.Count.EqualTo(1));
@@ -99,7 +99,7 @@ public class ListCommandTests : CommandTestBase
         Assert.That(key.Tool, Is.EqualTo(toolString));
         Assert.That(key.Group, Is.EqualTo(group));
         var rkey1 = new ArtifactResourceKey(key, "RES_1");
-        Assert.That(data.Keys, Is.EquivalentTo(new[] { rkey1 }));
+        Assert.That(data.Keys, Is.EquivalentTo([rkey1]));
         Assert.That(data[rkey1], Is.InstanceOf<StringArtifactResourceInfo>().With.Property("Resource").EqualTo("RES_1_CONTENT"));
     }
 
@@ -122,7 +122,7 @@ public class ListCommandTests : CommandTestBase
         CreateObjectOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider());
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactListTool>();
-        string[] line = { "-t", toolString, "-g", group };
+        string[] line = ["-t", toolString, "-g", group];
         int rc = InvokeCommand(Command, line, console);
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(OutQueue, Has.Count.EqualTo(2));
@@ -140,14 +140,14 @@ public class ListCommandTests : CommandTestBase
         Assert.That(key1.Tool, Is.EqualTo(toolString));
         Assert.That(key1.Group, Is.EqualTo(group));
         var rkey1 = new ArtifactResourceKey(key1, "RES_1");
-        Assert.That(data1.Keys, Is.EquivalentTo(new[] { rkey1 }));
+        Assert.That(data1.Keys, Is.EquivalentTo([rkey1]));
         Assert.That(data1[rkey1], Is.InstanceOf<StringArtifactResourceInfo>().With.Property(nameof(StringArtifactResourceInfo.Resource)).EqualTo("RES_1_CONTENT"));
         var key2 = data2.Info.Key;
         Assert.That(key2.Id, Is.EqualTo("ID_2"));
         Assert.That(key2.Tool, Is.EqualTo(toolString));
         Assert.That(key2.Group, Is.EqualTo(group));
         var rkey2 = new ArtifactResourceKey(key2, "RES_2");
-        Assert.That(data2.Keys, Is.EquivalentTo(new[] { rkey2 }));
+        Assert.That(data2.Keys, Is.EquivalentTo([rkey2]));
         Assert.That(data2[rkey2], Is.InstanceOf<StringArtifactResourceInfo>().With.Property(nameof(StringArtifactResourceInfo.Resource)).EqualTo("RES_2_CONTENT"));
     }
 }

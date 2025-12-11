@@ -53,7 +53,7 @@ public static class DataSizes
     /// </summary>
     public const long EiBl = 1024L * 1024 * 1024 * 1024 * 1024 * 1024;
 
-    private static readonly string[] UnitNames = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB" };
+    private static readonly string[] UnitNames = ["B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB"];
 
     /// <summary>
     /// Get size of datum with units

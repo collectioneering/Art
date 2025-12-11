@@ -32,7 +32,7 @@ public class LoggingTests : CommandTestBase
     {
         CreateOutputs(out var toolOutput, out var console, OutputDelimiter);
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactDumpTool>();
-        int code = Execute(toolOutput, console, t => t.LogInformation(Message), new[] { "-t", toolString, "-g", Group });
+        int code = Execute(toolOutput, console, t => t.LogInformation(Message), ["-t", toolString, "-g", Group]);
         Assert.That(code, Is.EqualTo(0));
         string outputContent = Out.ToString();
         Assert.That(outputContent, Is.Not.Empty);
@@ -45,7 +45,7 @@ public class LoggingTests : CommandTestBase
     {
         CreateOutputs(out var toolOutput, out var console, OutputDelimiter);
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactDumpTool>();
-        int code = Execute(toolOutput, console, t => t.LogTitle(Message), new[] { "-t", toolString, "-g", Group });
+        int code = Execute(toolOutput, console, t => t.LogTitle(Message), ["-t", toolString, "-g", Group]);
         Assert.That(code, Is.EqualTo(0));
         string outputContent = Out.ToString();
         Assert.That(outputContent, Is.Not.Empty);
@@ -58,7 +58,7 @@ public class LoggingTests : CommandTestBase
     {
         CreateOutputs(out var toolOutput, out var console, OutputDelimiter);
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactDumpTool>();
-        int code = Execute(toolOutput, console, t => t.LogEntry(Message), new[] { "-t", toolString, "-g", Group });
+        int code = Execute(toolOutput, console, t => t.LogEntry(Message), ["-t", toolString, "-g", Group]);
         Assert.That(code, Is.EqualTo(0));
         string outputContent = Out.ToString();
         Assert.That(outputContent, Is.Not.Empty);
@@ -71,7 +71,7 @@ public class LoggingTests : CommandTestBase
     {
         CreateOutputs(out var toolOutput, out var console, OutputDelimiter);
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactDumpTool>();
-        int code = Execute(toolOutput, console, t => t.LogWarning(Message), new[] { "-t", toolString, "-g", Group });
+        int code = Execute(toolOutput, console, t => t.LogWarning(Message), ["-t", toolString, "-g", Group]);
         Assert.That(code, Is.EqualTo(0));
         Assert.That(Out.ToString(), Is.Empty);
         string warnContent = Warn.ToString();
@@ -84,7 +84,7 @@ public class LoggingTests : CommandTestBase
     {
         CreateOutputs(out var toolOutput, out var console, OutputDelimiter);
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactDumpTool>();
-        int code = Execute(toolOutput, console, t => t.LogError(Message), new[] { "-t", toolString, "-g", Group });
+        int code = Execute(toolOutput, console, t => t.LogError(Message), ["-t", toolString, "-g", Group]);
         Assert.That(code, Is.EqualTo(0));
         Assert.That(Out.ToString(), Is.Empty);
         string errorContent = Error.ToString();

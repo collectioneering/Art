@@ -72,7 +72,7 @@ public class ConfigCommandList : CommandBase
 
             if (optionSet.Count > 1)
             {
-                result.AddError($"Only one option from {CommandHelper.GetOptionAliasList(new Option[] { ToolOption, InputOption })} may be specified");
+                result.AddError($"Only one option from {CommandHelper.GetOptionAliasList([ToolOption, InputOption])} may be specified");
                 return;
             }
 
@@ -82,7 +82,7 @@ public class ConfigCommandList : CommandBase
             {
                 if (anyScopeSpecifiers || result.GetValue(IgnoreBaseTypesOption))
                 {
-                    result.AddError($"{CommandHelper.GetOptionAlias(EffectiveOption)} may not be used with options {CommandHelper.GetOptionAliasList(new Option[] { AllOption, LocalOption, GlobalOption, IgnoreBaseTypesOption })}");
+                    result.AddError($"{CommandHelper.GetOptionAlias(EffectiveOption)} may not be used with options {CommandHelper.GetOptionAliasList([AllOption, LocalOption, GlobalOption, IgnoreBaseTypesOption])}");
                     return;
                 }
             }

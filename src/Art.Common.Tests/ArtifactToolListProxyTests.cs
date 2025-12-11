@@ -55,7 +55,7 @@ public class ArtifactToolListProxyTests
 #else
         var results = await proxy.ListAsync().ToListAsync();
 #endif
-        Assert.That(results.Select(v => int.Parse(v.Info.Key.Id)), Is.EquivalentTo(new[] { 1, 2, 3 }));
+        Assert.That(results.Select(v => int.Parse(v.Info.Key.Id)), Is.EquivalentTo([1, 2, 3]));
     }
 
     [Test]
@@ -76,7 +76,7 @@ public class ArtifactToolListProxyTests
 #else
         var results = await proxy.ListAsync().ToListAsync();
 #endif
-        Assert.That(results.Select(v => int.Parse(v.Info.Key.Id)), Is.EquivalentTo(new[] { 1, 2, 3 }));
+        Assert.That(results.Select(v => int.Parse(v.Info.Key.Id)), Is.EquivalentTo([1, 2, 3]));
     }
 
     [Test]
@@ -98,7 +98,7 @@ public class ArtifactToolListProxyTests
 #else
         var results = await proxy.ListAsync().ToListAsync();
 #endif
-        Assert.That(results.Select(v => int.Parse(v.Info.Key.Id)), Is.EquivalentTo(new[] { 1, 2, 3 }));
+        Assert.That(results.Select(v => int.Parse(v.Info.Key.Id)), Is.EquivalentTo([1, 2, 3]));
     }
 
     // TODO prioritisation tests

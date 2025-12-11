@@ -42,7 +42,7 @@ public static class M3UReader
     private const string ENCRYPTION_INF_KEYFORMAT = "KEYFORMAT";
     private const string ENCRYPTION_INF_URI = "URI";
     private const string ENCRYPTION_INF_IV = "IV";
-    private static readonly string[] Tags = { TAG_VERSION, TAG_STREAM_INFO, TAG_KEY, TAG_INDEPENDENT_SEGMENTS, TAG_MEDIA_SEQUENCE, TAG_MEDIA };
+    private static readonly string[] Tags = [TAG_VERSION, TAG_STREAM_INFO, TAG_KEY, TAG_INDEPENDENT_SEGMENTS, TAG_MEDIA_SEQUENCE, TAG_MEDIA];
 
     /// <summary>
     /// Parses M3U content.

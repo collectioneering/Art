@@ -379,7 +379,7 @@ public static class ArtifactToolProfileUtil
         if (element.ValueKind == JsonValueKind.Object)
         {
             isSingleObject = true;
-            return new[] { element.Deserialize(sourceGenerationContext.ArtifactToolProfile) ?? throw new InvalidDataException() };
+            return [element.Deserialize(sourceGenerationContext.ArtifactToolProfile) ?? throw new InvalidDataException()];
         }
         isSingleObject = false;
         return element.Deserialize(sourceGenerationContext.ArtifactToolProfileArray) ?? throw new InvalidDataException();

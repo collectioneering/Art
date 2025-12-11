@@ -217,7 +217,7 @@ public class ArtifactToolTests
             Assert.That(key.Tool, Is.EqualTo(toolString));
             Assert.That(key.Group, Is.EqualTo(group));
             var rkey1 = new ArtifactResourceKey(key, "RES_1");
-            Assert.That(data.Keys, Is.EquivalentTo(new[] { rkey1 }));
+            Assert.That(data.Keys, Is.EquivalentTo([rkey1]));
             Assert.That(data[rkey1], Is.InstanceOf<StringArtifactResourceInfo>().With.Property("Resource").EqualTo("RES_1_CONTENT"));
         }
     }
@@ -249,7 +249,7 @@ public class ArtifactToolTests
             Assert.That(key.Tool, Is.EqualTo(toolString));
             Assert.That(key.Group, Is.EqualTo(group));
             var rkey1 = new ArtifactResourceKey(key, "RES_1");
-            Assert.That(data.Keys, Is.EquivalentTo(new[] { rkey1 }));
+            Assert.That(data.Keys, Is.EquivalentTo([rkey1]));
             Assert.That(data[rkey1], Is.InstanceOf<StringArtifactResourceInfo>().With.Property("Resource").EqualTo("RES_1_CONTENT"));
         }
     }

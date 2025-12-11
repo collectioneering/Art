@@ -10,7 +10,7 @@ namespace Art.Common;
 /// </summary>
 public static class ArtifactToolOptionExtensions
 {
-    private static readonly HashSet<string> s_yesLower = new() { "y", "yes", "1", "true" };
+    private static readonly HashSet<string> s_yesLower = ["y", "yes", "1", "true"];
 
     #region Base
 

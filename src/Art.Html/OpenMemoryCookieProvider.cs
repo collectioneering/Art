@@ -85,7 +85,7 @@ public class OpenMemoryCookieProvider : ICookieProvider
             if (index != -1)
             {
                 var position = index + expires.Length;
-                var end = cookie.IndexOfAny(new[] { ';', ',' }, position + 4);
+                var end = cookie.IndexOfAny([';', ','], position + 4);
 
                 if (end == -1)
                 {

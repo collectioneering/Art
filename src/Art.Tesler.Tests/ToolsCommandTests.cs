@@ -18,7 +18,7 @@ public class ToolsCommandTests : CommandTestBase
     {
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, GetEmptyStore());
-        Assert.That(InvokeCommand(Command, Array.Empty<string>(), console), Is.EqualTo(0));
+        Assert.That(InvokeCommand(Command, [], console), Is.EqualTo(0));
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(Error.ToString(), Is.Empty);
     }
@@ -28,7 +28,7 @@ public class ToolsCommandTests : CommandTestBase
     {
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, GetSingleStore(ProgrammableArtifactDumpTool.CreateRegistryEntry(_ => { })));
-        Assert.That(InvokeCommand(Command, Array.Empty<string>(), console), Is.EqualTo(0));
+        Assert.That(InvokeCommand(Command, [], console), Is.EqualTo(0));
         Assert.That(Out.ToString(), Contains.Substring(nameof(ProgrammableArtifactDumpTool)));
         Assert.That(Error.ToString(), Is.Empty);
     }
@@ -38,7 +38,7 @@ public class ToolsCommandTests : CommandTestBase
     {
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, GetSingleStore(ProgrammableArtifactDumpTool.CreateRegistryEntry(_ => { })));
-        string[] line = { "-s", "$$NOT_A_REAL_TOOL$$" };
+        string[] line = ["-s", "$$NOT_A_REAL_TOOL$$"];
         Assert.That(InvokeCommand(Command, line, console), Is.EqualTo(0));
         Assert.That(Out.ToString(), Is.Empty);
         Assert.That(Error.ToString(), Is.Empty);
@@ -49,7 +49,7 @@ public class ToolsCommandTests : CommandTestBase
     {
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, GetSingleStore(ProgrammableArtifactDumpTool.CreateRegistryEntry(_ => { })));
-        string[] line = { "-s", nameof(ProgrammableArtifactDumpTool) };
+        string[] line = ["-s", nameof(ProgrammableArtifactDumpTool)];
         Assert.That(InvokeCommand(Command, line, console), Is.EqualTo(0));
         Assert.That(Out.ToString(), Contains.Substring(nameof(ProgrammableArtifactDumpTool)));
         Assert.That(Error.ToString(), Is.Empty);
