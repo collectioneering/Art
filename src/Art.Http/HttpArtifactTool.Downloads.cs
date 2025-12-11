@@ -336,6 +336,7 @@ public partial class HttpArtifactTool
                         else
                         {
                             ctx.Report(1.0f);
+                            ctx.MarkSafe();
                             break;
                         }
                     }

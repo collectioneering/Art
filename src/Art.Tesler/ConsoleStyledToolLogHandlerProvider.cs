@@ -59,7 +59,7 @@ public class ConsoleStyledToolLogHandlerProvider : ToolLogHandlerProviderBase
     }
 }
 
-public class ConsoleStyledLogHandler : StyledLogHandler, IOperationsOwner
+public class ConsoleStyledLogHandler : StyledLogHandler, IOperationProgressContextOwner
 {
     private readonly bool _forceFallback;
     private readonly Func<bool> _errorRedirectedFunc;
@@ -192,10 +192,23 @@ public class ConsoleStyledLogHandler : StyledLogHandler, IOperationsOwner
         }
     }
 
-    void IOperationsOwner.Release(object self)
+    void IOperationsOwner.Release(object self, bool isSafeExit)
     {
         lock (_lock)
         {
+            if (!isSafeExit)
+            {
+                // this is not a safe exit; dump all active progress contexts and dispose bar context
+                // (disposal is still to be managed by callees)
+                _multiObjects.Clear();
+                _registeredMultiObjects.Clear();
+                if (_multiBarContext != null)
+                {
+                    _multiBarContext.Dispose();
+                    _multiBarContext = null;
+                }
+                return;
+            }
             if (!_multiObjects.Remove(self, out var guid))
             {
                 return;
@@ -208,11 +221,32 @@ public class ConsoleStyledLogHandler : StyledLogHandler, IOperationsOwner
             }
         }
     }
+
+    void IOperationProgressContextOwner.GuardCall(IGuardedOperationProgressContext context, float value)
+    {
+        lock (_lock)
+        {
+            if (_multiObjects.ContainsKey(context))
+            {
+                context.ReportGuarded(value);
+            }
+        }
+    }
 }
 
 internal interface IOperationsOwner
 {
-    void Release(object self);
+    void Release(object self, bool isSafeExit);
+}
+
+internal interface IOperationProgressContextOwner : IOperationsOwner
+{
+    void GuardCall(IGuardedOperationProgressContext context, float value);
+}
+
+internal interface IGuardedOperationProgressContext : IOperationProgressContext
+{
+    void ReportGuarded(float value);
 }
 
 internal class WaitUpdateContext : IOperationProgressContext
@@ -237,17 +271,23 @@ internal class WaitUpdateContext : IOperationProgressContext
         _context.Clear();
         _context.Dispose();
     }
+
+    public void MarkSafe()
+    {
+    }
 }
 
-internal class WaitUpdateContextForMulti : IOperationProgressContext
+internal class WaitUpdateContextForMulti : IGuardedOperationProgressContext
 {
+    private readonly object _lock = new();
     private readonly MultiBarContext<Guid> _context;
     private readonly Guid _key;
     private EllipsisSuffixContentFiller _filler;
-    private readonly IOperationsOwner _operationsOwner;
+    private readonly IOperationProgressContextOwner _operationsOwner;
     private bool _disposed;
+    private bool _safeExit;
 
-    public WaitUpdateContextForMulti(MultiBarContext<Guid> context, Guid key, string name, IOperationsOwner owner)
+    public WaitUpdateContextForMulti(MultiBarContext<Guid> context, Guid key, string name, IOperationProgressContextOwner owner)
     {
         _context = context;
         _key = key;
@@ -258,6 +298,12 @@ internal class WaitUpdateContextForMulti : IOperationProgressContext
     }
 
     public void Report(float value)
+    {
+        EnsureNotDisposed();
+        _operationsOwner.GuardCall(this, value);
+    }
+
+    void IGuardedOperationProgressContext.ReportGuarded(float value)
     {
         EnsureNotDisposed();
         _context.Update(_key, ref _filler);
@@ -278,7 +324,18 @@ internal class WaitUpdateContextForMulti : IOperationProgressContext
         _context.Clear(_key);
         _context.Remove(_key);
         _context.Dispose();
-        _operationsOwner.Release(this);
+        lock (_lock)
+        {
+            _operationsOwner.Release(this, _safeExit);
+        }
+    }
+
+    public void MarkSafe()
+    {
+        lock (_lock)
+        {
+            _safeExit = true;
+        }
     }
 }
 
@@ -309,18 +366,24 @@ internal class DownloadUpdateContext : IOperationProgressContext
         _context.Clear();
         _context.Dispose();
     }
+
+    public void MarkSafe()
+    {
+    }
 }
 
-internal class DownloadUpdateContextForMulti : IOperationProgressContext
+internal class DownloadUpdateContextForMulti : IGuardedOperationProgressContext
 {
+    private readonly object _lock = new();
     private readonly MultiBarContext<Guid> _context;
     private readonly Guid _key;
     private readonly Stopwatch _stopwatch;
     private TimedDownloadPrefabContentFiller _filler;
-    private readonly IOperationsOwner _operationsOwner;
+    private readonly IOperationProgressContextOwner _operationsOwner;
     private bool _disposed;
+    private bool _safeExit;
 
-    public DownloadUpdateContextForMulti(MultiBarContext<Guid> context, Guid key, string name, IOperationsOwner owner)
+    public DownloadUpdateContextForMulti(MultiBarContext<Guid> context, Guid key, string name, IOperationProgressContextOwner owner)
     {
         _context = context;
         _key = key;
@@ -334,6 +397,12 @@ internal class DownloadUpdateContextForMulti : IOperationProgressContext
     }
 
     public void Report(float value)
+    {
+        EnsureNotDisposed();
+        _operationsOwner.GuardCall(this, value);
+    }
+
+    public void ReportGuarded(float value)
     {
         EnsureNotDisposed();
         _filler.SetDuration(_stopwatch.Elapsed);
@@ -353,9 +422,20 @@ internal class DownloadUpdateContextForMulti : IOperationProgressContext
             return;
         }
         _disposed = true;
-        _operationsOwner.Release(this);
         _context.Clear(_key);
         _context.Remove(_key);
         _context.Dispose();
+        lock (_lock)
+        {
+            _operationsOwner.Release(this, _safeExit);
+        }
+    }
+
+    public void MarkSafe()
+    {
+        lock (_lock)
+        {
+            _safeExit = true;
+        }
     }
 }

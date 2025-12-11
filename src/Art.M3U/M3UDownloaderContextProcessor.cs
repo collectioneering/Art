@@ -230,6 +230,7 @@ public abstract class M3UDownloaderContextProcessor
                     }
                     if (operationProgressContext != null)
                     {
+                        operationProgressContext.MarkSafe();
                         operationProgressContext.Dispose();
                         operationProgressContext = null;
                     }
@@ -308,6 +309,7 @@ public abstract class M3UDownloaderContextProcessor
                         {
                             if (operationProgressContext != null)
                             {
+                                operationProgressContext.MarkSafe();
                                 operationProgressContext.Dispose();
                                 operationProgressContext = null;
                             }
@@ -321,6 +323,7 @@ public abstract class M3UDownloaderContextProcessor
                 {
                     if (operationProgressContext != null)
                     {
+                        operationProgressContext.MarkSafe();
                         operationProgressContext.Dispose();
                         operationProgressContext = null;
                     }
