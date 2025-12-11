@@ -1,7 +1,5 @@
 # dotnet/runtime
 
-@17f5167d75bba8d53ed6a276f010ac51999f7983
-
 @71034dd2fbbd2304fac5c24d3a9f764a3c65f781
 
 The MIT License (MIT)
