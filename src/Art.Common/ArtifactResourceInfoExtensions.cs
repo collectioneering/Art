@@ -21,7 +21,18 @@ public static class ArtifactResourceInfoExtensions
     /// Gets informational path string.
     /// </summary>
     /// <returns>Info path string.</returns>
-    public static string GetInfoPathString(this ArtifactResourceInfo artifactResourceInfo) => $"{artifactResourceInfo.Key.Path}/{artifactResourceInfo.Key.File}";
+    public static string GetInfoPathString(this ArtifactResourceInfo artifactResourceInfo)
+    {
+        if (artifactResourceInfo.Key.Path.EndsWith('/'))
+        {
+            return $"{artifactResourceInfo.Key.Path}{artifactResourceInfo.Key.File}";
+        }
+        if (string.IsNullOrEmpty(artifactResourceInfo.Key.Path))
+        {
+            return artifactResourceInfo.Key.File;
+        }
+        return $"{artifactResourceInfo.Key.Path}/{artifactResourceInfo.Key.File}";
+    }
 
     /// <summary>
     /// Gets informational string.
