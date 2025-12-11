@@ -303,7 +303,7 @@ public abstract class HtmlArtifactTool : HttpArtifactTool
 
     private void NotDisposed()
     {
-        if (_disposed) throw new ObjectDisposedException(nameof(HtmlArtifactTool));
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
     #endregion

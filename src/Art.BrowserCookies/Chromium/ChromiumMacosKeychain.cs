@@ -65,9 +65,6 @@ internal class ChromiumMacosKeychain : IChromiumKeychain
 
     private void EnsureNotDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(ChromiumMacosKeychain));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 }

@@ -83,10 +83,7 @@ public class InMemoryArtifactDataManager : ArtifactDataManager
 
     private void EnsureNotDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(InMemoryArtifactDataManager));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
     /// <inheritdoc />

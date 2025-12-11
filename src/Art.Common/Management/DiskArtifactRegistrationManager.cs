@@ -229,10 +229,7 @@ public class DiskArtifactRegistrationManager : IArtifactRegistrationManager
 
     private void EnsureNotDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(DiskArtifactRegistrationManager));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
 

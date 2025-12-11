@@ -90,10 +90,7 @@ internal class SharedMemoryDataProvider : ITeslerDataProvider
 
         private void EnsureNotDisposed()
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(PersistentProxyArtifactDataManager));
-            }
+            ObjectDisposedException.ThrowIf(_disposed, this);
         }
 
         public void Dispose()

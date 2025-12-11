@@ -96,10 +96,7 @@ internal class SharedMemoryRegistrationProvider : ITeslerRegistrationProvider
 
         private void EnsureNotDisposed()
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(PersistentProxyArtifactRegistrationManager));
-            }
+            ObjectDisposedException.ThrowIf(_disposed, this);
         }
 
         public void Dispose()

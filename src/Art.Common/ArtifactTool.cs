@@ -168,7 +168,7 @@ public partial class ArtifactTool : IArtifactTool
 
     private void EnsureNotDisposed()
     {
-        if (_disposed) throw new ObjectDisposedException(nameof(IArtifactTool));
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
     #endregion

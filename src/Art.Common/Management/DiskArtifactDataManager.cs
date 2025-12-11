@@ -81,10 +81,7 @@ public class DiskArtifactDataManager : ArtifactDataManager
 
     private void EnsureNotDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(DiskArtifactDataManager));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
     /// <inheritdoc />

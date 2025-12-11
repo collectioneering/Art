@@ -88,10 +88,7 @@ public abstract class ArtifactDataManager : IArtifactDataManager
 
     private void EnsureNotDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(ArtifactDataManager));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>

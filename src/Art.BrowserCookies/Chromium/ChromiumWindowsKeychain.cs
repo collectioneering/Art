@@ -156,9 +156,6 @@ internal class ChromiumWindowsKeychain : IChromiumKeychain
 
     private void EnsureNotDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(ChromiumWindowsKeychain));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 }

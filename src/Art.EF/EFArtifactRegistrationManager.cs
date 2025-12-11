@@ -145,6 +145,6 @@ public class EFArtifactRegistrationManager<TContext> : IArtifactRegistrationMana
 
     private void EnsureNotDisposed()
     {
-        if (_disposed) throw new ObjectDisposedException(nameof(EFArtifactRegistrationManager<TContext>));
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 }

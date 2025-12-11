@@ -326,7 +326,7 @@ public abstract partial class HttpArtifactTool : ArtifactTool
 
     private void NotDisposed()
     {
-        if (_disposed) throw new ObjectDisposedException(nameof(HttpArtifactTool));
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
     #endregion

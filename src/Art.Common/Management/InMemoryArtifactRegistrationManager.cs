@@ -104,10 +104,7 @@ public class InMemoryArtifactRegistrationManager : IArtifactRegistrationManager
 
     private void EnsureNotDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(InMemoryArtifactRegistrationManager));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
     /// <inheritdoc />

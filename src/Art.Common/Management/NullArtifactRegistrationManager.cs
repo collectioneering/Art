@@ -82,10 +82,7 @@ public class NullArtifactRegistrationManager : IArtifactRegistrationManager
 
     private void EnsureNotDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(NullArtifactRegistrationManager));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
     /// <inheritdoc />

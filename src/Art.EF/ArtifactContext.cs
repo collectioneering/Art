@@ -422,6 +422,6 @@ public class ArtifactContext : DbContext
 
     private void EnsureNotDisposed()
     {
-        if (_disposed) throw new ObjectDisposedException(nameof(ArtifactContext));
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 }
