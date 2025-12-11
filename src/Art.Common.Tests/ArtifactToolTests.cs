@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Art.Common.Management;
 using Art.Common.Resources;
 using Art.TestsBase;
@@ -10,6 +11,7 @@ namespace Art.Common.Tests;
 public class ArtifactToolTests
 {
     [Test]
+    [SuppressMessage("ReSharper", "AccessToDisposedClosure")]
     public async Task ToolDisposed_DoesNotDisposeConfiguredManagers()
     {
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactFindTool>();
@@ -37,6 +39,7 @@ public class ArtifactToolTests
     }
 
     [Test]
+    [SuppressMessage("ReSharper", "AccessToDisposedClosure")]
     public async Task ToolReinitialized_DoesNotDisposeConfiguredManagers()
     {
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactFindTool>();

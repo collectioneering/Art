@@ -101,7 +101,6 @@ public class ConfigCommandList : CommandBase
                 if (result.GetValue(ToolOption) == null && result.GetValue(InputOption) == null)
                 {
                     result.AddError($"{CommandHelper.GetOptionAlias(IgnoreBaseTypesOption)} must be used with {CommandHelper.GetOptionAlias(ToolOption)} or {CommandHelper.GetOptionAlias(InputOption)}");
-                    return;
                 }
             }
         });
@@ -155,11 +154,11 @@ public class ConfigCommandList : CommandBase
                         break;
                     }
                 default:
-                    throw new InvalidOperationException($"Invalid listing setting type {listingSettings?.GetType()}");
+                    throw new InvalidOperationException($"Invalid listing setting type {listingSettings.GetType()}");
             }
             return Task.FromResult(0);
         }
-        else if (parseResult.GetValue(InputOption) is { } profileString)
+        if (parseResult.GetValue(InputOption) is { } profileString)
         {
             if (!_profileResolver.TryGetProfiles(profileString, out var profiles, ProfileResolutionFlags.Files))
             {
@@ -224,41 +223,38 @@ public class ConfigCommandList : CommandBase
                             break;
                         }
                     default:
-                        throw new InvalidOperationException($"Invalid listing setting type {listingSettings?.GetType()}");
+                        throw new InvalidOperationException($"Invalid listing setting type {listingSettings.GetType()}");
                 }
             }
             return Task.FromResult(0);
         }
-        else
+        switch (listingSettings)
         {
-            switch (listingSettings)
-            {
-                case ScopedListingSettings scopedListingSettings:
+            case ScopedListingSettings scopedListingSettings:
+                {
+                    foreach (var v in _runnerPropertyProvider.GetProperties(scopedListingSettings.ConfigScopeFlags))
                     {
-                        foreach (var v in _runnerPropertyProvider.GetProperties(scopedListingSettings.ConfigScopeFlags))
-                        {
-                            ToolOutput.Out.WriteLine(propertyFormatter.FormatProperty(v));
-                        }
-                        break;
+                        ToolOutput.Out.WriteLine(propertyFormatter.FormatProperty(v));
                     }
-                case EffectiveListingSettings:
+                    break;
+                }
+            case EffectiveListingSettings:
+                {
+                    Dictionary<string, ConfigProperty> map = new();
+                    foreach (var v in _runnerPropertyProvider.GetProperties(ConfigScopeFlags.All))
                     {
-                        Dictionary<string, ConfigProperty> map = new();
-                        foreach (var v in _runnerPropertyProvider.GetProperties(ConfigScopeFlags.All))
-                        {
-                            map[v.Key] = v;
-                        }
-                        foreach (var v in map.Values)
-                        {
-                            ToolOutput.Out.WriteLine(propertyFormatter.FormatProperty(v));
-                        }
-                        break;
+                        map[v.Key] = v;
                     }
-                default:
-                    throw new InvalidOperationException($"Invalid listing setting type {listingSettings?.GetType()}");
-            }
-            return Task.FromResult(0);
+                    foreach (var v in map.Values)
+                    {
+                        ToolOutput.Out.WriteLine(propertyFormatter.FormatProperty(v));
+                    }
+                    break;
+                }
+            default:
+                throw new InvalidOperationException($"Invalid listing setting type {listingSettings.GetType()}");
         }
+        return Task.FromResult(0);
     }
 
     private record ListingSettings;

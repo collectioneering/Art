@@ -205,7 +205,7 @@ public class ArtifactContext : DbContext
         }
         try
         {
-            (((string tool, string group, string id), string file, string? path), string? contentType, DateTimeOffset? updated, DateTimeOffset? retrieved, string? version, Checksum? checksum) = artifactResourceInfo;
+            (((string tool, string group, string id), string file, string path), string? contentType, DateTimeOffset? updated, DateTimeOffset? retrieved, string? version, Checksum? checksum) = artifactResourceInfo;
             ArtifactInfoModel? model = await ArtifactInfoModels.FindAsync(new object?[] { tool, group, id }, cancellationToken).ConfigureAwait(false);
             if (model == null) throw new InvalidOperationException("Can't add resource for missing artifact");
             ArtifactResourceInfoModel? model2 = await ArtifactResourceInfoModels.FindAsync(new object?[] { tool, group, id, file, path }, cancellationToken).ConfigureAwait(false);
@@ -244,7 +244,7 @@ public class ArtifactContext : DbContext
         {
             throw new InvalidOperationException($"Concurrent access to {nameof(ArtifactContext)} is disallowed");
         }
-        (string? tool, string? group, string? id) = key;
+        (string tool, string group, string id) = key;
         try
         {
             List<ArtifactResourceInfoModel> results = await ArtifactResourceInfoModels.Where(v => v.ArtifactTool == tool && v.ArtifactGroup == group && v.ArtifactId == id).ToListAsync(cancellationToken).ConfigureAwait(false);
@@ -296,7 +296,7 @@ public class ArtifactContext : DbContext
         }
         try
         {
-            ((string tool, string group, string id), string file, string? path) = key;
+            ((string tool, string group, string id), string file, string path) = key;
             ArtifactResourceInfoModel? model = await ArtifactResourceInfoModels.FindAsync(new object?[] { tool, group, id, file, path }, cancellationToken).ConfigureAwait(false);
             return model != null ? (ArtifactResourceInfo)model : null;
         }
@@ -350,7 +350,7 @@ public class ArtifactContext : DbContext
         }
         try
         {
-            ((string tool, string group, string id), string file, string? path) = key;
+            ((string tool, string group, string id), string file, string path) = key;
             ArtifactResourceInfoModel? model = await ArtifactResourceInfoModels.FindAsync(new object?[] { tool, group, id, file, path }, cancellationToken).ConfigureAwait(false);
             if (model != null)
             {

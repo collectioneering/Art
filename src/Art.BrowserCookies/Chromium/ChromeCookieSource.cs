@@ -109,10 +109,6 @@ public record ChromeCookieSource(string Profile = "Default") : ChromiumProfileCo
             {
                 return true;
             }
-            if (OperatingSystem.IsLinux())
-            {
-                return false;
-            }
             return false;
         }
     }

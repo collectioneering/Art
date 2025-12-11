@@ -32,9 +32,9 @@ public class ProgrammableArtifactListTool : ArtifactTool, IArtifactListTool
         return new CustomArtifactToolRegistryEntry(artifactToolId, synchronousListDelegate);
     }
 
-    private record CustomArtifactToolRegistryEntry(ArtifactToolID Id, SynchronousListDelegate SynchronousListDelegate) : ArtifactToolRegistryEntry(Id)
+    private record CustomArtifactToolRegistryEntry(ArtifactToolID Id, SynchronousListDelegate Delegate) : ArtifactToolRegistryEntry(Id)
     {
-        public override IArtifactTool CreateArtifactTool() => new ProgrammableArtifactListTool(SynchronousListDelegate);
+        public override IArtifactTool CreateArtifactTool() => new ProgrammableArtifactListTool(Delegate);
 
         public override Type GetArtifactToolType() => typeof(ProgrammableArtifactListTool);
     }
@@ -70,9 +70,9 @@ public class AsyncProgrammableArtifactListTool : ArtifactTool, IArtifactListTool
         return new CustomArtifactToolRegistryEntry(artifactToolId, asyncListDelegate);
     }
 
-    private record CustomArtifactToolRegistryEntry(ArtifactToolID Id, AsyncListDelegate AsyncListDelegate) : ArtifactToolRegistryEntry(Id)
+    private record CustomArtifactToolRegistryEntry(ArtifactToolID Id, AsyncListDelegate Delegate) : ArtifactToolRegistryEntry(Id)
     {
-        public override IArtifactTool CreateArtifactTool() => new AsyncProgrammableArtifactListTool(AsyncListDelegate);
+        public override IArtifactTool CreateArtifactTool() => new AsyncProgrammableArtifactListTool(Delegate);
 
         public override Type GetArtifactToolType() => typeof(AsyncProgrammableArtifactListTool);
     }

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Security.Cryptography;
 using NUnit.Framework;
@@ -29,6 +30,7 @@ public class HashProxyTests
     }
 
     [Test]
+    [SuppressMessage("ReSharper", "AccessToDisposedClosure")]
     public void TestHashProxyDisposal()
     {
         HashProxyStream hps = new(new MemoryStream(), SHA256.Create());

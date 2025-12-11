@@ -186,7 +186,7 @@ public partial class M3UDownloaderContext
         var alternateStreams = new List<M3UDownloaderContext>();
         for (int i = 0; i < alternateStreamsInput.Length; i++)
         {
-            Uri? alternateStream = alternateStreamsInput[i];
+            Uri alternateStream = alternateStreamsInput[i];
             var alternateStreamContext = await CreateContextAsync(tool, config, alternateStream, false, cancellationToken).ConfigureAwait(false);
             alternateStreamContext.IsConcurrent = true;
             alternateStreamContext.Name = $"M3U-Alt-{i}";
@@ -402,7 +402,9 @@ public partial class M3UDownloaderContext
         {
             try
             {
+                // ReSharper disable WithExpressionModifiesAllMembers
                 await artifactResourceInfo.ExportStreamAsync(targetStream, ArtifactResourceExportOptions.Default with { IsConcurrent = IsConcurrent }, cancellationToken: cancellationToken).ConfigureAwait(false);
+                // ReSharper restore WithExpressionModifiesAllMembers
                 break;
             }
             catch (TaskCanceledException e)

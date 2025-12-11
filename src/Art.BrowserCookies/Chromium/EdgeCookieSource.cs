@@ -111,10 +111,6 @@ public record EdgeCookieSource(string Profile = "Default") : ChromiumProfileCook
             {
                 return true;
             }
-            if (OperatingSystem.IsLinux())
-            {
-                return false;
-            }
             return false;
         }
     }

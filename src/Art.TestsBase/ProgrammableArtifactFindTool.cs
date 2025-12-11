@@ -32,9 +32,9 @@ public class ProgrammableArtifactFindTool : ArtifactTool, IArtifactFindTool
         return new CustomArtifactToolRegistryEntry(artifactToolId, synchronousFindDelegate);
     }
 
-    private record CustomArtifactToolRegistryEntry(ArtifactToolID Id, SynchronousFindDelegate SynchronousFindDelegate) : ArtifactToolRegistryEntry(Id)
+    private record CustomArtifactToolRegistryEntry(ArtifactToolID Id, SynchronousFindDelegate Delegate) : ArtifactToolRegistryEntry(Id)
     {
-        public override IArtifactTool CreateArtifactTool() => new ProgrammableArtifactFindTool(SynchronousFindDelegate);
+        public override IArtifactTool CreateArtifactTool() => new ProgrammableArtifactFindTool(Delegate);
 
         public override Type GetArtifactToolType() => typeof(ProgrammableArtifactFindTool);
     }
@@ -70,9 +70,9 @@ public class AsyncProgrammableArtifactFindTool : ArtifactTool, IArtifactFindTool
         return new CustomArtifactToolRegistryEntry(artifactToolId, asyncFindDelegate);
     }
 
-    private record CustomArtifactToolRegistryEntry(ArtifactToolID Id, AsyncFindDelegate AsyncFindDelegate) : ArtifactToolRegistryEntry(Id)
+    private record CustomArtifactToolRegistryEntry(ArtifactToolID Id, AsyncFindDelegate Delegate) : ArtifactToolRegistryEntry(Id)
     {
-        public override IArtifactTool CreateArtifactTool() => new AsyncProgrammableArtifactFindTool(AsyncFindDelegate);
+        public override IArtifactTool CreateArtifactTool() => new AsyncProgrammableArtifactFindTool(Delegate);
 
         public override Type GetArtifactToolType() => typeof(AsyncProgrammableArtifactFindTool);
     }

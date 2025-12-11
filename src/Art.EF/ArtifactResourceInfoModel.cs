@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Art.EF;
 
 /// <summary>
@@ -8,16 +10,19 @@ public class ArtifactResourceInfoModel
     /// <summary>
     /// Tool id.
     /// </summary>
+    [MaxLength(65536)]
     public virtual string ArtifactTool { get; set; } = null!;
 
     /// <summary>
     /// Group.
     /// </summary>
+    [MaxLength(65536)]
     public virtual string ArtifactGroup { get; set; } = null!;
 
     /// <summary>
     /// Artifact id.
     /// </summary>
+    [MaxLength(65536)]
     public virtual string ArtifactId { get; set; } = null!;
 
     /// <summary>
@@ -28,16 +33,19 @@ public class ArtifactResourceInfoModel
     /// <summary>
     /// Filename.
     /// </summary>
+    [MaxLength(65536)]
     public virtual string File { get; set; } = null!;
 
     /// <summary>
     /// Path.
     /// </summary>
+    [MaxLength(65536)]
     public virtual string Path { get; set; } = null!;
 
     /// <summary>
     /// Content type.
     /// </summary>
+    [MaxLength(65536)]
     public virtual string? ContentType { get; set; }
 
     /// <summary>
@@ -53,11 +61,13 @@ public class ArtifactResourceInfoModel
     /// <summary>
     /// Version.
     /// </summary>
+    [MaxLength(65536)]
     public virtual string? Version { get; set; }
 
     /// <summary>
     /// Checksum algorithm ID.
     /// </summary>
+    [MaxLength(65536)]
     public virtual string? ChecksumId { get; set; }
 
     /// <summary>

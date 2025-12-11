@@ -13,7 +13,8 @@ public static class ArtifactResourceInfoExtensions
     /// <returns>True if any metadata is different or if other is null.</returns>
     public static bool IsMetadataDifferent(this ArtifactResourceInfo artifactResourceInfo, ArtifactResourceInfo? other)
     {
-        if (other == null) return artifactResourceInfo == null;
+        ArgumentNullException.ThrowIfNull(artifactResourceInfo);
+        if (other == null) return true;
         return artifactResourceInfo.ContentType != other.ContentType;
     }
 

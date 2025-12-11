@@ -77,8 +77,10 @@ public abstract class M3UDownloaderContextProcessor
         switch (exception.StatusCode)
         {
             case HttpStatusCode.Forbidden: // 403
+                // ReSharper disable DuplicatedStatements
                 await GetRecoveryCallbackOrThrow(exception)(exception).ConfigureAwait(false);
                 return FailureHandleFlags.RequirePlaylistRetrieval;
+            // ReSharper restore DuplicatedStatements
             case HttpStatusCode.InternalServerError: // 500
                 ThrowForExceedTotalRetries(exception);
                 ThrowForExceedConsecutiveRetries(exception);

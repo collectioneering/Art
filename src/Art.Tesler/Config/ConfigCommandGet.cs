@@ -94,7 +94,7 @@ public class ConfigCommandGet : ConfigCommandGetSetBase
         bool exactScope = parseResult.GetValue(ExactScopeOption);
         return configScope switch
         {
-            ConfigScope.Global => exactScope ? ConfigScopeFlags.Global : ConfigScopeFlags.Global,
+            ConfigScope.Global => ConfigScopeFlags.Global,
             ConfigScope.Local => exactScope ? ConfigScopeFlags.Local : ConfigScopeFlags.Local | ConfigScopeFlags.Global,
             ConfigScope.Profile => exactScope ? ConfigScopeFlags.Profile : ConfigScopeFlags.Local | ConfigScopeFlags.Global | ConfigScopeFlags.Profile,
             _ => throw new InvalidOperationException($"Invalid scope value {configScope}")

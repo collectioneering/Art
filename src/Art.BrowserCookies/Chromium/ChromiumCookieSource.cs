@@ -15,7 +15,7 @@ public abstract record ChromiumCookieSource : CookieSource
     }
 
     /// <inheritdoc />
-    public override Task LoadCookiesAsync(CookieContainer cookieContainer, CookieFilter domain, IToolLogHandler? toolLogHandler, CancellationToken cancellationToken = default)
+    public override Task LoadCookiesAsync(CookieContainer cookieContainer, CookieFilter domain, IToolLogHandler? toolLogHandler = null, CancellationToken cancellationToken = default)
     {
         return LoadCookiesAsync(cookieContainer, new[] { domain }, toolLogHandler, cancellationToken);
     }
@@ -103,7 +103,7 @@ public abstract record ChromiumCookieSource : CookieSource
     }
 
     /// <inheritdoc />
-    public override async Task LoadCookiesAsync(CookieContainer cookieContainer, IReadOnlyCollection<CookieFilter> domains, IToolLogHandler? toolLogHandler, CancellationToken cancellationToken = default)
+    public override async Task LoadCookiesAsync(CookieContainer cookieContainer, IReadOnlyCollection<CookieFilter> domains, IToolLogHandler? toolLogHandler = null, CancellationToken cancellationToken = default)
     {
         foreach (var domain in domains)
         {

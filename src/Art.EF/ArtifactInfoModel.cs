@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Art.EF;
 
 /// <summary>
@@ -8,21 +10,25 @@ public class ArtifactInfoModel
     /// <summary>
     /// Tool id.
     /// </summary>
+    [MaxLength(65536)]
     public virtual string Tool { get; set; } = null!;
 
     /// <summary>
     /// Group.
     /// </summary>
+    [MaxLength(65536)]
     public virtual string Group { get; set; } = null!;
 
     /// <summary>
     /// Artifact id.
     /// </summary>
+    [MaxLength(65536)]
     public virtual string Id { get; set; } = null!;
 
     /// <summary>
     /// Name.
     /// </summary>
+    [MaxLength(65536)]
     public virtual string? Name { get; set; }
 
     /// <summary>

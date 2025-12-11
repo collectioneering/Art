@@ -95,7 +95,6 @@ public abstract class ConfigCommandGetSetBase : CommandBase
                 if (result.GetValue(LocalOption) && result.GetValue(GlobalOption))
                 {
                     result.AddError($"{CommandHelper.GetOptionAliasList(new Option[] { LocalOption, GlobalOption })} may not be specified when {CommandHelper.GetOptionAlias(InputOption)} is specified");
-                    return;
                 }
             }
         });

@@ -52,24 +52,22 @@ public static class TeslerPropertyUtility
         return enumerable;
     }
 
-    public static bool TryGetPropertyDeep(
-        IScopedToolPropertyProvider toolPropertyProvider,
-        Type type,
-        string key,
-        ConfigScopeFlags configScopeFlags,
-        out ConfigProperty configProperty)
+    public static bool TryGetPropertyDeep(IScopedToolPropertyProvider toolPropertyProvider, Type type, string key, ConfigScopeFlags configScopeFlags, out ConfigProperty configProperty)
     {
-        if (toolPropertyProvider.TryGetProperty(ArtifactToolIDUtil.CreateCoreToolID(type), key, configScopeFlags, out configProperty))
+        while (true)
         {
-            return true;
+            if (toolPropertyProvider.TryGetProperty(ArtifactToolIDUtil.CreateCoreToolID(type), key, configScopeFlags, out configProperty))
+            {
+                return true;
+            }
+            if (type.BaseType is { } baseType)
+            {
+                type = baseType;
+                continue;
+            }
+            configProperty = default;
+            return false;
         }
-        IEnumerable<ConfigProperty> enumerable = toolPropertyProvider.GetProperties(ArtifactToolIDUtil.CreateCoreToolID(type), configScopeFlags);
-        if (type.BaseType is { } baseType)
-        {
-            return TryGetPropertyDeep(toolPropertyProvider, baseType, key, configScopeFlags, out configProperty);
-        }
-        configProperty = default;
-        return false;
     }
 
     public static void ApplyPropertiesDeep(
@@ -152,7 +150,7 @@ public static class TeslerPropertyUtility
         }
     }
 
-    public static Dictionary<string, JsonElement>? GetOptionsMapWithAddedPair(IReadOnlyDictionary<string, JsonElement>? existingOptions, string key, JsonElement value)
+    public static Dictionary<string, JsonElement> GetOptionsMapWithAddedPair(IReadOnlyDictionary<string, JsonElement>? existingOptions, string key, JsonElement value)
     {
         Dictionary<string, JsonElement> map = existingOptions != null ? new(existingOptions) : new();
         map[key] = value;
