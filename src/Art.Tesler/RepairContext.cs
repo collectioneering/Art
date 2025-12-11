@@ -93,7 +93,15 @@ public class RepairContext : ToolControlContext
                 _l.Log($"Failed to obtain resource {resource.GetInfoPathString()} for artifact {key.Tool}/{key.Group}:{key.Id}", null, LogLevel.Error);
                 continue;
             }
-            await tool.DumpResourceAsync(resourceActual, ResourceUpdateMode.Hard, _l, checksumSource, timeProvider, getResourceRetrievalTimestamps, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await tool.DumpResourceAsync(
+                resourceActual,
+                ResourceUpdateMode.Hard,
+                _l,
+                checksumSource,
+                timeProvider,
+                getResourceRetrievalTimestamps,
+                isConcurrent: false,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
             list.Remove(resource);
         }
         if (list.Count == 0) _failed.Remove(key);

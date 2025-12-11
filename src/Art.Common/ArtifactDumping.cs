@@ -288,12 +288,23 @@ public static class ArtifactDumping
             case ResourceUpdateMode.Hard:
                 break;
         }
+        // eager artifact dump: whole process can be running concurrently.
+        // eager resource obtain: resources can be retrieved concurrently.
+        bool isConcurrentObtain = (eagerFlags & (EagerFlags.ArtifactDump | EagerFlags.ResourceObtain)) != 0;
         switch (eagerFlags & artifactTool.AllowedEagerModes & (EagerFlags.ResourceMetadata | EagerFlags.ResourceObtain))
         {
             case EagerFlags.ResourceMetadata | EagerFlags.ResourceObtain:
                 {
                     Task[] tasks = artifactData.Values.Select(async v =>
-                        await UpdateResourceAsync(artifactTool, await artifactTool.DetermineUpdatedResourceAsync(v, resourceUpdate, cancellationToken).ConfigureAwait(false), logHandler, checksumSource, timeProvider, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false)).ToArray();
+                        await UpdateResourceAsync(
+                            artifactTool,
+                            await artifactTool.DetermineUpdatedResourceAsync(v, resourceUpdate, cancellationToken).ConfigureAwait(false),
+                            logHandler,
+                            checksumSource,
+                            timeProvider,
+                            getResourceRetrievalTimestamps,
+                            isConcurrentObtain,
+                            cancellationToken).ConfigureAwait(false)).ToArray();
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                     break;
                 }
@@ -301,7 +312,15 @@ public static class ArtifactDumping
                 Task<ArtifactResourceInfoWithState>[] updateTasks = artifactData.Values.Select(v => artifactTool.DetermineUpdatedResourceAsync(v, resourceUpdate, cancellationToken)).ToArray();
                 ArtifactResourceInfoWithState[] items = await Task.WhenAll(updateTasks).ConfigureAwait(false);
                 foreach (ArtifactResourceInfoWithState aris in items)
-                    await UpdateResourceAsync(artifactTool, aris, logHandler, checksumSource, timeProvider, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
+                    await UpdateResourceAsync(
+                        artifactTool,
+                        aris,
+                        logHandler,
+                        checksumSource,
+                        timeProvider,
+                        getResourceRetrievalTimestamps,
+                        isConcurrentObtain,
+                        cancellationToken).ConfigureAwait(false);
                 break;
             case EagerFlags.ResourceObtain:
                 {
@@ -309,7 +328,15 @@ public static class ArtifactDumping
                     foreach (ArtifactResourceInfo resource in artifactData.Values)
                     {
                         ArtifactResourceInfoWithState aris = await artifactTool.DetermineUpdatedResourceAsync(resource, resourceUpdate, cancellationToken).ConfigureAwait(false);
-                        tasks.Add(UpdateResourceAsync(artifactTool, aris, logHandler, checksumSource, timeProvider, getResourceRetrievalTimestamps, cancellationToken));
+                        tasks.Add(UpdateResourceAsync(
+                            artifactTool,
+                            aris,
+                            logHandler,
+                            checksumSource,
+                            timeProvider,
+                            getResourceRetrievalTimestamps,
+                            isConcurrentObtain,
+                            cancellationToken));
                     }
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                     break;
@@ -317,7 +344,15 @@ public static class ArtifactDumping
             default:
                 {
                     foreach (ArtifactResourceInfo resource in artifactData.Values)
-                        await UpdateResourceAsync(artifactTool, await artifactTool.DetermineUpdatedResourceAsync(resource, resourceUpdate, cancellationToken).ConfigureAwait(false), logHandler, checksumSource, timeProvider, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
+                        await UpdateResourceAsync(
+                            artifactTool,
+                            await artifactTool.DetermineUpdatedResourceAsync(resource, resourceUpdate, cancellationToken).ConfigureAwait(false),
+                            logHandler,
+                            checksumSource,
+                            timeProvider,
+                            getResourceRetrievalTimestamps,
+                            isConcurrentObtain,
+                            cancellationToken).ConfigureAwait(false);
                     break;
                 }
         }
@@ -336,6 +371,7 @@ public static class ArtifactDumping
     /// <param name="checksumSource">Optional checksum source, if resource is to have its checksum computed.</param>
     /// <param name="timeProvider">Time provider.</param>
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
+    /// <param name="isConcurrent">If true, this is an operation running concurrent to other such operations.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     public static async Task DumpResourceAsync(
         this IArtifactTool artifactTool,
@@ -345,9 +381,18 @@ public static class ArtifactDumping
         ChecksumSource? checksumSource,
         TimeProvider? timeProvider,
         bool? getResourceRetrievalTimestamps,
+        bool isConcurrent,
         CancellationToken cancellationToken = default)
     {
-        await UpdateResourceAsync(artifactTool, await artifactTool.DetermineUpdatedResourceAsync(resource, resourceUpdate, cancellationToken).ConfigureAwait(false), logHandler, checksumSource, timeProvider, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
+        await UpdateResourceAsync(
+            artifactTool,
+            await artifactTool.DetermineUpdatedResourceAsync(resource, resourceUpdate, cancellationToken).ConfigureAwait(false),
+            logHandler,
+            checksumSource,
+            timeProvider,
+            getResourceRetrievalTimestamps,
+            isConcurrent,
+            cancellationToken).ConfigureAwait(false);
     }
 
     private static bool GetResourceRetrievable(ArtifactResourceInfo resource)
@@ -355,11 +400,13 @@ public static class ArtifactDumping
         return resource.CanExportStream || resource.CanGetStream;
     }
 
-    private static async Task CopyResourceAsync(ArtifactResourceInfo resource, Stream targetStream, CancellationToken cancellationToken)
+    private static async Task CopyResourceAsync(ArtifactResourceInfo resource, Stream targetStream, bool isConcurrent, CancellationToken cancellationToken)
     {
         if (resource.CanExportStream)
         {
-            await resource.ExportStreamAsync(targetStream, cancellationToken: cancellationToken).ConfigureAwait(false);
+            // ReSharper disable WithExpressionModifiesAllMembers
+            await resource.ExportStreamAsync(targetStream, ArtifactResourceExportOptions.Default with { IsConcurrent = isConcurrent }, cancellationToken: cancellationToken).ConfigureAwait(false);
+            // ReSharper restore WithExpressionModifiesAllMembers
         }
         else if (resource.CanGetStream)
         {
@@ -379,6 +426,7 @@ public static class ArtifactDumping
         ChecksumSource? checksumSource,
         TimeProvider? timeProvider,
         bool? getResourceRetrievalTimestamps,
+        bool isConcurrent,
         CancellationToken cancellationToken)
     {
         (ArtifactResourceInfo versionedResource, ItemStateFlags rF) = aris;
@@ -396,7 +444,7 @@ public static class ArtifactDumping
                 using var algorithm = checksumSource.CreateHashAlgorithm();
                 // Take this opportunity to hash the resource.
                 await using HashProxyStream hps = new(stream, algorithm, true, true);
-                await CopyResourceAsync(versionedResource, hps, cancellationToken).ConfigureAwait(false);
+                await CopyResourceAsync(versionedResource, hps, isConcurrent, cancellationToken).ConfigureAwait(false);
                 stream.ShouldCommit = true;
                 Checksum newChecksum = new(checksumSource.Id, hps.GetHash());
                 if (!ChecksumUtility.DatawiseEquals(newChecksum, versionedResource.Checksum))
@@ -407,7 +455,7 @@ public static class ArtifactDumping
             }
             else if (stream is not ISinkStream) // if target output were a sink stream and hash isn't needed, then just don't bother exporting
             {
-                await CopyResourceAsync(versionedResource, stream, cancellationToken).ConfigureAwait(false);
+                await CopyResourceAsync(versionedResource, stream, isConcurrent, cancellationToken).ConfigureAwait(false);
                 stream.ShouldCommit = true;
             }
         }
