@@ -9,6 +9,8 @@ public class ConsoleStyledToolLogHandlerProvider : ToolLogHandlerProviderBase
 {
     private readonly Func<bool> _errorRedirectedFunc;
     private readonly Func<int> _widthFunc;
+    private readonly Func<int> _heightFunc;
+    private readonly Func<int> _initialRowFunc;
 
     public ConsoleStyledToolLogHandlerProvider(
         TextWriter outWriter,
@@ -16,31 +18,60 @@ public class ConsoleStyledToolLogHandlerProvider : ToolLogHandlerProviderBase
         TextWriter errorWriter,
         Func<bool> errorRedirectedFunc,
         Func<int> widthFunc,
+        Func<int> heightFunc,
+        Func<int> initialRowFunc,
         Func<Stream> outStreamAccessFunc)
         : base(outWriter, warnWriter, errorWriter, outStreamAccessFunc)
     {
         _errorRedirectedFunc = errorRedirectedFunc;
         _widthFunc = widthFunc;
+        _heightFunc = heightFunc;
+        _initialRowFunc = initialRowFunc;
     }
 
     public override IToolLogHandler GetStreamToolLogHandler()
     {
-        return new ConsoleStyledLogHandler(Out, Warn, Error, true, _errorRedirectedFunc, _widthFunc, true);
+        return new ConsoleStyledLogHandler(
+            Out,
+            Warn,
+            Error,
+            true,
+            _errorRedirectedFunc,
+            _widthFunc,
+            _heightFunc,
+            _initialRowFunc,
+            true);
     }
 
     public override IToolLogHandler GetDefaultToolLogHandler()
     {
-        return new ConsoleStyledLogHandler(Out, Warn, Error, false, _errorRedirectedFunc, _widthFunc, false, OperatingSystem.IsMacOS());
+        return new ConsoleStyledLogHandler(
+            Out,
+            Warn,
+            Error,
+            false,
+            _errorRedirectedFunc,
+            _widthFunc,
+            _heightFunc,
+            _initialRowFunc,
+            false,
+            OperatingSystem.IsMacOS());
     }
 }
 
-public class ConsoleStyledLogHandler : StyledLogHandler
+public class ConsoleStyledLogHandler : StyledLogHandler, IOperationsOwner
 {
     private readonly bool _forceFallback;
     private readonly Func<bool> _errorRedirectedFunc;
     private readonly Func<int> _widthFunc;
+    private readonly Func<int> _heightFunc;
+    private readonly Func<int> _initialRowFunc;
     private static readonly Guid s_downloadOperation = Guid.ParseExact("c6d42b18f0ae452385f180aa74e9ef29", "N");
     private static readonly Guid s_operationWaitingForResult = Guid.ParseExact("4fd5c851a88c430c8f8da54dbcf70ab2", "N");
+    private readonly Dictionary<object, Guid> _multiObjects = new();
+    private readonly HashSet<Guid> _registeredMultiObjects = new();
+    private MultiBarContext<Guid>? _multiBarContext;
+    private readonly object _lock = new();
 
     public ConsoleStyledLogHandler(
         TextWriter outWriter,
@@ -49,6 +80,8 @@ public class ConsoleStyledLogHandler : StyledLogHandler
         bool forceFallback,
         Func<bool> errorRedirectedFunc,
         Func<int> widthFunc,
+        Func<int> heightFunc,
+        Func<int> initialRowFunc,
         bool alwaysPrintToErrorStream,
         bool enableFancy = false)
         : base(outWriter, warnWriter, errorWriter, alwaysPrintToErrorStream, enableFancy)
@@ -56,22 +89,130 @@ public class ConsoleStyledLogHandler : StyledLogHandler
         _forceFallback = forceFallback;
         _errorRedirectedFunc = errorRedirectedFunc;
         _widthFunc = widthFunc;
+        _heightFunc = heightFunc;
+        _initialRowFunc = initialRowFunc;
+    }
+
+    private MultiBarContext<Guid> GetMultiBarContext()
+    {
+        lock (_lock)
+        {
+            if (_multiBarContext != null)
+            {
+                return _multiBarContext;
+            }
+            return _multiBarContext = MultiBarContext<Guid>.Create(
+                Error,
+                _forceFallback,
+                _errorRedirectedFunc,
+                _widthFunc,
+                _heightFunc,
+                _initialRowFunc());
+        }
+    }
+
+    private Guid AllocateGuid()
+    {
+        Guid result;
+        do
+        {
+            result = Guid.NewGuid();
+        } while (!_registeredMultiObjects.Add(result));
+        return result;
+    }
+
+    public override bool TryGetConcurrentOperationProgressContext(string operationName, Guid operationGuid, [NotNullWhen(true)] out IOperationProgressContext? operationProgressContext)
+    {
+        lock (_lock)
+        {
+            if (operationGuid.Equals(s_downloadOperation))
+            {
+                Guid guid = AllocateGuid();
+                try
+                {
+                    operationProgressContext = new DownloadUpdateContextForMulti(
+                        GetMultiBarContext(),
+                        guid,
+                        operationName,
+                        this);
+                    _multiObjects.Add(operationProgressContext, guid);
+                }
+                catch
+                {
+                    _registeredMultiObjects.Remove(guid);
+                    throw;
+                }
+                return true;
+            }
+            if (operationGuid.Equals(s_operationWaitingForResult))
+            {
+                Guid guid = AllocateGuid();
+                try
+                {
+                    operationProgressContext = new WaitUpdateContextForMulti(
+                        GetMultiBarContext(),
+                        guid,
+                        operationName,
+                        this);
+                    _multiObjects.Add(operationProgressContext, guid);
+                }
+                catch
+                {
+                    _registeredMultiObjects.Remove(guid);
+                    throw;
+                }
+                return true;
+            }
+            operationProgressContext = null;
+            return false;
+        }
     }
 
     public override bool TryGetOperationProgressContext(string operationName, Guid operationGuid, [NotNullWhen(true)] out IOperationProgressContext? operationProgressContext)
     {
-        if (operationGuid.Equals(s_downloadOperation))
+        lock (_lock)
         {
-            operationProgressContext = new DownloadUpdateContext(operationName, Error, _forceFallback, _errorRedirectedFunc, _widthFunc);
-            return true;
+            if (_multiObjects.Count > 0)
+            {
+                operationProgressContext = null;
+                return false;
+            }
+            if (operationGuid.Equals(s_downloadOperation))
+            {
+                operationProgressContext = new DownloadUpdateContext(operationName, Error, _forceFallback, _errorRedirectedFunc, _widthFunc);
+                return true;
+            }
+            if (operationGuid.Equals(s_operationWaitingForResult))
+            {
+                operationProgressContext = new WaitUpdateContext(operationName, Error, _forceFallback, _errorRedirectedFunc, _widthFunc);
+                return true;
+            }
+            operationProgressContext = null;
+            return false;
         }
-        if (operationGuid.Equals(s_operationWaitingForResult))
-        {
-            operationProgressContext = new WaitUpdateContext(operationName, Error, _forceFallback, _errorRedirectedFunc, _widthFunc);
-            return true;
-        }
-        return base.TryGetOperationProgressContext(operationName, operationGuid, out operationProgressContext);
     }
+
+    void IOperationsOwner.Release(object self)
+    {
+        lock (_lock)
+        {
+            if (!_multiObjects.Remove(self, out var guid))
+            {
+                return;
+            }
+            _registeredMultiObjects.Remove(guid);
+            if (_multiObjects.Count == 0 && _multiBarContext != null)
+            {
+                _multiBarContext.Dispose();
+                _multiBarContext = null;
+            }
+        }
+    }
+}
+
+internal interface IOperationsOwner
+{
+    void Release(object self);
 }
 
 internal class WaitUpdateContext : IOperationProgressContext
@@ -95,6 +236,49 @@ internal class WaitUpdateContext : IOperationProgressContext
     {
         _context.Clear();
         _context.Dispose();
+    }
+}
+
+internal class WaitUpdateContextForMulti : IOperationProgressContext
+{
+    private readonly MultiBarContext<Guid> _context;
+    private readonly Guid _key;
+    private EllipsisSuffixContentFiller _filler;
+    private readonly IOperationsOwner _operationsOwner;
+    private bool _disposed;
+
+    public WaitUpdateContextForMulti(MultiBarContext<Guid> context, Guid key, string name, IOperationsOwner owner)
+    {
+        _context = context;
+        _key = key;
+        _filler = new EllipsisSuffixContentFiller(name, 0);
+        _context.Allocate(_key);
+        _context.Write(_key, ref _filler);
+        _operationsOwner = owner;
+    }
+
+    public void Report(float value)
+    {
+        EnsureNotDisposed();
+        _context.Update(_key, ref _filler);
+    }
+
+    private void EnsureNotDisposed()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+        _disposed = true;
+        _context.Clear(_key);
+        _context.Remove(_key);
+        _context.Dispose();
+        _operationsOwner.Release(this);
     }
 }
 
@@ -123,8 +307,55 @@ internal class DownloadUpdateContext : IOperationProgressContext
     public void Dispose()
     {
         _context.Clear();
-        //_context.Write(_filler);
-        //_context.End();
+        _context.Dispose();
+    }
+}
+
+internal class DownloadUpdateContextForMulti : IOperationProgressContext
+{
+    private readonly MultiBarContext<Guid> _context;
+    private readonly Guid _key;
+    private readonly Stopwatch _stopwatch;
+    private TimedDownloadPrefabContentFiller _filler;
+    private readonly IOperationsOwner _operationsOwner;
+    private bool _disposed;
+
+    public DownloadUpdateContextForMulti(MultiBarContext<Guid> context, Guid key, string name, IOperationsOwner owner)
+    {
+        _context = context;
+        _key = key;
+        _context = context;
+        _filler = TimedDownloadPrefabContentFiller.Create(name);
+        _context.Allocate(_key);
+        _context.Write(_key, ref _filler);
+        _stopwatch = new Stopwatch();
+        _stopwatch.Start();
+        _operationsOwner = owner;
+    }
+
+    public void Report(float value)
+    {
+        EnsureNotDisposed();
+        _filler.SetDuration(_stopwatch.Elapsed);
+        _filler.SetProgress(value);
+        _context.Update(_key, ref _filler);
+    }
+
+    private void EnsureNotDisposed()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+        _disposed = true;
+        _operationsOwner.Release(this);
+        _context.Clear(_key);
+        _context.Remove(_key);
         _context.Dispose();
     }
 }

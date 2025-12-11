@@ -118,6 +118,13 @@ public class StyledLogHandler : IToolLogHandler
     }
 
     /// <inheritdoc />
+    public virtual bool TryGetConcurrentOperationProgressContext(string operationName, Guid operationGuid, [NotNullWhen(true)] out IOperationProgressContext? operationProgressContext)
+    {
+        operationProgressContext = null;
+        return false;
+    }
+
+    /// <inheritdoc />
     public virtual bool TryGetOperationProgressContext(string operationName, Guid operationGuid, [NotNullWhen(true)] out IOperationProgressContext? operationProgressContext)
     {
         operationProgressContext = null;
