@@ -27,7 +27,7 @@ public class DiskArtifactDataManager : ArtifactDataManager
         EnsureNotDisposed();
         try
         {
-            return ValueTask.FromResult((Stream)File.OpenRead(Path.Combine(DiskPaths.GetBasePath(BaseDirectory, key.Artifact.Tool, key.Artifact.Group), key.Path, key.File.SafeifyFileName())));
+            return ValueTask.FromResult<Stream>(File.OpenRead(Path.Combine(GetBasePathForArtifact(key.Artifact), key.Path, key.File.SafeifyFileName())));
         }
         catch (FileNotFoundException)
         {
@@ -43,14 +43,14 @@ public class DiskArtifactDataManager : ArtifactDataManager
     public override ValueTask<bool> ExistsAsync(ArtifactResourceKey key, CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();
-        return ValueTask.FromResult(File.Exists(Path.Combine(DiskPaths.GetBasePath(BaseDirectory, key.Artifact.Tool, key.Artifact.Group), key.Path, key.File.SafeifyFileName())));
+        return ValueTask.FromResult(File.Exists(Path.Combine(GetBasePathForArtifact(key.Artifact), key.Path, key.File.SafeifyFileName())));
     }
 
     /// <inheritdoc/>
     public override ValueTask<bool> DeleteAsync(ArtifactResourceKey key, CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();
-        string file = Path.Combine(DiskPaths.GetBasePath(BaseDirectory, key.Artifact.Tool, key.Artifact.Group), key.Path, key.File.SafeifyFileName());
+        string file = Path.Combine(GetBasePathForArtifact(key.Artifact), key.Path, key.File.SafeifyFileName());
         if (!File.Exists(file)) return ValueTask.FromResult(false);
         File.Delete(file);
         return ValueTask.FromResult(!File.Exists(file));
@@ -60,18 +60,23 @@ public class DiskArtifactDataManager : ArtifactDataManager
     public override ValueTask<CommittableStream> CreateOutputStreamAsync(ArtifactResourceKey key, OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();
-        string dir = Path.Combine(DiskPaths.GetBasePath(BaseDirectory, key.Artifact.Tool, key.Artifact.Group), key.Path);
+        string dir = Path.Combine(GetBasePathForArtifact(key.Artifact), key.Path);
         if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
         FileStreamOptions fso = new() { Mode = FileMode.Create, Access = FileAccess.ReadWrite };
         bool preferTemporaryLocation = true;
-        if (options is { } optionsActual)
+        if (options != null)
         {
-            long preallocationSize = optionsActual.PreallocationSize;
+            long preallocationSize = options.PreallocationSize;
             if (preallocationSize < 0) throw new ArgumentException($"Invalid {nameof(OutputStreamOptions.PreallocationSize)} value", nameof(options));
             if (preallocationSize != 0) fso.PreallocationSize = preallocationSize;
-            preferTemporaryLocation = optionsActual.PreferTemporaryLocation;
+            preferTemporaryLocation = options.PreferTemporaryLocation;
         }
         return new ValueTask<CommittableStream>(new CommittableFileStream(Path.Combine(dir, key.File.SafeifyFileName()), fso, preferTemporaryLocation: preferTemporaryLocation));
+    }
+
+    private string GetBasePathForArtifact(ArtifactKey key)
+    {
+        return DiskPaths.GetBasePath(BaseDirectory, key.Tool, key.Group);
     }
 
     private void EnsureNotDisposed()
