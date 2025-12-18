@@ -377,7 +377,10 @@ public partial class M3UDownloaderContext
             }
         }
         // don't need to always write msn (only necessary for later dec) but do it anyway...
-        if (mediaSequenceNumber is { } msn) await WriteAncillaryFileAsync($"{fn}.msn.txt", Encoding.UTF8.GetBytes(msn.ToString(CultureInfo.InvariantCulture)), cancellationToken).ConfigureAwait(false);
+        if (mediaSequenceNumber is { } msn)
+        {
+            await WriteAncillaryFileAsync($"{fn}.msn.txt", "msn", Encoding.UTF8.GetBytes(msn.ToString(CultureInfo.InvariantCulture)), cancellationToken).ConfigureAwait(false);
+        }
         ArtifactResourceInfo ari = GetResourceInternal(ark, uri, file, mediaSequenceNumber, segmentSettings);
         await using (CommittableStream oStream = await Tool.DataManager.CreateOutputStreamAsync(ari.Key, OutputStreamOptions.Default, cancellationToken).ConfigureAwait(false))
         {
