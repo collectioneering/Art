@@ -42,6 +42,31 @@ public static class ChecksumUtility
     }
 
     /// <summary>
+    /// Gets checksum of a resource.
+    /// </summary>
+    /// <param name="artifactDataManager"><see cref="INamespacedArtifactDataManager"/>.</param>
+    /// <param name="checksumId">Checksum algorithm ID.</param>
+    /// <param name="name">File name.</param>
+    /// <param name="path">File path.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Checksum for resource.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown for missing resource.</exception>
+    /// <exception cref="ArgumentException">Thrown for a bad <paramref name="checksumId"/> value.</exception>
+    public static async ValueTask<Checksum> ComputeChecksumAsync(this INamespacedArtifactDataManager artifactDataManager, string checksumId, string name, string path = "", CancellationToken cancellationToken = default)
+    {
+        if (!ChecksumSource.DefaultSources.TryGetValue(checksumId, out var checksumSource))
+        {
+            throw new ArgumentException("Unknown checksum ID", nameof(checksumId));
+        }
+        using HashAlgorithm hashAlgorithm = checksumSource.CreateHashAlgorithm();
+        await using Stream sourceStream = await artifactDataManager.OpenInputStreamAsync(name, path, cancellationToken).ConfigureAwait(false);
+        await using HashProxyStream hps = new(sourceStream, hashAlgorithm, true, true);
+        await using MemoryStream ms = new();
+        await hps.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
+        return new Checksum(checksumId, hps.GetHash());
+    }
+
+    /// <summary>
     /// Compares two values for data equality.
     /// </summary>
     /// <param name="first">First value.</param>

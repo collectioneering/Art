@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -10,17 +11,25 @@ namespace Art.M3U;
 /// </summary>
 public partial class M3UDownloaderContextTopDownSaver : M3UDownloaderContextSaver, IExtraSaverOperation
 {
+    /// <summary>
+    /// Skip missing entries.
+    /// </summary>
+    public bool SkipMissing { get; set; }
+
     [GeneratedRegex(@"(^[\S\s]*[^\d]|)\d+(\.\w+)$")]
     private static partial Regex GetBitRegex();
 
     [GeneratedRegex(@"(?<prefix>^[\S\s]*[^\d]|)(?<number>\d+)(?<suffix>\.\w+)$")]
     private static partial Regex GetBit2Regex();
 
+    private readonly ConcurrentQueue<TopQueueEntry> _queue = new();
     private readonly long _top;
     private readonly long? _topMsn;
     private readonly Func<string, long, string> _nameTransform;
     private long _currentTop;
     private bool _ended;
+
+    private record struct TopQueueEntry(long Number, long? Msn);
 
     internal M3UDownloaderContextTopDownSaver(M3UDownloaderContext context, long top, long? topMsn)
         : this(context, top, topMsn, TranslateNameDefault)
@@ -83,6 +92,49 @@ public partial class M3UDownloaderContextTopDownSaver : M3UDownloaderContextSave
         return match.Groups["prefix"].Value + paddedI + match.Groups["suffix"].Value;
     }
 
+    /// <summary>
+    /// Extracts the number from a generic filename.
+    /// </summary>
+    /// <param name="name">Filename.</param>
+    /// <returns>Number contained in filename.</returns>
+    /// <exception cref="InvalidDataException">Regex match failed.</exception>
+    public static int ExtractNumberFromName(string name)
+    {
+        if (GetBit2Regex().Match(name) is not { Success: true } match)
+        {
+            throw new InvalidDataException();
+        }
+        return int.Parse(match.Groups["number"].Value, CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>
+    /// Extracts the number from a generic filename.
+    /// </summary>
+    /// <param name="name">Filename.</param>
+    /// <param name="number">Number contained in filename.</param>
+    /// <returns>true if successful.</returns>
+    /// <exception cref="InvalidDataException">Regex match failed.</exception>
+    public static bool TryExtractNumberFromName(string name, out long number)
+    {
+        if (GetBit2Regex().Match(name) is { Success: true } match)
+        {
+            number = long.Parse(match.Groups["number"].Value, CultureInfo.InvariantCulture);
+            return true;
+        }
+        number = 0;
+        return false;
+    }
+
+    /// <summary>
+    /// Enqueues a new element for processing.
+    /// </summary>
+    /// <param name="number">Number.</param>
+    /// <param name="msn">Media sequence number, if applicable.</param>
+    public void EnqueueElement(long number, long? msn)
+    {
+        _queue.Enqueue(new TopQueueEntry(number, msn));
+    }
+
     /// <inheritdoc />
     public override async Task RunAsync(CancellationToken cancellationToken = default)
     {
@@ -128,43 +180,80 @@ public partial class M3UDownloaderContextTopDownSaver : M3UDownloaderContextSave
         return TickAsync(m3, cancellationToken);
     }
 
-    private async Task<bool> TickAsync(M3UFile m3, CancellationToken cancellationToken = default)
+    private async Task<bool> ProcessElementAsync(M3UFile m3, long number, long? msn, bool isTopDown, CancellationToken cancellationToken)
     {
-        if (_ended || _currentTop < 0)
-        {
-            return false;
-        }
         string str = m3.DataLines.First();
         Uri origUri = new(Context.MainUri, str);
         int idx = str.IndexOf('?');
         if (idx >= 0) str = str[..idx];
-        Uri uri = new UriBuilder(new Uri(Context.MainUri, _nameTransform(str, _currentTop))) { Query = origUri.Query }.Uri;
+        Uri uri = new UriBuilder(new Uri(Context.MainUri, _nameTransform(str, number))) { Query = origUri.Query }.Uri;
         Context.Tool.LogInformation($"[{Context.Name}] Top-downloading segment {uri.Segments[^1]}...");
         try
         {
-            long? msn;
-            if (_topMsn is { } topMsn)
-            {
-                msn = _top - _currentTop + topMsn;
-            }
-            else
-            {
-                msn = null;
-            }
             // Don't assume MSN, and just accept failure (exception) when trying to decrypt with no IV
             // Also don't depend on current file since it probably won't do us good anyway for this use case
             await Context.DownloadSegmentAsync(uri, null, msn, null, cancellationToken).ConfigureAwait(false);
-            _currentTop--;
         }
         catch (ArtHttpResponseMessageException e)
         {
             if (e.StatusCode == HttpStatusCode.NotFound)
             {
+                if (SkipMissing && !isTopDown)
+                {
+                    return true;
+                }
                 Context.Tool.LogInformation("HTTP NotFound returned, ending top-down operation");
                 _ended = true;
                 return false;
             }
             await HandleRequestExceptionAsync(e, cancellationToken).ConfigureAwait(false);
+        }
+        return true;
+    }
+
+    private  Task WriteEndFileAsync(CancellationToken cancellationToken = default)
+    {
+        return Context.WriteAncillaryFileAsync(
+            "vxf_finito",
+            ReadOnlyMemory<byte>.Empty,
+            cancellationToken);
+    }
+
+    private async Task<bool> TickAsync(M3UFile m3, CancellationToken cancellationToken = default)
+    {
+        if (_ended || _currentTop < 0)
+        {
+            await WriteEndFileAsync(cancellationToken).ConfigureAwait(false);
+            return false;
+        }
+        if (_queue.TryDequeue(out var dequeued))
+        {
+            if (!await ProcessElementAsync(
+                    m3,
+                    dequeued.Number,
+                    dequeued.Msn,
+                    false,
+                    cancellationToken).ConfigureAwait(false))
+            {
+                await WriteEndFileAsync(cancellationToken).ConfigureAwait(false);
+                return false;
+            }
+        }
+        else
+        {
+            if (!await ProcessElementAsync(
+                    m3,
+                    _currentTop,
+                    _topMsn is { } topMsn
+                        ? topMsn - _top + _currentTop
+                        : null,
+                    true,
+                    cancellationToken).ConfigureAwait(false))
+            {
+                await WriteEndFileAsync(cancellationToken).ConfigureAwait(false);
+                return false;
+            }
+            _currentTop--;
         }
         ConsecutiveFailCounter = 0;
         return true;

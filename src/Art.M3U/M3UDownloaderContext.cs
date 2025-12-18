@@ -72,6 +72,11 @@ public partial class M3UDownloaderContext
     /// </remarks>
     public M3UTiming ResolvedTiming => Config.Timing ?? M3UTiming.Default;
 
+    /// <summary>
+    /// Output VxFile content.
+    /// </summary>
+    public bool WriteVxFiles { get; set; } = false;
+
     private M3UDownloaderContext(HttpArtifactTool tool, M3UDownloaderConfig config, Uri mainUri, M3UFile streamInfo)
     {
         Tool = tool;
@@ -246,12 +251,30 @@ public partial class M3UDownloaderContext
         if (ei.Iv is not null) await WriteAncillaryFileAsync("iv.bin", ei.Iv, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task WriteAncillaryFileAsync(string file, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+    internal Task WriteAncillaryFileAsync(string file, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
     {
-        ArtifactResourceKey keyFormatArk = new(Config.ArtifactKey, file, Config.ArtifactKey.Id);
-        await using CommittableStream keyFormatStream = await Tool.DataManager.CreateOutputStreamAsync(keyFormatArk, OutputStreamOptions.Default, cancellationToken).ConfigureAwait(false);
-        await keyFormatStream.WriteAsync(data, cancellationToken).ConfigureAwait(false);
-        keyFormatStream.ShouldCommit = true;
+        return WriteAncillaryFileAsync(new ArtifactResourceKey(Config.ArtifactKey, file, Config.ArtifactKey.Id), data, cancellationToken);
+    }
+
+    internal Task WriteAncillaryFileAsync(string file, string subPath, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+    {
+        string basePath = Config.ArtifactKey.Id;
+        if (basePath.EndsWith('/'))
+        {
+            basePath = basePath[..^1];
+        }
+        if (subPath.StartsWith('/'))
+        {
+            subPath = subPath[1..];
+        }
+        return WriteAncillaryFileAsync(new ArtifactResourceKey(Config.ArtifactKey, file, string.IsNullOrEmpty(basePath) ? subPath : $"{basePath}/{subPath}"), data, cancellationToken);
+    }
+
+    internal async Task WriteAncillaryFileAsync(ArtifactResourceKey key, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+    {
+        await using CommittableStream stream = await Tool.DataManager.CreateOutputStreamAsync(key, OutputStreamOptions.Default, cancellationToken).ConfigureAwait(false);
+        await stream.WriteAsync(data, cancellationToken).ConfigureAwait(false);
+        stream.ShouldCommit = true;
     }
 
     /// <summary>
@@ -343,7 +366,7 @@ public partial class M3UDownloaderContext
     private async Task DownloadSegmentInternalAsync(Uri uri, M3UFile file, long? mediaSequenceNumber, SegmentSettings? segmentSettings, CancellationToken cancellationToken)
     {
         string fn = GetFileName(uri);
-        ArtifactResourceKey ark = new(Config.ArtifactKey, fn, Config.ArtifactKey.Id);
+        ArtifactResourceKey ark = new(Config.ArtifactKey, fn, $"{Config.ArtifactKey.Id}/stream");
         bool useRegistrationManager = UseRegistrationManager;
         if (useRegistrationManager)
         {
@@ -364,6 +387,15 @@ public partial class M3UDownloaderContext
         if (useRegistrationManager)
         {
             await Tool.RegistrationManager.AddResourceAsync(ari, cancellationToken).ConfigureAwait(false);
+        }
+        if (WriteVxFiles || segmentSettings is { WriteVxFiles: true })
+        {
+            await WriteAncillaryFileAsync(fn,
+                "vxf",
+                mediaSequenceNumber is { } msn2
+                    ? Encoding.UTF8.GetBytes(msn2.ToString(CultureInfo.InvariantCulture))
+                    : ReadOnlyMemory<byte>.Empty,
+                cancellationToken).ConfigureAwait(false);
         }
     }
 

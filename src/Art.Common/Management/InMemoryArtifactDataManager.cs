@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Art.Common.Resources;
 
 namespace Art.Common.Management;
@@ -5,7 +6,7 @@ namespace Art.Common.Management;
 /// <summary>
 /// Represents an in-memory artifact data manager.
 /// </summary>
-public class InMemoryArtifactDataManager : ArtifactDataManager
+public class InMemoryArtifactDataManager : ArtifactDataManager, INamespacedArtifactDataManagerProvider<ArtifactKey>
 {
     /// <summary>
     /// Mapping of artifact keys to resource info.
@@ -19,6 +20,7 @@ public class InMemoryArtifactDataManager : ArtifactDataManager
     /// </summary>
     public IReadOnlyDictionary<ArtifactResourceKey, Stream> Entries => _entries;
 
+    private readonly Dictionary<ArtifactKey, InMemoryArtifactDataManagerArtifactKey> _namespacedToolGroup = new();
     private readonly Dictionary<ArtifactResourceKey, Stream> _entries = new();
     private bool _disposed;
 
@@ -46,7 +48,10 @@ public class InMemoryArtifactDataManager : ArtifactDataManager
             stream = new CommittableMemoryStream();
         ArtifactKey ak = key.Artifact;
         if (!_artifacts.TryGetValue(ak, out List<ArtifactResourceInfo>? list))
+        {
             _artifacts.Add(ak, list = new List<ArtifactResourceInfo>());
+        }
+        GetOrCreateNamespacedArtifactDataManager(ak);
         list.Add(new ResultStreamArtifactResourceInfo(stream, key, null, null, null, null));
         _entries[key] = stream;
         return new ValueTask<CommittableStream>(stream);
@@ -63,7 +68,17 @@ public class InMemoryArtifactDataManager : ArtifactDataManager
     public override ValueTask<bool> DeleteAsync(ArtifactResourceKey key, CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();
-        return ValueTask.FromResult(_entries.Remove(key));
+        bool removed = _entries.Remove(key);
+        if (_artifacts.TryGetValue(key.Artifact, out var resources))
+        {
+            resources.RemoveAll(resource => resource.Key.Equals(key));
+            if (resources.Count == 0)
+            {
+                _artifacts.Remove(key.Artifact);
+                _namespacedToolGroup.Remove(key.Artifact);
+            }
+        }
+        return ValueTask.FromResult(removed);
     }
 
     /// <inheritdoc />
@@ -95,5 +110,73 @@ public class InMemoryArtifactDataManager : ArtifactDataManager
             return;
         }
         _disposed = true;
+    }
+
+    private InMemoryArtifactDataManagerArtifactKey GetOrCreateNamespacedArtifactDataManager(ArtifactKey targetNamespace)
+    {
+        if (!_namespacedToolGroup.TryGetValue(targetNamespace, out var managerTyped))
+        {
+            return _namespacedToolGroup[targetNamespace] = new InMemoryArtifactDataManagerArtifactKey(this, targetNamespace);
+        }
+        return managerTyped;
+    }
+
+    /// <inheritdoc />
+    public bool TryGetNamespacedArtifactDataManager(ArtifactKey targetNamespace, [NotNullWhen(true)] out INamespacedArtifactDataManager? manager, bool attemptCreationIfMissing)
+    {
+        if (_namespacedToolGroup.TryGetValue(targetNamespace, out var managerTyped))
+        {
+            manager = managerTyped;
+            return true;
+        }
+        if (attemptCreationIfMissing)
+        {
+            manager = _namespacedToolGroup[targetNamespace] = new InMemoryArtifactDataManagerArtifactKey(this, targetNamespace);
+            return true;
+        }
+        manager = null;
+        return false;
+    }
+
+
+    private class InMemoryArtifactDataManagerArtifactKey : NamespacedArtifactDataManager
+    {
+        private readonly InMemoryArtifactDataManager _manager;
+        private readonly ArtifactKey _targetNamespace;
+
+        public InMemoryArtifactDataManagerArtifactKey(InMemoryArtifactDataManager manager, ArtifactKey targetNamespace)
+        {
+            _manager = manager;
+            _targetNamespace = targetNamespace;
+        }
+
+        public override ValueTask<CommittableStream> CreateOutputStreamAsync(string file, string path = "", OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
+        {
+            return _manager.CreateOutputStreamAsync(new ArtifactResourceKey(_targetNamespace, file, path), options, cancellationToken);
+        }
+
+        public override ValueTask<bool> ExistsAsync(string file, string path = "", CancellationToken cancellationToken = default)
+        {
+            return _manager.ExistsAsync(new ArtifactResourceKey(_targetNamespace, file, path), cancellationToken);
+        }
+
+        public override ValueTask<bool> DeleteAsync(string file, string path = "", CancellationToken cancellationToken = default)
+        {
+            return _manager.DeleteAsync(new ArtifactResourceKey(_targetNamespace, file, path), cancellationToken);
+        }
+
+        public override ValueTask<Stream> OpenInputStreamAsync(string file, string path = "", CancellationToken cancellationToken = default)
+        {
+            return _manager.OpenInputStreamAsync(new ArtifactResourceKey(_targetNamespace, file, path), cancellationToken);
+        }
+
+        public override ValueTask<string[]> ListFilesAsync(string path, CancellationToken cancellationToken = default)
+        {
+            if (_manager._artifacts.TryGetValue(_targetNamespace, out var resources))
+            {
+                return ValueTask.FromResult(resources.Where(resource => resource.Key.Path == path).Select(static resource => resource.Key.File).ToArray());
+            }
+            return ValueTask.FromResult(Array.Empty<string>());
+        }
     }
 }
