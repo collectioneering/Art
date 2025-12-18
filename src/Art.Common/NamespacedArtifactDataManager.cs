@@ -25,6 +25,15 @@ public abstract class NamespacedArtifactDataManager : INamespacedArtifactDataMan
     public abstract ValueTask<string[]> ListFilesAsync(string path, CancellationToken cancellationToken = default);
 
     /// <inheritdoc />
+    public async ValueTask OutputMemoryAsync(ReadOnlyMemory<byte> buffer, string file, string path = "", OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        UpdateOptionsTextual(ref options);
+        await using CommittableStream stream = await CreateOutputStreamAsync(file, path, options, cancellationToken).ConfigureAwait(false);
+        await stream.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
+        stream.ShouldCommit = true;
+    }
+
+    /// <inheritdoc />
     public async ValueTask OutputTextAsync(string text, string file, string path = "", OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
     {
         UpdateOptionsTextual(ref options);

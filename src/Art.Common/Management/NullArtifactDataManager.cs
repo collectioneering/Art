@@ -41,6 +41,13 @@ public class NullArtifactDataManager : IArtifactDataManager
     }
 
     /// <inheritdoc />
+    public ValueTask OutputMemoryAsync(ReadOnlyMemory<byte> memory, ArtifactResourceKey key, OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        EnsureNotDisposed();
+        return ValueTask.CompletedTask;
+    }
+
+    /// <inheritdoc />
     public async ValueTask OutputTextAsync(string text, ArtifactResourceKey key, OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();

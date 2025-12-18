@@ -24,6 +24,16 @@ public abstract class ArtifactDataManager : IArtifactDataManager
     public abstract ValueTask<Stream> OpenInputStreamAsync(ArtifactResourceKey key, CancellationToken cancellationToken = default);
 
     /// <inheritdoc />
+    public async ValueTask OutputMemoryAsync(ReadOnlyMemory<byte> buffer, ArtifactResourceKey key, OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        EnsureNotDisposed();
+        UpdateOptionsTextual(ref options);
+        await using CommittableStream stream = await CreateOutputStreamAsync(key, options, cancellationToken).ConfigureAwait(false);
+        await stream.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
+        stream.ShouldCommit = true;
+    }
+
+    /// <inheritdoc />
     public async ValueTask OutputTextAsync(string text, ArtifactResourceKey key, OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();

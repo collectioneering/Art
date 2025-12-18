@@ -272,9 +272,7 @@ public partial class M3UDownloaderContext
 
     internal async Task WriteAncillaryFileAsync(ArtifactResourceKey key, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
     {
-        await using CommittableStream stream = await Tool.DataManager.CreateOutputStreamAsync(key, OutputStreamOptions.Default, cancellationToken).ConfigureAwait(false);
-        await stream.WriteAsync(data, cancellationToken).ConfigureAwait(false);
-        stream.ShouldCommit = true;
+        await Tool.DataManager.OutputMemoryAsync(data, key, OutputStreamOptions.Default, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

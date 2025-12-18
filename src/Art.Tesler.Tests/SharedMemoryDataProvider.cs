@@ -52,6 +52,11 @@ internal class SharedMemoryDataProvider : ITeslerDataProvider
             return _artifactDataManager.OpenInputStreamAsync(key, cancellationToken);
         }
 
+        public ValueTask OutputMemoryAsync(ReadOnlyMemory<byte> buffer, ArtifactResourceKey key, OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
+        {
+            return _artifactDataManager.OutputMemoryAsync(buffer, key, options, cancellationToken);
+        }
+
         public ValueTask OutputTextAsync(string text, ArtifactResourceKey key, OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
         {
             EnsureNotDisposed();

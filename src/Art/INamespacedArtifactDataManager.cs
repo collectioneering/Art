@@ -48,6 +48,17 @@ public interface INamespacedArtifactDataManager
     ValueTask<Stream> OpenInputStreamAsync(string file, string path = "", CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Outputs a memory buffer for the specified artifact.
+    /// </summary>
+    /// <param name="buffer">Buffer to output.</param>
+    /// <param name="file">File name.</param>
+    /// <param name="path">File path.</param>
+    /// <param name="options">Output options.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Task.</returns>
+    ValueTask OutputMemoryAsync(ReadOnlyMemory<byte> buffer, string file, string path = "", OutputStreamOptions? options = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Outputs a text file for the specified artifact.
     /// </summary>
     /// <param name="text">Text to output.</param>

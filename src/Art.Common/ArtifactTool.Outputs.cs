@@ -9,6 +9,30 @@ public partial class ArtifactTool
     #region Outputs
 
     /// <summary>
+    /// Outputs a memory buffer for the specified artifact.
+    /// </summary>
+    /// <param name="buffer">Buffer to output.</param>
+    /// <param name="key">Resource key.</param>
+    /// <param name="options">Output options.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Task.</returns>
+    public async Task OutputMemoryAsync(ReadOnlyMemory<byte> buffer, ArtifactResourceKey key, OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
+        => await DataManager.OutputMemoryAsync(buffer, key, options, cancellationToken).ConfigureAwait(false);
+
+    /// <summary>
+    /// Outputs a text file for the specified artifact.
+    /// </summary>
+    /// <param name="buffer">Buffer to output.</param>
+    /// <param name="key">Artifact key.</param>
+    /// <param name="file">Target filename.</param>
+    /// <param name="path">File path to prepend.</param>
+    /// <param name="options">Output options.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Task.</returns>
+    public async Task OutputMemoryAsync(ReadOnlyMemory<byte> buffer, ArtifactKey key, string file, string path = "", OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
+        => await OutputMemoryAsync(buffer, new ArtifactResourceKey(key, file, path), options, cancellationToken).ConfigureAwait(false);
+
+    /// <summary>
     /// Outputs a text file for the specified artifact.
     /// </summary>
     /// <param name="text">Text to output.</param>

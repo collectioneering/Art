@@ -46,6 +46,16 @@ public interface IArtifactDataManager : IDisposable
     /// <summary>
     /// Outputs a text file for the specified artifact.
     /// </summary>
+    /// <param name="buffer">Buffer to output.</param>
+    /// <param name="key">Resource key.</param>
+    /// <param name="options">Output options.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Task.</returns>
+    ValueTask OutputMemoryAsync(ReadOnlyMemory<byte> buffer, ArtifactResourceKey key, OutputStreamOptions? options = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Outputs a text file for the specified artifact.
+    /// </summary>
     /// <param name="text">Text to output.</param>
     /// <param name="key">Resource key.</param>
     /// <param name="options">Output options.</param>
