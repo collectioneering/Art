@@ -207,7 +207,6 @@ public abstract class M3UDownloaderContextProcessor
                     ei2.Key ??= ei.Key; // assume key kept if it was supplied in the first place
                     ei2.Iv ??= ei.Iv; // assume IV kept if it was supplied in the first place
                 }
-                //Context.Tool.LogInformation($"{m3.DataLines.Count} segments...");
                 int i = 0, j = 0;
                 foreach (string entry in m3.DataLines)
                 {
