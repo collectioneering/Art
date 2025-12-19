@@ -235,10 +235,7 @@ public static class M3UReader
                 ParseKey(file, tag, line);
                 break;
             case TAG_MEDIA:
-                if (file.HasIndependentSegments)
-                {
-                    ParseAlternateStreamInfo(file, tag, line);
-                }
+                ParseAlternateStreamInfo(file, tag, line);
                 break;
             case TAG_MEDIA_SEQUENCE:
                 file.FirstMediaSequenceNumber = long.Parse(value, CultureInfo.InvariantCulture);

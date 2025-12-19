@@ -15,11 +15,11 @@ public class ProgrammableArtifactFindTool : ArtifactTool, IArtifactFindTool
 
     public Task<IArtifactData?> FindAsync(string id, CancellationToken cancellationToken = default)
     {
-        if (SynchronousFindFunc != null)
+        if (SynchronousFindFunc == null)
         {
-            return Task.FromResult(SynchronousFindFunc(this, id));
+            throw new InvalidOperationException();
         }
-        throw new NotImplementedException();
+        return Task.FromResult(SynchronousFindFunc(this, id));
     }
 
     public static ArtifactToolRegistryEntry CreateRegistryEntry(SynchronousFindDelegate synchronousFindDelegate)
@@ -53,11 +53,11 @@ public class AsyncProgrammableArtifactFindTool : ArtifactTool, IArtifactFindTool
 
     public Task<IArtifactData?> FindAsync(string id, CancellationToken cancellationToken = default)
     {
-        if (AsyncFindFunc != null)
+        if (AsyncFindFunc == null)
         {
-            return AsyncFindFunc(this, id);
+            throw new InvalidOperationException();
         }
-        throw new NotImplementedException();
+        return AsyncFindFunc(this, id);
     }
 
     public static ArtifactToolRegistryEntry CreateRegistryEntry(AsyncFindDelegate asyncFindDelegate)

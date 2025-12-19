@@ -44,7 +44,7 @@ public interface IArtifactDataManager : IDisposable
     ValueTask<Stream> OpenInputStreamAsync(ArtifactResourceKey key, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Outputs a text file for the specified artifact.
+    /// Outputs a memory buffer for the specified artifact.
     /// </summary>
     /// <param name="buffer">Buffer to output.</param>
     /// <param name="key">Resource key.</param>

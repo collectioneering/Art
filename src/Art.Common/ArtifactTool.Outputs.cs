@@ -20,7 +20,7 @@ public partial class ArtifactTool
         => await DataManager.OutputMemoryAsync(buffer, key, options, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
-    /// Outputs a text file for the specified artifact.
+    /// Outputs a memory buffer for the specified artifact.
     /// </summary>
     /// <param name="buffer">Buffer to output.</param>
     /// <param name="key">Artifact key.</param>

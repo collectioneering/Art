@@ -17,7 +17,7 @@ public class ProgrammableArtifactListTool : ArtifactTool, IArtifactListTool
     {
         if (SynchronousListFunc == null)
         {
-            throw new NotImplementedException();
+            throw new InvalidOperationException();
         }
         return SynchronousListFunc(this).ToAsyncEnumerable();
     }
@@ -55,7 +55,7 @@ public class AsyncProgrammableArtifactListTool : ArtifactTool, IArtifactListTool
     {
         if (AsyncListFunc == null)
         {
-            throw new NotImplementedException();
+            throw new InvalidOperationException();
         }
         return AsyncListFunc(this);
     }

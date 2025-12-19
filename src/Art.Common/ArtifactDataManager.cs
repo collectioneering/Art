@@ -27,7 +27,7 @@ public abstract class ArtifactDataManager : IArtifactDataManager
     public async ValueTask OutputMemoryAsync(ReadOnlyMemory<byte> buffer, ArtifactResourceKey key, OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();
-        UpdateOptionsTextual(ref options);
+        options = (options ?? OutputStreamOptions.Default) with { PreallocationSize = buffer.Length };
         await using CommittableStream stream = await CreateOutputStreamAsync(key, options, cancellationToken).ConfigureAwait(false);
         await stream.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
         stream.ShouldCommit = true;

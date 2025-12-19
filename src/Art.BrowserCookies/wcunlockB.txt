@@ -666,7 +666,6 @@ function Invoke-WcunlockB {
                         $CryptoStream.Write($SourceData, 0, $SourceData.Length)
                         $CryptoStream.Flush()
                         Set-Content -Path "$($args[1])" -Encoding Byte -Value $Stream.ToArray()
-                        # TODO implement
                     }
                 }
             }

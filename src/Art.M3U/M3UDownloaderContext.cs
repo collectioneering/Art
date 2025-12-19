@@ -493,7 +493,7 @@ public partial class M3UDownloaderContext
         var ff = M3UReader.Parse(await res.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
         var primarySubStream = SelectPrimarySubStream(ff, config);
         var alternateSubStreams = new List<AlternateStreamInfo>();
-        if (ff.HasIndependentSegments && primarySubStream.Audio != null)
+        if (primarySubStream.Audio != null)
         {
             var audioCandidates = ff.AlternateStreams.Where(v => v.GroupId == primarySubStream.Audio && v.Type == "AUDIO").ToList();
             var audioCandidateDefault = audioCandidates.FirstOrDefault(static v => v.Default);

@@ -143,6 +143,8 @@ public class InMemoryArtifactDataManager : ArtifactDataManager, INamespacedArtif
     {
         private readonly InMemoryArtifactDataManager _manager;
         private readonly ArtifactKey _targetNamespace;
+        private bool IsDisposed => _disposed || _manager._disposed;
+        private bool _disposed;
 
         public InMemoryArtifactDataManagerArtifactKey(InMemoryArtifactDataManager manager, ArtifactKey targetNamespace)
         {
@@ -152,31 +154,52 @@ public class InMemoryArtifactDataManager : ArtifactDataManager, INamespacedArtif
 
         public override ValueTask<CommittableStream> CreateOutputStreamAsync(string file, string path = "", OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
         {
+            EnsureNotDisposed();
             return _manager.CreateOutputStreamAsync(new ArtifactResourceKey(_targetNamespace, file, path), options, cancellationToken);
         }
 
         public override ValueTask<bool> ExistsAsync(string file, string path = "", CancellationToken cancellationToken = default)
         {
+            EnsureNotDisposed();
             return _manager.ExistsAsync(new ArtifactResourceKey(_targetNamespace, file, path), cancellationToken);
         }
 
         public override ValueTask<bool> DeleteAsync(string file, string path = "", CancellationToken cancellationToken = default)
         {
+            EnsureNotDisposed();
             return _manager.DeleteAsync(new ArtifactResourceKey(_targetNamespace, file, path), cancellationToken);
         }
 
         public override ValueTask<Stream> OpenInputStreamAsync(string file, string path = "", CancellationToken cancellationToken = default)
         {
+            EnsureNotDisposed();
             return _manager.OpenInputStreamAsync(new ArtifactResourceKey(_targetNamespace, file, path), cancellationToken);
         }
 
         public override ValueTask<string[]> ListFilesAsync(string path, CancellationToken cancellationToken = default)
         {
+            EnsureNotDisposed();
             if (_manager._artifacts.TryGetValue(_targetNamespace, out var resources))
             {
                 return ValueTask.FromResult(resources.Where(resource => resource.Key.Path == path).Select(static resource => resource.Key.File).ToArray());
             }
             return ValueTask.FromResult(Array.Empty<string>());
+        }
+
+        private void EnsureNotDisposed()
+        {
+            ObjectDisposedException.ThrowIf(IsDisposed, this);
+        }
+
+        /// <inheritdoc />
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            if (_disposed)
+            {
+                return;
+            }
+            _disposed = true;
         }
     }
 }

@@ -15,12 +15,12 @@ public class ProgrammableArtifactDumpTool : ArtifactTool, IArtifactDumpTool
 
     public Task DumpAsync(CancellationToken cancellationToken = default)
     {
-        if (SynchronousDumpAction != null)
+        if (SynchronousDumpAction == null)
         {
-            SynchronousDumpAction(this);
-            return Task.CompletedTask;
+            throw new InvalidOperationException();
         }
-        throw new NotImplementedException();
+        SynchronousDumpAction(this);
+        return Task.CompletedTask;
     }
 
     public static ArtifactToolRegistryEntry CreateRegistryEntry(SynchronousDumpDelegate synchronousDumpDelegate)
@@ -54,11 +54,11 @@ public class AsyncProgrammableArtifactDumpTool : ArtifactTool, IArtifactDumpTool
 
     public Task DumpAsync(CancellationToken cancellationToken = default)
     {
-        if (AsyncDumpAction != null)
+        if (AsyncDumpAction == null)
         {
-            return AsyncDumpAction(this);
+            throw new InvalidOperationException();
         }
-        throw new NotImplementedException();
+        return AsyncDumpAction(this);
     }
 
     public static ArtifactToolRegistryEntry CreateRegistryEntry(AsyncDumpDelegate asyncDumpDelegate)
