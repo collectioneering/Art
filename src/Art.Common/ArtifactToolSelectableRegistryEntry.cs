@@ -45,7 +45,7 @@ public record ArtifactToolSelectableRegistryEntry<T>(ArtifactToolID Id) : Artifa
             artifactToolId = Id;
             return true;
         }
-        artifactToolId = default;
+        artifactToolId = null;
         return false;
     }
 }

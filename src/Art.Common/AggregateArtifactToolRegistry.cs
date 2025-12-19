@@ -148,7 +148,7 @@ public class AggregateArtifactToolRegistry : IArtifactToolSelectableRegistry<str
                 return true;
             }
         }
-        artifactToolId = default;
+        artifactToolId = null;
         artifactId = null;
         return false;
     }

@@ -16,7 +16,7 @@ public abstract class CommandBase : Command
     {
         try
         {
-            return await RunAsync(parseResult, default).ConfigureAwait(false);
+            return await RunAsync(parseResult, CancellationToken.None).ConfigureAwait(false);
         }
         catch (ArtUserException e)
         {

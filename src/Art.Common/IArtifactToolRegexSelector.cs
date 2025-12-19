@@ -30,7 +30,7 @@ public interface IArtifactToolRegexSelector<TSelf> : IArtifactToolFactory, IArti
             artifactId = group.Value;
             return true;
         }
-        artifactToolId = default;
+        artifactToolId = null;
         artifactId = null;
         return false;
     }

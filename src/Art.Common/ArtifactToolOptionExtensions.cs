@@ -163,26 +163,26 @@ public static class ArtifactToolOptionExtensions
     #region String
 
     /// <summary>
-    /// Attempts to get option or throw exception if not found.
+    /// Attempts to get option, converted to string with <see cref="Object.ToString"/>, and throws exception if not found.
     /// </summary>
     /// <param name="options">Options.</param>
     /// <param name="optKey">Key to search.</param>
     /// <returns>Value, if located.</returns>
     /// <exception cref="ArtifactToolOptionNotFoundException">Thrown when option is not found.</exception>
-    public static string GetStringOption(this IReadOnlyDictionary<string, JsonElement>? options, string optKey)
+    public static string GetOptionToString(this IReadOnlyDictionary<string, JsonElement>? options, string optKey)
     {
         if (!(options?.TryGetValue(optKey, out JsonElement vv) ?? false)) throw new ArtifactToolOptionNotFoundException(optKey);
         return vv.ToString();
     }
 
     /// <summary>
-    /// Attempts to get option.
+    /// Attempts to get option, converted to string with <see cref="Object.ToString"/>.
     /// </summary>
     /// <param name="options">Options.</param>
     /// <param name="optKey">Key to search.</param>
     /// <param name="value">Value to set.</param>
     /// <exception cref="NullJsonDataException">Thrown for null JSON.</exception>
-    public static void GetStringOption(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, ref string value)
+    public static void GetOptionToString(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, ref string value)
     {
         if (!(options?.TryGetValue(optKey, out JsonElement vv) ?? false)) return;
         if (vv.ValueKind == JsonValueKind.Null) throw new NullJsonDataException();
@@ -190,34 +190,34 @@ public static class ArtifactToolOptionExtensions
     }
 
     /// <summary>
-    /// Attempts to get option.
+    /// Attempts to get option, converted to string with <see cref="Object.ToString"/>.
     /// </summary>
     /// <param name="options">Options.</param>
     /// <param name="optKey">Key to search.</param>
     /// <param name="value">Value, if located and nonnull.</param>
     /// <returns>True if value is located and of the right type.</returns>
-    public static bool TryGetStringOption(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, [NotNullWhen(true)] out string? value)
+    public static bool TryGetOptionToString(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, [NotNullWhen(true)] out string? value)
     {
         if (options?.TryGetValue(optKey, out JsonElement vv) ?? false)
         {
             value = vv.ToString();
             return true;
         }
-        value = default;
+        value = null;
         return false;
     }
 
     /// <summary>
-    /// Gets an string option from a string value, or use a group name as fallback.
+    /// Gets a string option from a value converted to string with <see cref="Object.ToString"/>, or use a group name as fallback.
     /// </summary>
     /// <param name="options">Options.</param>
     /// <param name="optKey">Key to search.</param>
     /// <param name="group">Group fallback.</param>
     /// <returns>Option value.</returns>
     /// <exception cref="InvalidOperationException">Thrown when appropriate option was not found and no group is provided.</exception>
-    public static string GetStringOptionOrGroup(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, string? group)
+    public static string GetOptionToStringOrGroup(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, string? group)
     {
-        if (TryGetStringOption(options, optKey, out string? optValue))
+        if (TryGetOptionToString(options, optKey, out string? optValue))
         {
             return optValue;
         }
@@ -325,7 +325,7 @@ public static class ArtifactToolOptionExtensions
     }
 
     /// <summary>
-    /// Attempts to get a Int64 option from a string or literal value.
+    /// Attempts to get an Int64 option from a string or literal value.
     /// </summary>
     /// <param name="options">Options.</param>
     /// <param name="optKey">Key to search.</param>

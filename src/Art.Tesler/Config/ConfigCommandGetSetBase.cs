@@ -113,7 +113,7 @@ public abstract class ConfigCommandGetSetBase : CommandBase
         {
             PrintErrorMessage($"Unable to identify profile file {profileString}", ToolOutput);
             resolvedProfiles = null;
-            selectedIndex = default;
+            selectedIndex = -1;
             errorCode = ErrorProfileLoad;
             return false;
         }
@@ -126,7 +126,7 @@ public abstract class ConfigCommandGetSetBase : CommandBase
         else if (profileList.Count != 1)
         {
             PrintErrorMessage($"There are {profileList.Count} profiles in profile file {profileString} - select one with {CommandHelper.GetOptionAlias(ProfileIndexOption)}", ToolOutput);
-            selectedIndex = default;
+            selectedIndex = -1;
             errorCode = ErrorProfileIndexUnspecified;
             return false;
         }

@@ -100,7 +100,7 @@ public class Plugin : IArtifactToolSelectableRegistry<string>
                 return true;
             }
         }
-        artifactToolId = default;
+        artifactToolId = null;
         artifactId = null;
         return false;
     }

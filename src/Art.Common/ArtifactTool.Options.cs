@@ -107,46 +107,46 @@ public partial class ArtifactTool
     #region String
 
     /// <summary>
-    /// Attempts to get option or throw exception if not found.
+    /// Attempts to get option, converted to string with <see cref="Object.ToString"/>, and throws exception if not found.
     /// </summary>
     /// <param name="optKey">Key to search.</param>
     /// <returns>Value, if located.</returns>
     /// <exception cref="ArtifactToolOptionNotFoundException">Thrown when option is not found.</exception>
-    public string GetStringOption(string optKey)
+    public string GetOptionToString(string optKey)
     {
-        return Profile.Options.GetStringOption(optKey);
+        return Profile.Options.GetOptionToString(optKey);
     }
 
     /// <summary>
-    /// Attempts to get option.
+    /// Attempts to get option, converted to string with <see cref="Object.ToString"/>.
     /// </summary>
     /// <param name="optKey">Key to search.</param>
     /// <param name="value">Value to set.</param>
     /// <exception cref="NullJsonDataException">Thrown for null JSON.</exception>
-    public void GetStringOption(string optKey, ref string value)
+    public void GetOptionToString(string optKey, ref string value)
     {
-        Profile.Options.GetStringOption(optKey, ref value);
+        Profile.Options.GetOptionToString(optKey, ref value);
     }
 
     /// <summary>
-    /// Attempts to get option.
+    /// Attempts to get option, converted to string with <see cref="Object.ToString"/>.
     /// </summary>
     /// <param name="optKey">Key to search.</param>
     /// <param name="value">Value, if located and nonnull.</param>
     /// <returns>True if value is located and of the right type.</returns>
-    public bool TryGetStringOption(string optKey, [NotNullWhen(true)] out string? value)
+    public bool TryGetOptionToString(string optKey, [NotNullWhen(true)] out string? value)
     {
-        return Profile.Options.TryGetStringOption(optKey, out value);
+        return Profile.Options.TryGetOptionToString(optKey, out value);
     }
 
     /// <summary>
-    /// Gets an string option from a string value, or take value from <see cref="ArtifactToolProfile.Group"/>.
+    /// Gets a string option from a value converted to string with <see cref="Object.ToString"/>, or take value from <see cref="ArtifactToolProfile.Group"/>.
     /// </summary>
     /// <param name="optKey">Key to search.</param>
     /// <returns>Option value.</returns>
-    public string GetStringOptionOrGroup(string optKey)
+    public string GetOptionToStringOrGroup(string optKey)
     {
-        return Profile.Options.GetStringOptionOrGroup(optKey, Profile.Group);
+        return Profile.Options.GetOptionToStringOrGroup(optKey, Profile.Group);
     }
 
     #endregion
