@@ -9,7 +9,7 @@ namespace Art.Common;
 /// Provides an <see cref="AssemblyLoadContext"/> that restricts passthrough of assemblies to a specified set.
 /// </summary>
 [RequiresUnreferencedCode("Loading artifact tools might require types that cannot be statically analyzed.")]
-public class RestrictedPassthroughAssemblyLoadContext : AssemblyLoadContext, IBasedAssemblyLoadContext
+public class RestrictedPassthroughAssemblyLoadContext : AssemblyLoadContext
 {
     /// <summary>
     /// Base path of resolver.
