@@ -198,7 +198,7 @@ public partial class M3UDownloaderContextTopDownSaver : M3UDownloaderContextSave
         {
             if (e.StatusCode == HttpStatusCode.NotFound)
             {
-                if (SkipMissing && !isTopDown)
+                if (SkipMissing && isTopDown)
                 {
                     return true;
                 }
