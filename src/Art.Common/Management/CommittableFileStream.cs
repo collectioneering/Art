@@ -199,13 +199,31 @@ public class CommittableFileStream : CommittableDelegatingStream
         {
             if (_tempPath != null)
             {
-                if (File.Exists(_path))
+                int retries = 5;
+                while (true)
                 {
-                    File.Replace(_tempPath, _path, null, true);
-                }
-                else
-                {
-                    File.Move(_tempPath, _path);
+                    bool fileExists = File.Exists(_path);
+                    try
+                    {
+                        if (fileExists)
+                        {
+                            File.Replace(_tempPath, _path, null, true);
+                        }
+                        else
+                        {
+                            File.Move(_tempPath, _path);
+                        }
+                        break;
+                    }
+                    catch (IOException)
+                    {
+                        // potential race condition
+                        if (retries <= 0)
+                        {
+                            throw;
+                        }
+                        retries--;
+                    }
                 }
             }
         }
