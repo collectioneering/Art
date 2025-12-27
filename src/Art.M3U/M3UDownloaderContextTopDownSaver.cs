@@ -16,6 +16,11 @@ public partial class M3UDownloaderContextTopDownSaver : M3UDownloaderContextSave
     /// </summary>
     public bool SkipMissing { get; set; }
 
+    /// <summary>
+    /// Persistently read from queue.
+    /// </summary>
+    public bool HoldForQueue { get; set; }
+
     [GeneratedRegex(@"(^[\S\s]*[^\d]|)\d+(\.\w+)$")]
     private static partial Regex GetBitRegex();
 
@@ -198,7 +203,7 @@ public partial class M3UDownloaderContextTopDownSaver : M3UDownloaderContextSave
         {
             if (e.StatusCode == HttpStatusCode.NotFound)
             {
-                if (SkipMissing && isTopDown)
+                if (SkipMissing)
                 {
                     return true;
                 }
@@ -211,7 +216,7 @@ public partial class M3UDownloaderContextTopDownSaver : M3UDownloaderContextSave
         return true;
     }
 
-    private  Task WriteEndFileAsync(CancellationToken cancellationToken = default)
+    private Task WriteEndFileAsync(CancellationToken cancellationToken = default)
     {
         return Context.WriteAncillaryFileAsync(
             "vxf_finito",
@@ -221,7 +226,8 @@ public partial class M3UDownloaderContextTopDownSaver : M3UDownloaderContextSave
 
     private async Task<bool> TickAsync(M3UFile m3, CancellationToken cancellationToken = default)
     {
-        if (_ended || _currentTop < 0)
+        bool generalStop = _ended || _currentTop < 0;
+        if (generalStop && !HoldForQueue)
         {
             await WriteEndFileAsync(cancellationToken).ConfigureAwait(false);
             return false;
@@ -239,7 +245,7 @@ public partial class M3UDownloaderContextTopDownSaver : M3UDownloaderContextSave
                 return false;
             }
         }
-        else
+        else if (!generalStop)
         {
             if (!await ProcessElementAsync(
                     m3,
