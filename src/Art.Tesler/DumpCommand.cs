@@ -5,7 +5,7 @@ using Art.Tesler.Properties;
 
 namespace Art.Tesler;
 
-public class DumpCommand : ArcDumpCommandBase
+public class DumpCommand : ArcDumpCommandBase, IToolGroupOrProfileFileOptions
 {
     protected Option<string> ProfileFileOption;
 
@@ -52,27 +52,15 @@ public class DumpCommand : ArcDumpCommandBase
 
     protected override IReadOnlyList<ArtifactToolProfile> GetProfiles(ParseResult parseResult)
     {
-        List<ArtifactToolProfile> profiles = [];
-        string? profileFileValue = parseResult.GetValue(ProfileFileOption);
-        string? toolValue = parseResult.GetValue(ToolOption);
-        string? groupValue = parseResult.GetValue(GroupOption);
-        if (profileFileValue == null)
-        {
-            profiles.Add(new ArtifactToolProfile(toolValue!, groupValue, null));
-        }
-        else
-        {
-            foreach (ArtifactToolProfile profile in ArtifactToolProfileUtil.DeserializeProfilesFromFile(profileFileValue))
-            {
-                if (groupValue != null && groupValue != profile.Group || toolValue != null && toolValue != profile.Tool) continue;
-                profiles.Add(profile);
-            }
-        }
-        return profiles;
+        return DumpFindListUtil.GetProfiles(this, parseResult);
     }
 
     protected override ArtifactToolDumpOptions GetArtifactToolDumpOptions(ParseResult parseResult, ChecksumSource? checksumSource)
     {
         return new ArtifactToolDumpOptions(ChecksumSource: checksumSource);
     }
+
+    Option<string> IToolGroupOrProfileFileOptions.ProfileFileOption => ProfileFileOption;
+    Option<string> IToolGroupOrProfileFileOptions.ToolOption => ToolOption;
+    Option<string> IToolGroupOrProfileFileOptions.GroupOption => GroupOption;
 }

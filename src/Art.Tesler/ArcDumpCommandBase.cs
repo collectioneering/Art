@@ -45,53 +45,37 @@ public abstract class ArcDumpCommandBase : ToolCommandBase
         Add(NullOutputOption);
     }
 
-    protected static bool TryConfigureHash([NotNullWhen(false)] string? hash, out ChecksumSource? checksumSource)
-    {
-        hash = string.Equals(hash, "none", StringComparison.InvariantCultureIgnoreCase) ? null : hash;
-        if (hash == null)
-        {
-            checksumSource = null;
-            return true;
-        }
-        if (!ChecksumSource.DefaultSources.TryGetValue(hash, out checksumSource))
-        {
-            return false;
-        }
-        return true;
-    }
+    protected abstract IReadOnlyList<ArtifactToolProfile> GetProfiles(ParseResult parseResult);
+
+    protected abstract ArtifactToolDumpOptions GetArtifactToolDumpOptions(ParseResult parseResult, ChecksumSource? checksumSource);
 
     protected override async Task<int> RunAsync(ParseResult parseResult, CancellationToken cancellationToken)
     {
         string? hash = parseResult.GetValue(HashOption);
-        if (!TryConfigureHash(hash, out var checksumSource))
+        hash = string.Equals(hash, "none", StringComparison.InvariantCultureIgnoreCase) ? null : hash;
+        ChecksumSource? checksumSource;
+        if (hash == null)
+        {
+            checksumSource = null;
+        }
+        else if (!ChecksumSource.DefaultSources.TryGetValue(hash, out checksumSource))
         {
             PrintErrorMessage(Common.GetInvalidHashMessage(hash), ToolOutput);
             return 2;
         }
         var profiles = GetProfiles(parseResult);
         var options = GetArtifactToolDumpOptions(parseResult, checksumSource);
-        await DumpAsync(parseResult, profiles, options, cancellationToken);
-        return 0;
-    }
-
-    protected abstract IReadOnlyList<ArtifactToolProfile> GetProfiles(ParseResult parseResult);
-
-    protected abstract ArtifactToolDumpOptions GetArtifactToolDumpOptions(ParseResult parseResult, ChecksumSource? checksumSource);
-
-    protected async Task DumpAsync(
-        ParseResult parseResult,
-        IReadOnlyList<ArtifactToolProfile> profiles,
-        ArtifactToolDumpOptions options,
-        CancellationToken cancellationToken)
-    {
         using var adm = parseResult.GetValue(NullOutputOption) ? new NullArtifactDataManager() : DataProvider.CreateArtifactDataManager(parseResult);
-        using var arm = parseResult.GetValue(NoDatabaseOption) ? new InMemoryArtifactRegistrationManager() : RegistrationProvider.CreateArtifactRegistrationManager(parseResult);
+        using var arm = parseResult.GetValue(NoDatabaseOption) ? new NullArtifactRegistrationManager() : RegistrationProvider.CreateArtifactRegistrationManager(parseResult);
         IToolLogHandler l = ToolLogHandlerProvider.GetDefaultToolLogHandler();
         (bool getArtifactRetrievalTimestamps, bool getResourceRetrievalTimestamps) = GetArtifactRetrievalOptions(parseResult);
         foreach (ArtifactToolProfile profile in PrepareProfiles(parseResult, profiles))
         {
-            using var tool = await GetToolAsync(profile, arm, adm, TimeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
+            // no-db mode should use in-memory db to keep tool happy, but specific to each tool run
+            using var armNoDb = parseResult.GetValue(NoDatabaseOption) ? new InMemoryArtifactRegistrationManager() : null;
+            using var tool = await GetToolAsync(profile, armNoDb ?? arm, adm, TimeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
             await new ArtifactToolDumpProxy(tool, options, l).DumpAsync(cancellationToken).ConfigureAwait(false);
         }
+        return 0;
     }
 }
