@@ -41,4 +41,4 @@ always allow the calling program access to that store. ***Do not*** select Alway
 
 [(Further explanation)](https://stackoverflow.com/a/79216440)
 
-[Google Security Blog - ]()
+[Google Security Blog - Improving the security of Chrome cookies on Windows](https://security.googleblog.com/2024/07/improving-security-of-chrome-cookies-on.html)
