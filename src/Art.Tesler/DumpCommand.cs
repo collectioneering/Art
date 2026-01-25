@@ -57,7 +57,11 @@ public class DumpCommand : ArcDumpCommandBase, IToolGroupOrProfileFileOptions
 
     protected override ArtifactToolDumpOptions GetArtifactToolDumpOptions(ParseResult parseResult, ChecksumSource? checksumSource)
     {
-        return new ArtifactToolDumpOptions(ChecksumSource: checksumSource);
+        return new ArtifactToolDumpOptions(
+            ResourceUpdateMode.Hard,
+            true,
+            ArtifactSkipMode.None,
+            checksumSource);
     }
 
     Option<string> IToolGroupOrProfileFileOptions.ProfileFileOption => ProfileFileOption;

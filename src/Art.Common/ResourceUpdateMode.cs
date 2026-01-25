@@ -6,11 +6,11 @@
 public enum ResourceUpdateMode
 {
     /// <summary>
-    /// Update resource iff an artifact has been updated and a new version is detected.
+    /// Update resource if and only if an artifact has been updated and a new version is detected.
     /// </summary>
     ArtifactSoft,
     /// <summary>
-    /// Update resource iff an artifact has been updated.
+    /// Update resource if and only if an artifact has been updated.
     /// </summary>
     ArtifactHard,
     /// <summary>

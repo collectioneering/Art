@@ -76,6 +76,10 @@ public class ArcCommand : ArcDumpCommandBase
         bool full = parseResult.GetValue(FullOption);
         ArtifactSkipMode skip = parseResult.GetValue(SkipOption);
         bool fastExit = parseResult.GetValue(FastExitOption);
-        return new ArtifactToolDumpOptions(update, !full, fastExit ? ArtifactSkipMode.FastExit : skip, checksumSource);
+        return new ArtifactToolDumpOptions(
+            update,
+            !full,
+            fastExit ? ArtifactSkipMode.FastExit : skip,
+            checksumSource);
     }
 }

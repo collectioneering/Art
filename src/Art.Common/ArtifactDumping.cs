@@ -277,7 +277,9 @@ public static class ArtifactDumping
         ItemStateFlags iF = await artifactTool.CompareArtifactAsync(artifactInfo, cancellationToken).ConfigureAwait(false);
         logHandler?.Log(artifactTool.Profile.Tool, artifactTool.Profile.GetGroupOrFallback(artifactInfo.Key.Group), $"{((iF & ItemStateFlags.NewerIdentityMask) != 0 ? "[NEW] " : "")}{artifactInfo.GetInfoTitleString()}", artifactInfo.GetInfoString(), LogLevel.Entry);
         if ((iF & ItemStateFlags.NewerIdentityMask) != 0)
+        {
             await artifactTool.RegistrationManager.AddArtifactAsync(artifactInfo with { Full = false }, cancellationToken).ConfigureAwait(false);
+        }
         switch (resourceUpdate)
         {
             case ResourceUpdateMode.ArtifactSoft:
@@ -312,6 +314,7 @@ public static class ArtifactDumping
                 Task<ArtifactResourceInfoWithState>[] updateTasks = artifactData.Values.Select(v => artifactTool.DetermineUpdatedResourceAsync(v, resourceUpdate, cancellationToken)).ToArray();
                 ArtifactResourceInfoWithState[] items = await Task.WhenAll(updateTasks).ConfigureAwait(false);
                 foreach (ArtifactResourceInfoWithState aris in items)
+                {
                     await UpdateResourceAsync(
                         artifactTool,
                         aris,
@@ -321,6 +324,7 @@ public static class ArtifactDumping
                         getResourceRetrievalTimestamps,
                         isConcurrentObtain,
                         cancellationToken).ConfigureAwait(false);
+                }
                 break;
             case EagerFlags.ResourceObtain:
                 {
@@ -344,6 +348,7 @@ public static class ArtifactDumping
             default:
                 {
                     foreach (ArtifactResourceInfo resource in artifactData.Values)
+                    {
                         await UpdateResourceAsync(
                             artifactTool,
                             await artifactTool.DetermineUpdatedResourceAsync(resource, resourceUpdate, cancellationToken).ConfigureAwait(false),
@@ -353,12 +358,15 @@ public static class ArtifactDumping
                             getResourceRetrievalTimestamps,
                             isConcurrentObtain,
                             cancellationToken).ConfigureAwait(false);
+                    }
                     break;
                 }
         }
         SaveArtifact:
         if ((iF & ItemStateFlags.NewerIdentityMask) != 0)
+        {
             await artifactTool.RegistrationManager.AddArtifactAsync(artifactInfo, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <summary>
