@@ -29,6 +29,19 @@ public class ConsoleStyledToolLogHandlerProvider : ToolLogHandlerProviderBase
         _initialRowFunc = initialRowFunc;
     }
 
+    public static ConsoleStyledToolLogHandlerProvider FromSystemConsole()
+    {
+        return new ConsoleStyledToolLogHandlerProvider(
+            Console.Out,
+            Console.Error,
+            Console.Error,
+            static () => Console.IsErrorRedirected,
+            static () => Console.BufferWidth,
+            static () => Console.WindowHeight,
+            static () => Console.CursorTop - Console.WindowTop,
+            Console.OpenStandardOutput);
+    }
+
     public override IToolLogHandler GetStreamToolLogHandler()
     {
         return new ConsoleStyledLogHandler(

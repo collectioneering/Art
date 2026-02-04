@@ -1,11 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace Art.Common;
+namespace Artcore;
 
 /// <summary>
-/// Represents a provider for loading <see cref="IArtifactToolRegistry"/> modules.
+/// Represents a provider for loading modules.
 /// </summary>
-public interface IModuleProvider
+public interface IModuleProvider<out TModule>
 {
     /// <summary>
     /// Attempts to locate a module.
@@ -21,7 +21,7 @@ public interface IModuleProvider
     /// <param name="moduleLocation">Module location.</param>
     /// <returns>True if successful.</returns>
     /// <exception cref="ArgumentException">Thrown for invalid type.</exception>
-    IArtifactToolRegistry LoadModule(IModuleLocation moduleLocation);
+    TModule LoadModule(IModuleLocation moduleLocation);
 
     /// <summary>
     /// Gets all module locations.

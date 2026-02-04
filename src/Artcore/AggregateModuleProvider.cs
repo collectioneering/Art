@@ -1,21 +1,21 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace Art.Common.Modular;
+namespace Artcore;
 
 /// <summary>
-/// Provides prioritized access to multiple <see cref="IModuleProvider"/>.
+/// Provides prioritized access to multiple <see cref="IModuleProvider{TModule}"/>.
 /// </summary>
-public class AggregateModuleProvider : IModuleProvider
+public class AggregateModuleProvider<TModule> : IModuleProvider<TModule>
 {
-    private readonly IModuleProvider[] _providers;
+    private readonly IModuleProvider<TModule>[] _providers;
 
     /// <summary>
-    /// Initializes an instance of <see cref="AggregateModuleProvider"/>.
+    /// Initializes an instance of <see cref="AggregateModuleProvider{TModule}"/>.
     /// </summary>
     /// <param name="providers"></param>
-    public AggregateModuleProvider(IModuleProvider[] providers)
+    public AggregateModuleProvider(IReadOnlyList<IModuleProvider<TModule>> providers)
     {
-        _providers = providers;
+        _providers = providers.ToArray();
     }
 
     /// <inheritdoc />
@@ -33,10 +33,10 @@ public class AggregateModuleProvider : IModuleProvider
         return false;
     }
 
-    private record AggregateModuleLocation(IModuleProvider ModuleProvider, IModuleLocation InnerModuleLocation) : IModuleLocation;
+    private record AggregateModuleLocation(IModuleProvider<TModule> ModuleProvider, IModuleLocation InnerModuleLocation) : IModuleLocation;
 
     /// <inheritdoc />
-    public IArtifactToolRegistry LoadModule(IModuleLocation moduleLocation)
+    public TModule LoadModule(IModuleLocation moduleLocation)
     {
         if (moduleLocation is not AggregateModuleLocation aggregateModuleLocation)
         {

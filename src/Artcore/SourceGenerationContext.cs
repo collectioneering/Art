@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Art.Common;
+namespace Artcore;
 
 [JsonSourceGenerationOptions(
     PropertyNameCaseInsensitive = true,
@@ -9,17 +9,8 @@ namespace Art.Common;
     AllowTrailingCommas = true,
     ReadCommentHandling = JsonCommentHandling.Skip,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
-[JsonSerializable(typeof(bool))]
-[JsonSerializable(typeof(ulong))]
-[JsonSerializable(typeof(long))]
-[JsonSerializable(typeof(string))]
-[JsonSerializable(typeof(string[]))]
-[JsonSerializable(typeof(JsonElement))]
-[JsonSerializable(typeof(ArtifactToolProfile))]
-[JsonSerializable(typeof(ArtifactToolProfile[]))]
-[JsonSerializable(typeof(IReadOnlyList<ArtifactToolProfile>))]
-[JsonSerializable(typeof(ArtifactInfo))]
-[JsonSerializable(typeof(ArtifactResourceInfo))]
+[JsonSerializable(typeof(ModuleManifestContent))]
+[JsonSerializable(typeof(ModuleSearchConfiguration))]
 internal partial class SourceGenerationContext : JsonSerializerContext
 {
     static SourceGenerationContext()

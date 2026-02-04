@@ -50,6 +50,17 @@ public class Plugin : IArtifactToolSelectableRegistry<string>
     {
     }
 
+    /// <summary>
+    /// Creates an instance of <see cref="Plugin"/>.
+    /// </summary>
+    /// <param name="context"><see cref="AssemblyLoadContext"/>.</param>
+    /// <param name="baseAssembly"><see cref="Assembly"/> to draw from.</param>
+    /// <returns>A <see cref="Plugin"/> for the specified assembly.</returns>
+    public static Plugin Create(AssemblyLoadContext context, Assembly baseAssembly)
+    {
+        return new Plugin(context, baseAssembly);
+    }
+
     private static AssemblyLoadContext ResolveAssemblyLoadContext(Assembly baseAssembly, [CallerArgumentExpression("baseAssembly")] string? argumentName = null)
     {
         return AssemblyLoadContext.GetLoadContext(baseAssembly) ?? throw new ArgumentException("Cannot get load context for an baseAssembly not provided by runtime", argumentName);

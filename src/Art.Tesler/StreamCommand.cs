@@ -1,5 +1,7 @@
 ﻿using System.CommandLine;
+#if !NET10_0_OR_GREATER
 using Art.Common;
+#endif
 using Art.Common.Management;
 using Art.Common.Proxies;
 using Art.Tesler.Profiles;

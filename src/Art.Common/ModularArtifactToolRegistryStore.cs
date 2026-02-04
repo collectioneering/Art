@@ -1,20 +1,21 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Artcore;
 
 namespace Art.Common;
 
 /// <summary>
-/// Represents a store of dynamically loaded <see cref="IArtifactToolRegistry"/> based on a <see cref="IModuleProvider"/>.
+/// Represents a store of dynamically loaded <see cref="IArtifactToolRegistry"/> based on a <see cref="IModuleProvider{TModule}"/>.
 /// </summary>
 [RequiresUnreferencedCode("Loading artifact tools might require types that cannot be statically analyzed.")]
 public class ModularArtifactToolRegistryStore : IArtifactToolRegistryStore
 {
-    private readonly IModuleProvider _moduleProvider;
+    private readonly IModuleProvider<IArtifactToolRegistry> _moduleProvider;
 
     /// <summary>
     /// Initializes an instance of <see cref="ModularArtifactToolRegistryStore"/>.
     /// </summary>
-    /// <param name="moduleProvider"><see cref="IModuleProvider"/>.</param>
-    public ModularArtifactToolRegistryStore(IModuleProvider moduleProvider)
+    /// <param name="moduleProvider"><see cref="IModuleProvider{TModule}"/>.</param>
+    public ModularArtifactToolRegistryStore(IModuleProvider<IArtifactToolRegistry> moduleProvider)
     {
         _moduleProvider = moduleProvider;
     }

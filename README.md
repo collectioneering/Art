@@ -12,6 +12,8 @@
 | `Art.Html`           | [![NuGet](https://img.shields.io/nuget/v/Art.Html.svg)](https://www.nuget.org/packages/Art.Html/)                     |
 | `Art.Http`           | [![NuGet](https://img.shields.io/nuget/v/Art.Http.svg)](https://www.nuget.org/packages/Art.Http/)                     |
 | `Art.M3U`            | [![NuGet](https://img.shields.io/nuget/v/Art.M3U.svg)](https://www.nuget.org/packages/Art.M3U/)                       |
+| `Art.Tesler`         | [![NuGet](https://img.shields.io/nuget/v/Art.Tesler.svg)](https://www.nuget.org/packages/Art.Tesler/)                 |
+| `Artcore`            | [![NuGet](https://img.shields.io/nuget/v/Artcore.svg)](https://www.nuget.org/packages/Artcore/)                       |
 
 Art is a set of packages for streamlining targeted archival of artifacts such as web articles with associated resource streams.
 

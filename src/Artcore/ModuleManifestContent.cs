@@ -1,7 +1,7 @@
-namespace Art.Common.Modular;
+namespace Artcore;
 
 /// <summary>
-/// Specifies content for a <see cref="ModuleManifestProvider"/> module.
+/// Specifies content for a <see cref="ModuleManifestProvider{TModule}"/> module.
 /// </summary>
 /// <param name="Assembly">Target assembly simple name.</param>
 /// <param name="Path">Sub-directory of manifest location to use to locate assemblies.</param>

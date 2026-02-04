@@ -1,0 +1,17 @@
+<Solution>
+  <Project Path="Art.BrowserCookies/Art.BrowserCookies.csproj" />
+  <Project Path="Art.Common.Tests/Art.Common.Tests.csproj" />
+  <Project Path="Art.Common/Art.Common.csproj" />
+  <Project Path="Art.EF.Sqlite.Tests/Art.EF.Sqlite.Tests.csproj" />
+  <Project Path="Art.EF.Sqlite/Art.EF.Sqlite.csproj" />
+  <Project Path="Art.EF/Art.EF.csproj" />
+  <Project Path="Art.Html/Art.Html.csproj" />
+  <Project Path="Art.Http.Tests/Art.Http.Tests.csproj" />
+  <Project Path="Art.Http/Art.Http.csproj" />
+  <Project Path="Art.M3U/Art.M3U.csproj" />
+  <Project Path="Art.Tesler.Tests/Art.Tesler.Tests.csproj" />
+  <Project Path="Art.Tesler/Art.Tesler.csproj" />
+  <Project Path="Art.TestsBase/Art.TestsBase.csproj" />
+  <Project Path="Art/Art.csproj" />
+  <Project Path="Artcore/Artcore.csproj" />
+</Solution>

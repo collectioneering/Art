@@ -1,7 +1,7 @@
-namespace Art.Common.Modular;
+namespace Artcore;
 
 /// <summary>
-/// Represents a manifest for a <see cref="ModuleManifestProvider"/> module.
+/// Represents a manifest for a <see cref="ModuleManifestProvider{TModule}"/> module.
 /// </summary>
 /// <param name="BasePath">Base path.</param>
 /// <param name="Content">Module content.</param>
