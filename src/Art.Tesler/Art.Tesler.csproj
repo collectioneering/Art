@@ -1,14 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageVersion>0.50.0</PackageVersion>
+    <PackageVersion>0.49.1</PackageVersion>
     <AssemblyVersion>1.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Art.EF.Sqlite/Art.EF.Sqlite.csproj" />
+    <PackageReference Include="Art.EF.Sqlite" />
+    <PackageReference Include="Art.BrowserCookies" />
+    <PackageReference Include="Art.Common" />
+    <!--<ProjectReference Include="../Art.EF.Sqlite/Art.EF.Sqlite.csproj" />
     <ProjectReference Include="../Art.BrowserCookies/Art.BrowserCookies.csproj" />
-    <ProjectReference Include="../Art.Common/Art.Common.csproj" />
+    <ProjectReference Include="../Art.Common/Art.Common.csproj" />-->
   </ItemGroup>
 
   <ItemGroup>

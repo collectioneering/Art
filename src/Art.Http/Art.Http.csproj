@@ -1,15 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageVersion>0.50.0</PackageVersion>
+    <PackageVersion>0.49.1</PackageVersion>
     <AssemblyVersion>1.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <!--<PackageReference Include="Art.BrowserCookies" Version="0.49.0" />-->
-    <ProjectReference Include="..\Art.BrowserCookies\Art.BrowserCookies.csproj" />
-    <!--<PackageReference Include="Art.Common" Version="0.49.0" />-->
-    <ProjectReference Include="..\Art.Common\Art.Common.csproj" />
+    <PackageReference Include="Art.BrowserCookies" />
+    <!--<ProjectReference Include="..\Art.BrowserCookies\Art.BrowserCookies.csproj" />-->
+    <PackageReference Include="Art.Common" />
+    <!--<ProjectReference Include="..\Art.Common\Art.Common.csproj" />-->
   </ItemGroup>
 
   <PropertyGroup>
