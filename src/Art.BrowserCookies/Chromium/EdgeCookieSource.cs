@@ -16,15 +16,15 @@ public record EdgeCookieSource(string Profile = "Default") : ChromiumProfileCook
     {
         if (OperatingSystem.IsWindows())
         {
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft/Edge/User Data");
+            return Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft/Edge/User Data");
         }
         if (OperatingSystem.IsMacOS())
         {
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library/Application Support/Microsoft Edge");
+            return Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library/Application Support/Microsoft Edge");
         }
         if (OperatingSystem.IsLinux())
         {
-            return Path.Combine(PathUtil.GetXdgConfigHomeOrFallback(), "microsoft-edge");
+            return Path.Join(PathUtil.GetXdgConfigHomeOrFallback(), "microsoft-edge");
         }
         throw new PlatformNotSupportedException();
     }
@@ -37,8 +37,8 @@ public record EdgeCookieSource(string Profile = "Default") : ChromiumProfileCook
         {
             return kind switch
             {
-                UserDataKind.Cookies => Path.Combine(userDataPath, profile, "Network/Cookies"),
-                UserDataKind.Preferences => Path.Combine(userDataPath, profile, "Preferences"),
+                UserDataKind.Cookies => Path.Join(userDataPath, profile, "Network/Cookies"),
+                UserDataKind.Preferences => Path.Join(userDataPath, profile, "Preferences"),
                 _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null)
             };
         }
@@ -46,8 +46,8 @@ public record EdgeCookieSource(string Profile = "Default") : ChromiumProfileCook
         {
             return kind switch
             {
-                UserDataKind.Cookies => Path.Combine(userDataPath, profile, "Cookies"),
-                UserDataKind.Preferences => Path.Combine(userDataPath, profile, "Preferences"),
+                UserDataKind.Cookies => Path.Join(userDataPath, profile, "Cookies"),
+                UserDataKind.Preferences => Path.Join(userDataPath, profile, "Preferences"),
                 _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null)
             };
         }
@@ -55,8 +55,8 @@ public record EdgeCookieSource(string Profile = "Default") : ChromiumProfileCook
         {
             return kind switch
             {
-                UserDataKind.Cookies => Path.Combine(userDataPath, profile, "Cookies"),
-                UserDataKind.Preferences => Path.Combine(userDataPath, profile, "Preferences"),
+                UserDataKind.Cookies => Path.Join(userDataPath, profile, "Cookies"),
+                UserDataKind.Preferences => Path.Join(userDataPath, profile, "Preferences"),
                 _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null)
             };
         }

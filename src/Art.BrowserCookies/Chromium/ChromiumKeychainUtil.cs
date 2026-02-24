@@ -57,7 +57,7 @@ internal static class ChromiumKeychainUtil
         {
             throw new PlatformNotSupportedException();
         }
-        string file = Path.Combine(userDataPath, "Local State");
+        string file = Path.Join(userDataPath, "Local State");
         using var stream = File.OpenRead(file);
         return GetWindowsKeychainInternal(chromiumVariant, JsonSerializer.Deserialize(stream, SourceGenerationContext.Default.ChromiumWindowsLocalState) ?? throw new InvalidDataException(), toolLogHandler);
     }
@@ -68,7 +68,7 @@ internal static class ChromiumKeychainUtil
         {
             throw new PlatformNotSupportedException();
         }
-        string file = Path.Combine(userDataPath, "Local State");
+        string file = Path.Join(userDataPath, "Local State");
         await using var stream = File.OpenRead(file);
         return GetWindowsKeychainInternal(chromiumVariant, await JsonSerializer.DeserializeAsync(stream, SourceGenerationContext.Default.ChromiumWindowsLocalState, cancellationToken: cancellationToken).ConfigureAwait(false) ?? throw new InvalidDataException(), toolLogHandler);
     }

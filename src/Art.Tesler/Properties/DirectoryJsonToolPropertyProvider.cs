@@ -17,7 +17,7 @@ public class DirectoryJsonToolPropertyProvider : IWritableToolPropertyProvider
 
     public string GetPropertyFilePath(ArtifactToolID artifactToolId)
     {
-        return Path.Combine(_directory, _fileNameTransform(artifactToolId));
+        return Path.Join(_directory, _fileNameTransform(artifactToolId));
     }
 
     public IEnumerable<KeyValuePair<string, JsonElement>> GetProperties(ArtifactToolID artifactToolId)

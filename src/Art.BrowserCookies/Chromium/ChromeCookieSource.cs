@@ -14,11 +14,11 @@ public record ChromeCookieSource(string Profile = "Default") : ChromiumProfileCo
     {
         if (OperatingSystem.IsWindows())
         {
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Google/Chrome/User Data");
+            return Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Google/Chrome/User Data");
         }
         if (OperatingSystem.IsMacOS())
         {
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library/Application Support/Google/Chrome");
+            return Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library/Application Support/Google/Chrome");
         }
         if (OperatingSystem.IsLinux())
         {
@@ -35,8 +35,8 @@ public record ChromeCookieSource(string Profile = "Default") : ChromiumProfileCo
         {
             return kind switch
             {
-                UserDataKind.Cookies => Path.Combine(userDataPath, profile, "Network/Cookies"),
-                UserDataKind.Preferences => Path.Combine(userDataPath, profile, "Preferences"),
+                UserDataKind.Cookies => Path.Join(userDataPath, profile, "Network/Cookies"),
+                UserDataKind.Preferences => Path.Join(userDataPath, profile, "Preferences"),
                 _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null)
             };
         }
@@ -44,8 +44,8 @@ public record ChromeCookieSource(string Profile = "Default") : ChromiumProfileCo
         {
             return kind switch
             {
-                UserDataKind.Cookies => Path.Combine(userDataPath, profile, "Cookies"),
-                UserDataKind.Preferences => Path.Combine(userDataPath, profile, "Preferences"),
+                UserDataKind.Cookies => Path.Join(userDataPath, profile, "Cookies"),
+                UserDataKind.Preferences => Path.Join(userDataPath, profile, "Preferences"),
                 _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null)
             };
         }
@@ -53,8 +53,8 @@ public record ChromeCookieSource(string Profile = "Default") : ChromiumProfileCo
         {
             return kind switch
             {
-                UserDataKind.Cookies => Path.Combine(userDataPath, profile, "Cookies"),
-                UserDataKind.Preferences => Path.Combine(userDataPath, profile, "Preferences"),
+                UserDataKind.Cookies => Path.Join(userDataPath, profile, "Cookies"),
+                UserDataKind.Preferences => Path.Join(userDataPath, profile, "Preferences"),
                 _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null)
             };
         }

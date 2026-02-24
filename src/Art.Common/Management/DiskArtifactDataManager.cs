@@ -12,6 +12,7 @@ public class DiskArtifactDataManager : ArtifactDataManager, INamespacedArtifactD
     /// </summary>
     public string BaseDirectory { get; }
 
+    private readonly ArtifactDataBaseDirectoryContext _baseDirectoryContext;
     private bool _disposed;
 
     /// <summary>
@@ -21,6 +22,7 @@ public class DiskArtifactDataManager : ArtifactDataManager, INamespacedArtifactD
     public DiskArtifactDataManager(string baseDirectory)
     {
         BaseDirectory = baseDirectory;
+        _baseDirectoryContext = new ArtifactDataBaseDirectoryContext(baseDirectory);
     }
 
     /// <inheritdoc/>
@@ -53,12 +55,12 @@ public class DiskArtifactDataManager : ArtifactDataManager, INamespacedArtifactD
 
     private string GetBasePathForArtifact(ArtifactKey key)
     {
-        return DiskPaths.GetBasePath(BaseDirectory, key.Tool, key.Group);
+        return _baseDirectoryContext.GetBasePath(key.Tool, key.Group);
     }
 
     private string GetBasePathForToolGroupNamespace(ToolGroupNamespace key)
     {
-        return DiskPaths.GetBasePath(BaseDirectory, key.Tool, key.Group);
+        return _baseDirectoryContext.GetBasePath(key.Tool, key.Group);
     }
 
     private void EnsureNotDisposed()
@@ -77,11 +79,12 @@ public class DiskArtifactDataManager : ArtifactDataManager, INamespacedArtifactD
         _disposed = true;
     }
 
-    private static FileStream OpenInputStream(string basePath, string file, string path)
+    private FileStream OpenInputStream(string basePath, string file, string path)
     {
         try
         {
-            return File.OpenRead(Path.Join(basePath, path, file.SafeifyFileName()));
+            string filePath = _baseDirectoryContext.JoinValidated(basePath, path, file.SafeifyFileName());
+            return File.OpenRead(filePath);
         }
         catch (FileNotFoundException)
         {
@@ -93,22 +96,24 @@ public class DiskArtifactDataManager : ArtifactDataManager, INamespacedArtifactD
         }
     }
 
-    private static bool Exists(string basePath, string file, string path)
+    private bool Exists(string basePath, string file, string path)
     {
-        return File.Exists(Path.Join(basePath, path, file.SafeifyFileName()));
+        string filePath = _baseDirectoryContext.JoinValidated(basePath, path, file.SafeifyFileName());
+        return File.Exists(filePath);
     }
 
-    private static bool Delete(string basePath, string file, string path)
+    private bool Delete(string basePath, string file, string path)
     {
-        string filePath = Path.Join(basePath, path, file.SafeifyFileName());
+        string filePath = _baseDirectoryContext.JoinValidated(basePath, path, file.SafeifyFileName());
         if (!File.Exists(filePath)) return false;
         File.Delete(filePath);
         return !File.Exists(filePath);
     }
 
-    private static CommittableFileStream CreateOutputStream(string basePath, string file, string path, OutputStreamOptions? options)
+    private CommittableFileStream CreateOutputStream(string basePath, string file, string path, OutputStreamOptions? options)
     {
-        string dir = Path.Join(basePath, path);
+        string dir = _baseDirectoryContext.JoinValidated(basePath, path);
+        string filePath = _baseDirectoryContext.JoinValidated(dir, file);
         if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
         FileStreamOptions fso = new() { Mode = FileMode.Create, Access = FileAccess.ReadWrite };
         bool preferTemporaryLocation = true;
@@ -119,12 +124,13 @@ public class DiskArtifactDataManager : ArtifactDataManager, INamespacedArtifactD
             if (preallocationSize != 0) fso.PreallocationSize = preallocationSize;
             preferTemporaryLocation = options.PreferTemporaryLocation;
         }
-        return new CommittableFileStream(Path.Join(dir, file), fso, preferTemporaryLocation: preferTemporaryLocation);
+        return new CommittableFileStream(filePath, fso, preferTemporaryLocation: preferTemporaryLocation);
     }
 
-    private static string[] ListFiles(string basePath, string path)
+    private string[] ListFiles(string basePath, string path)
     {
-        var di = new DirectoryInfo(Path.Join(basePath, path));
+        string directoryPath = _baseDirectoryContext.JoinValidated(basePath, basePath, path);
+        var di = new DirectoryInfo(directoryPath);
         if (!di.Exists)
         {
             return Array.Empty<string>();
@@ -175,34 +181,34 @@ public class DiskArtifactDataManager : ArtifactDataManager, INamespacedArtifactD
         public override ValueTask<Stream> OpenInputStreamAsync(string file, string path = "", CancellationToken cancellationToken = default)
         {
             EnsureNotDisposed();
-            return ValueTask.FromResult<Stream>(OpenInputStream(_basePath, file, path));
+            return ValueTask.FromResult<Stream>(_parent.OpenInputStream(_basePath, file, path));
         }
 
         /// <inheritdoc/>
         public override ValueTask<bool> ExistsAsync(string file, string path = "", CancellationToken cancellationToken = default)
         {
             EnsureNotDisposed();
-            return ValueTask.FromResult(Exists(_basePath, file, path));
+            return ValueTask.FromResult(_parent.Exists(_basePath, file, path));
         }
 
         /// <inheritdoc/>
         public override ValueTask<bool> DeleteAsync(string file, string path = "", CancellationToken cancellationToken = default)
         {
             EnsureNotDisposed();
-            return ValueTask.FromResult(Delete(_basePath, file, path));
+            return ValueTask.FromResult(_parent.Delete(_basePath, file, path));
         }
 
         /// <inheritdoc/>
         public override ValueTask<CommittableStream> CreateOutputStreamAsync(string file, string path = "", OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
         {
             EnsureNotDisposed();
-            return ValueTask.FromResult<CommittableStream>(CreateOutputStream(_basePath, file, path, options));
+            return ValueTask.FromResult<CommittableStream>(_parent.CreateOutputStream(_basePath, file, path, options));
         }
 
         public override ValueTask<string[]> ListFilesAsync(string path, CancellationToken cancellationToken = default)
         {
             EnsureNotDisposed();
-            return ValueTask.FromResult(ListFiles(_basePath, path));
+            return ValueTask.FromResult(_parent.ListFiles(_basePath, path));
         }
 
         private void EnsureNotDisposed()

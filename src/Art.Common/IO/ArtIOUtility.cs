@@ -63,7 +63,7 @@ public static class ArtIOUtility
         if (attempts <= 0) throw new ArgumentException("Invalid max number of attempts", nameof(attempts));
         for (int i = 0; i < attempts; i++)
         {
-            string path = Path.Combine(baseDirectory, $"{Guid.NewGuid():N}{extension}");
+            string path = Path.Join(baseDirectory, $"{Guid.NewGuid():N}{extension}");
             if (!File.Exists(path) && !Directory.Exists(path)) return path;
         }
         throw new IOException("Failed to create random path");
