@@ -21,6 +21,16 @@ public partial class M3UDownloaderContextTopDownSaver : M3UDownloaderContextSave
     /// </summary>
     public bool HoldForQueue { get; set; }
 
+    /// <summary>
+    /// Number of internal iterations when this instance is used as an extra operation.
+    /// </summary>
+    /// <remarks>
+    /// This configuration mandates a specified number of runs when ticking as extra operation.
+    /// <br/>
+    /// Extra operation always executes at least once.
+    /// </remarks>
+    public long ExtraOperationExecutionMultiplier { get; set; }
+
     [GeneratedRegex(@"(^[\S\s]*[^\d]|)\d+(\.\w+)$")]
     private static partial Regex GetBitRegex();
 
@@ -180,9 +190,18 @@ public partial class M3UDownloaderContextTopDownSaver : M3UDownloaderContextSave
         TotalFailCounter = 0;
     }
 
-    Task<bool> IExtraSaverOperation.TickAsync(M3UFile m3, CancellationToken cancellationToken)
+    async Task<bool> IExtraSaverOperation.TickAsync(M3UFile m3, CancellationToken cancellationToken)
     {
-        return TickAsync(m3, cancellationToken);
+        long remaining = Math.Max(ExtraOperationExecutionMultiplier, 1);
+        do
+        {
+            bool result = await TickAsync(m3, cancellationToken).ConfigureAwait(false);
+            if (!result)
+            {
+                return false;
+            }
+        } while (--remaining > 0);
+        return true;
     }
 
     private async Task<bool> ProcessElementAsync(M3UFile m3, long number, long? msn, bool isTopDown, CancellationToken cancellationToken)
