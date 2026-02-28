@@ -77,9 +77,9 @@ internal static class DiskPaths
         string fullPath = Path.GetFullPath(path);
         if (fullPath.StartsWith(fullBaseDirectory))
         {
-            if (fullPath.Length > baseDirectory.Length)
+            if (fullPath.Length > fullBaseDirectory.Length)
             {
-                char c = fullPath[baseDirectory.Length];
+                char c = fullPath[fullBaseDirectory.Length];
                 if (c == Path.DirectorySeparatorChar || c == Path.AltDirectorySeparatorChar)
                 {
                     return;
@@ -90,6 +90,6 @@ internal static class DiskPaths
                 return;
             }
         }
-        throw new InvalidOperationException($"Path \"{path}\" is not contained within base directory \"{baseDirectory}\"");
+        throw new InvalidOperationException($"Path \"{path}\" ({fullPath}) is not contained within base directory \"{baseDirectory}\" ({fullBaseDirectory})");
     }
 }

@@ -129,7 +129,7 @@ public class DiskArtifactDataManager : ArtifactDataManager, INamespacedArtifactD
 
     private string[] ListFiles(string basePath, string path)
     {
-        string directoryPath = _baseDirectoryContext.JoinValidated(basePath, basePath, path);
+        string directoryPath = _baseDirectoryContext.JoinValidated(basePath, path);
         var di = new DirectoryInfo(directoryPath);
         if (!di.Exists)
         {
