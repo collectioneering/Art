@@ -1,15 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageVersion>0.49.1</PackageVersion>
+    <PackageVersion>0.50.0</PackageVersion>
     <AssemblyVersion>1.0.0</AssemblyVersion>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <ReferenceLocalProject_Art_BrowserCookies>true</ReferenceLocalProject_Art_BrowserCookies>
+    <ReferenceLocalProject_Art_Common>true</ReferenceLocalProject_Art_Common>
+  </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="Art.BrowserCookies" />
-    <!--<ProjectReference Include="..\Art.BrowserCookies\Art.BrowserCookies.csproj" />-->
-    <PackageReference Include="Art.Common" />
-    <!--<ProjectReference Include="..\Art.Common\Art.Common.csproj" />-->
+    <PackageReference Include="Art.BrowserCookies" Condition="'$(ReferenceLocalProject_Art_BrowserCookies)'!='true'" />
+    <ProjectReference Include="..\Art.BrowserCookies\Art.BrowserCookies.csproj" Condition="'$(ReferenceLocalProject_Art_BrowserCookies)'=='true'" />
+    <PackageReference Include="Art.Common" Condition="'$(ReferenceLocalProject_Art_Common)'!='true'" />
+    <ProjectReference Include="..\Art.Common\Art.Common.csproj" Condition="'$(ReferenceLocalProject_Art_Common)'=='true'" />
   </ItemGroup>
 
   <PropertyGroup>

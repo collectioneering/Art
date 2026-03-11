@@ -1,13 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageVersion>0.49.1</PackageVersion>
+    <PackageVersion>0.50.0</PackageVersion>
     <AssemblyVersion>1.0.0</AssemblyVersion>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <ReferenceLocalProject_Art>true</ReferenceLocalProject_Art>
+  </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="Art" />
-    <!--<ProjectReference Include="..\Art\Art.csproj" />-->
+    <PackageReference Include="Art" Condition="'$(ReferenceLocalProject_Art)'!='true'" />
+    <ProjectReference Include="..\Art\Art.csproj" Condition="'$(ReferenceLocalProject_Art)'=='true'" />
   </ItemGroup>
 
   <PropertyGroup>
