@@ -8,8 +8,7 @@ namespace Artcore;
 /// </summary>
 public class ModuleManifestLookup : IModuleLookup<ModuleManifest>
 {
-    private readonly List<ModuleManifest> _manifestsUnfiltered = new();
-    private readonly Dictionary<string, ModuleManifest> _manifests = new(StringComparer.InvariantCultureIgnoreCase);
+    private readonly Dictionary<string, ModuleManifest> _manifestsByAssemblyName = new(StringComparer.InvariantCultureIgnoreCase);
     private readonly string _moduleDirectory;
     private readonly string _directorySuffix;
     private readonly string _fileNameSuffix;
@@ -43,7 +42,27 @@ public class ModuleManifestLookup : IModuleLookup<ModuleManifest>
     /// <inheritdoc />
     public bool TryLocateModule(string assembly, [NotNullWhen(true)] out ModuleManifest? moduleLocation)
     {
-        return TryFind(assembly, _moduleDirectory, out moduleLocation);
+        if (_manifestsByAssemblyName.TryGetValue(assembly, out moduleLocation))
+        {
+            return true;
+        }
+        if (!Directory.Exists(_moduleDirectory))
+        {
+            moduleLocation = null;
+            return false;
+        }
+        var tmpDict = new Dictionary<string, ModuleManifest>(StringComparer.InvariantCultureIgnoreCase);
+        foreach (string subDirectory in EnumerateModuleDirectories(_moduleDirectory))
+        {
+            LoadManifestsAtTarget(subDirectory, tmpDict);
+            if (tmpDict.TryGetValue(assembly, out moduleLocation))
+            {
+                return true;
+            }
+            tmpDict.Clear();
+        }
+        moduleLocation = null;
+        return false;
     }
 
     /// <inheritdoc />
@@ -56,8 +75,11 @@ public class ModuleManifestLookup : IModuleLookup<ModuleManifest>
     public IEnumerable<ModuleManifest> LoadTypedModuleLocations()
     {
         if (!Directory.Exists(_moduleDirectory)) return Array.Empty<ModuleManifest>();
-        LoadManifests(_moduleDirectory, null);
-        return new List<ModuleManifest>(_manifestsUnfiltered);
+        foreach (string subDirectory in EnumerateModuleDirectories(_moduleDirectory))
+        {
+            LoadManifestsAtTarget(subDirectory, null);
+        }
+        return new List<ModuleManifest>(_cached.SelectMany(static v => v.Value));
     }
 
     private IEnumerable<string> EnumerateModuleDirectories(string directory)
@@ -68,40 +90,6 @@ public class ModuleManifestLookup : IModuleLookup<ModuleManifest>
     private IEnumerable<string> EnumerateModuleManifests(string directory)
     {
         return Directory.EnumerateFiles(directory, $"*{_fileNameSuffix}", new EnumerationOptions { MatchCasing = MatchCasing.CaseInsensitive });
-    }
-
-    private bool TryFind(string assembly, string directory, [NotNullWhen(true)] out ModuleManifest? manifest)
-    {
-        if (_manifests.TryGetValue(assembly, out var moduleManifest))
-        {
-            manifest = moduleManifest;
-            return true;
-        }
-        if (!Directory.Exists(_moduleDirectory))
-        {
-            manifest = null;
-            return false;
-        }
-        var tmpDict = new Dictionary<string, ModuleManifest>(StringComparer.InvariantCultureIgnoreCase);
-        foreach (string subDirectory in EnumerateModuleDirectories(directory))
-        {
-            LoadManifestsAtTarget(subDirectory, tmpDict);
-            if (tmpDict.TryGetValue(assembly, out manifest))
-            {
-                return true;
-            }
-            tmpDict.Clear();
-        }
-        manifest = null;
-        return false;
-    }
-
-    private void LoadManifests(string directory, IDictionary<string, ModuleManifest>? dictionary)
-    {
-        foreach (string subDirectory in EnumerateModuleDirectories(directory))
-        {
-            LoadManifestsAtTarget(subDirectory, dictionary);
-        }
     }
 
     private void LoadManifestsAtTarget(string directory, IDictionary<string, ModuleManifest>? dictionary)
@@ -120,9 +108,8 @@ public class ModuleManifestLookup : IModuleLookup<ModuleManifest>
             }
             foreach (var manifest in manifestsToAdd)
             {
-                _manifests.TryAdd(manifest.Content.Assembly, manifest);
+                _manifestsByAssemblyName.TryAdd(manifest.Content.Assembly, manifest);
             }
-            _manifestsUnfiltered.AddRange(manifestsToAdd);
             _cached[fullPath] = manifestsToAdd;
         }
         if (dictionary == null)
