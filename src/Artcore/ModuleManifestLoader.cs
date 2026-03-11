@@ -35,13 +35,23 @@ public class ModuleManifestLoader<TModule> : IModuleLoader<TModule>
     }
 
     /// <inheritdoc />
+    public bool CanLoadModule(IModuleLocation moduleLocation)
+    {
+        if (moduleLocation is not ModuleManifest)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    /// <inheritdoc />
     public TModule LoadModule(IModuleLocation moduleLocation)
     {
         if (moduleLocation is not ModuleManifest manifest)
         {
             throw new ArgumentException("Cannot load this module manifest, it is of an invalid type.");
         }
-        string baseDir = manifest.Content.Path != null && !Path.IsPathFullyQualified(manifest.Content.Path) ? Path.Combine(manifest.BasePath, manifest.Content.Path) : manifest.BasePath;
+        string baseDir = manifest.Content.Path != null ? Path.Combine(manifest.BasePath, manifest.Content.Path) : manifest.BasePath;
         var ctx = new RestrictedPassthroughAssemblyLoadContext(baseDir, manifest.Content.Assembly, _moduleLoadConfiguration.PassthroughAssemblies);
         return _creationFunction(ctx, ctx.LoadFromAssemblyName(new AssemblyName(manifest.Content.Assembly)));
     }

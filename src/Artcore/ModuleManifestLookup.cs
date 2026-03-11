@@ -6,7 +6,7 @@ namespace Artcore;
 /// <summary>
 /// Provides lookup of modules stored on disk with manifests.
 /// </summary>
-public class ModuleManifestLookup : IModuleLookup
+public class ModuleManifestLookup : IModuleLookup<ModuleManifest>
 {
     private readonly Dictionary<string, ModuleManifest> _manifests = new(StringComparer.InvariantCultureIgnoreCase);
     private readonly string _moduleDirectory;
@@ -40,7 +40,7 @@ public class ModuleManifestLookup : IModuleLookup
     }
 
     /// <inheritdoc />
-    public bool TryLocateModule(string assembly, [NotNullWhen(true)] out IModuleLocation? moduleLocation)
+    public bool TryLocateModule(string assembly, [NotNullWhen(true)] out ModuleManifest? moduleLocation)
     {
         if (_manifests.TryGetValue(assembly, out var moduleManifest))
         {

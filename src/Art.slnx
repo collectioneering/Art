@@ -13,5 +13,6 @@
   <Project Path="Art.Tesler/Art.Tesler.csproj" />
   <Project Path="Art.TestsBase/Art.TestsBase.csproj" />
   <Project Path="Art/Art.csproj" />
+  <Project Path="Artcore.Tests/Artcore.Tests.csproj" />
   <Project Path="Artcore/Artcore.csproj" />
 </Solution>

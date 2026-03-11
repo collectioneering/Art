@@ -36,6 +36,16 @@ public class AggregateModuleProvider<TModule> : IModuleProvider<TModule>
     private record AggregateModuleLocation(IModuleProvider<TModule> ModuleProvider, IModuleLocation InnerModuleLocation) : IModuleLocation;
 
     /// <inheritdoc />
+    public bool CanLoadModule(IModuleLocation moduleLocation)
+    {
+        if (moduleLocation is not AggregateModuleLocation)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    /// <inheritdoc />
     public TModule LoadModule(IModuleLocation moduleLocation)
     {
         if (moduleLocation is not AggregateModuleLocation aggregateModuleLocation)

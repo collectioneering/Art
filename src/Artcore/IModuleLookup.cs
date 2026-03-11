@@ -21,3 +21,25 @@ public interface IModuleLookup
     /// <param name="dictionary">Dictionary to populate.</param>
     void LoadModuleLocations(IDictionary<string, IModuleLocation> dictionary);
 }
+
+/// <summary>
+/// Represents a provider for loading modules.
+/// </summary>
+/// <typeparam name="TModuleLocation">Module location type.</typeparam>
+public interface IModuleLookup<TModuleLocation> : IModuleLookup where TModuleLocation : IModuleLocation
+{
+    bool IModuleLookup.TryLocateModule(string assembly, [NotNullWhen(true)] out IModuleLocation? moduleLocation)
+    {
+        bool result = TryLocateModule(assembly, out TModuleLocation? moduleLocationAlt);
+        moduleLocation = result ? moduleLocationAlt : null;
+        return result;
+    }
+
+    /// <summary>
+    /// Attempts to locate a module.
+    /// </summary>
+    /// <param name="assembly">Assembly simple name.</param>
+    /// <param name="moduleLocation">Module location, if successful.</param>
+    /// <returns>True if successful.</returns>
+    bool TryLocateModule(string assembly, [NotNullWhen(true)] out TModuleLocation? moduleLocation);
+}

@@ -8,7 +8,7 @@ namespace Artcore;
 /// Provides disk and manifest backed module provider.
 /// </summary>
 [RequiresUnreferencedCode("Loading modules might require types that cannot be statically analyzed.")]
-public class ModuleManifestProvider<TModule> : IModuleProvider<TModule>
+public class ModuleManifestProvider<TModule> : IModuleProvider<ModuleManifest, TModule>
 {
     private readonly ModuleManifestLookup _lookup;
     private readonly ModuleManifestLoader<TModule> _loader;
@@ -42,13 +42,19 @@ public class ModuleManifestProvider<TModule> : IModuleProvider<TModule>
     }
 
     /// <inheritdoc />
+    public bool CanLoadModule(IModuleLocation moduleLocation)
+    {
+        return _loader.CanLoadModule(moduleLocation);
+    }
+
+    /// <inheritdoc />
     public TModule LoadModule(IModuleLocation moduleLocation)
     {
         return _loader.LoadModule(moduleLocation);
     }
 
     /// <inheritdoc />
-    public bool TryLocateModule(string assembly, [NotNullWhen(true)] out IModuleLocation? moduleLocation)
+    public bool TryLocateModule(string assembly, [NotNullWhen(true)] out ModuleManifest? moduleLocation)
     {
         return _lookup.TryLocateModule(assembly, out moduleLocation);
     }

@@ -6,7 +6,14 @@ namespace Artcore;
 public interface IModuleLoader<out TModule>
 {
     /// <summary>
-    ///     Loads a module.
+    /// Checks if the module location can be loaded as a module.
+    /// </summary>
+    /// <param name="moduleLocation">Module location.</param>
+    /// <returns>True the module location appears to be compatible with this instance.</returns>
+    bool CanLoadModule(IModuleLocation moduleLocation);
+
+    /// <summary>
+    /// Loads a module.
     /// </summary>
     /// <param name="moduleLocation">Module location.</param>
     /// <returns>True if successful.</returns>
