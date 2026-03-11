@@ -37,11 +37,7 @@ public class ModuleManifestLoader<TModule> : IModuleLoader<TModule>
     /// <inheritdoc />
     public bool CanLoadModule(IModuleLocation moduleLocation)
     {
-        if (moduleLocation is not ModuleManifest)
-        {
-            return false;
-        }
-        return true;
+        return moduleLocation is ModuleManifest;
     }
 
     /// <inheritdoc />

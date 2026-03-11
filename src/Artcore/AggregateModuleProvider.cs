@@ -38,11 +38,7 @@ public class AggregateModuleProvider<TModule> : IModuleProvider<TModule>
     /// <inheritdoc />
     public bool CanLoadModule(IModuleLocation moduleLocation)
     {
-        if (moduleLocation is not AggregateModuleLocation)
-        {
-            return false;
-        }
-        return true;
+        return moduleLocation is AggregateModuleLocation;
     }
 
     /// <inheritdoc />
