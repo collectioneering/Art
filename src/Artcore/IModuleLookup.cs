@@ -18,12 +18,6 @@ public interface IModuleLookup
     /// <summary>
     /// Gets all module locations.
     /// </summary>
-    /// <param name="dictionary">Dictionary to populate.</param>
-    void LoadModuleLocations(IDictionary<string, IModuleLocation> dictionary);
-
-    /// <summary>
-    /// Gets all module locations.
-    /// </summary>
     /// <returns>Module locations.</returns>
     IEnumerable<IModuleLocation> LoadModuleLocations();
 }

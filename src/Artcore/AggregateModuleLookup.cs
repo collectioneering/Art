@@ -34,24 +34,6 @@ public class AggregateModuleLookup : IModuleLookup
     }
 
     /// <inheritdoc />
-    public void LoadModuleLocations(IDictionary<string, IModuleLocation> dictionary)
-    {
-        var innerDictionary = new Dictionary<string, IModuleLocation>();
-        foreach (var lookup in _lookups)
-        {
-            lookup.LoadModuleLocations(innerDictionary);
-            foreach (var pair in innerDictionary)
-            {
-                if (!dictionary.ContainsKey(pair.Key))
-                {
-                    dictionary.Add(pair.Key, pair.Value);
-                }
-            }
-            innerDictionary.Clear();
-        }
-    }
-
-    /// <inheritdoc />
     public IEnumerable<IModuleLocation> LoadModuleLocations()
     {
         foreach (var lookup in _lookups)

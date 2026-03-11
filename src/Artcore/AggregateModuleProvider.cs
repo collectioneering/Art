@@ -56,24 +56,6 @@ public class AggregateModuleProvider<TModule> : IModuleProvider<TModule>
     }
 
     /// <inheritdoc />
-    public void LoadModuleLocations(IDictionary<string, IModuleLocation> dictionary)
-    {
-        var innerDictionary = new Dictionary<string, IModuleLocation>();
-        foreach (var provider in _providers)
-        {
-            provider.LoadModuleLocations(innerDictionary);
-            foreach (var pair in innerDictionary)
-            {
-                if (!dictionary.ContainsKey(pair.Key))
-                {
-                    dictionary.Add(pair.Key, new AggregateModuleLocation(provider, pair.Value));
-                }
-            }
-            innerDictionary.Clear();
-        }
-    }
-
-    /// <inheritdoc />
     public IEnumerable<IModuleLocation> LoadModuleLocations()
     {
         foreach (var provider in _providers)

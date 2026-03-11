@@ -60,12 +60,6 @@ public class ModuleManifestProvider<TModule> : IModuleProvider<ModuleManifest, T
     }
 
     /// <inheritdoc />
-    public void LoadModuleLocations(IDictionary<string, IModuleLocation> dictionary)
-    {
-        _lookup.LoadModuleLocations(dictionary);
-    }
-
-    /// <inheritdoc />
     public IEnumerable<IModuleLocation> LoadModuleLocations()
     {
         return _lookup.LoadModuleLocations();

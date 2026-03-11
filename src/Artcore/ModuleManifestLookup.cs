@@ -47,18 +47,6 @@ public class ModuleManifestLookup : IModuleLookup<ModuleManifest>
     }
 
     /// <inheritdoc />
-    public void LoadModuleLocations(IDictionary<string, IModuleLocation> dictionary)
-    {
-        if (!Directory.Exists(_moduleDirectory)) return;
-        var tmpDict = new Dictionary<string, ModuleManifest>();
-        LoadManifests(_moduleDirectory, tmpDict);
-        foreach (var pair in tmpDict)
-        {
-            dictionary[pair.Key] = pair.Value;
-        }
-    }
-
-    /// <inheritdoc />
     public IEnumerable<IModuleLocation> LoadModuleLocations()
     {
         return LoadTypedModuleLocations();

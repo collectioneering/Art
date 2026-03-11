@@ -36,9 +36,7 @@ public class ModularArtifactToolRegistryStore : IArtifactToolRegistryStore
     /// <inheritdoc />
     public IEnumerable<IArtifactToolRegistry> LoadAllRegistries()
     {
-        var modules = new Dictionary<string, IModuleLocation>();
-        _moduleProvider.LoadModuleLocations(modules);
-        foreach (var module in modules.Values)
+        foreach (var module in _moduleProvider.LoadModuleLocations())
         {
             yield return _moduleProvider.LoadModule(module);
         }
