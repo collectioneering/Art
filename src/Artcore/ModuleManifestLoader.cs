@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Runtime.Loader;
 
 namespace Artcore;
 
@@ -8,30 +7,23 @@ namespace Artcore;
 /// Provides loading of modules stored on disks with manifests.
 /// </summary>
 [RequiresUnreferencedCode("Loading modules might require types that cannot be statically analyzed.")]
-public class ModuleManifestLoader<TModule> : IModuleLoader<TModule>
+public class ModuleManifestLoader : IModuleLoader<ALCModule>
 {
     private readonly ModuleLoadConfiguration _moduleLoadConfiguration;
-    private readonly Func<AssemblyLoadContext, Assembly, TModule> _creationFunction;
 
     /// <summary>
-    /// Creates an instance of <see cref="ModuleManifestLoader{TModule}"/>.
+    /// Creates an instance of <see cref="ModuleManifestLoader"/>.
     /// </summary>
     /// <param name="moduleLoadConfiguration">Load configuration.</param>
-    /// <param name="creationFunction">Creation function.</param>
     /// <returns>Instance.</returns>
-    public static ModuleManifestLoader<TModule> Create(
-        ModuleLoadConfiguration moduleLoadConfiguration,
-        Func<AssemblyLoadContext, Assembly, TModule> creationFunction)
+    public static ModuleManifestLoader Create(ModuleLoadConfiguration moduleLoadConfiguration)
     {
-        return new ModuleManifestLoader<TModule>(moduleLoadConfiguration, creationFunction);
+        return new ModuleManifestLoader(moduleLoadConfiguration);
     }
 
-    private ModuleManifestLoader(
-        ModuleLoadConfiguration moduleLoadConfiguration,
-        Func<AssemblyLoadContext, Assembly, TModule> creationFunction)
+    private ModuleManifestLoader( ModuleLoadConfiguration moduleLoadConfiguration)
     {
         _moduleLoadConfiguration = moduleLoadConfiguration;
-        _creationFunction = creationFunction;
     }
 
     /// <inheritdoc />
@@ -41,7 +33,7 @@ public class ModuleManifestLoader<TModule> : IModuleLoader<TModule>
     }
 
     /// <inheritdoc />
-    public TModule LoadModule(IModuleLocation moduleLocation)
+    public ALCModule LoadModule(IModuleLocation moduleLocation)
     {
         if (moduleLocation is not ModuleManifest manifest)
         {
@@ -49,6 +41,6 @@ public class ModuleManifestLoader<TModule> : IModuleLoader<TModule>
         }
         string baseDir = manifest.Content.Path != null ? Path.Combine(manifest.BasePath, manifest.Content.Path) : manifest.BasePath;
         var ctx = new RestrictedPassthroughAssemblyLoadContext(baseDir, manifest.Content.Assembly, _moduleLoadConfiguration.PassthroughAssemblies);
-        return _creationFunction(ctx, ctx.LoadFromAssemblyName(new AssemblyName(manifest.Content.Assembly)));
+        return new ALCModule(ctx.LoadFromAssemblyName(new AssemblyName(manifest.Content.Assembly)), ctx);
     }
 }

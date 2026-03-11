@@ -1,6 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using System.Runtime.Loader;
 
 namespace Artcore;
 
@@ -8,34 +6,32 @@ namespace Artcore;
 /// Provides disk and manifest backed module provider.
 /// </summary>
 [RequiresUnreferencedCode("Loading modules might require types that cannot be statically analyzed.")]
-public class ModuleManifestProvider<TModule> : IModuleProvider<ModuleManifest, TModule>
+public class ModuleManifestProvider : IModuleProvider<ModuleManifest, ALCModule>
 {
     private readonly ModuleManifestLookup _lookup;
-    private readonly ModuleManifestLoader<TModule> _loader;
+    private readonly ModuleManifestLoader _loader;
 
     /// <summary>
-    /// Creates an instance of <see cref="ModuleManifestProvider{TModule}"/>.
+    /// Creates an instance of <see cref="ModuleManifestProvider"/>.
     /// </summary>
     /// <param name="moduleLoadConfiguration">Load configuration.</param>
     /// <param name="moduleDirectory">Module directory.</param>
     /// <param name="directorySuffix">Suffix on module directories.</param>
     /// <param name="fileNameSuffix">Suffix on module manifests.</param>
-    /// <param name="creationFunction">Creation function.</param>
     /// <returns>Instance.</returns>
-    public static ModuleManifestProvider<TModule> Create(
+    public static ModuleManifestProvider Create(
         ModuleLoadConfiguration moduleLoadConfiguration,
         string moduleDirectory,
         string directorySuffix,
-        string fileNameSuffix,
-        Func<AssemblyLoadContext, Assembly, TModule> creationFunction)
+        string fileNameSuffix)
     {
-        return new ModuleManifestProvider<TModule>(
+        return new ModuleManifestProvider(
             ModuleManifestLookup.Create(moduleDirectory, directorySuffix, fileNameSuffix),
-            ModuleManifestLoader<TModule>.Create(moduleLoadConfiguration, creationFunction)
+            ModuleManifestLoader.Create(moduleLoadConfiguration)
         );
     }
 
-    private ModuleManifestProvider(ModuleManifestLookup lookup, ModuleManifestLoader<TModule> loader)
+    private ModuleManifestProvider(ModuleManifestLookup lookup, ModuleManifestLoader loader)
     {
         _lookup = lookup;
         _loader = loader;
@@ -48,7 +44,7 @@ public class ModuleManifestProvider<TModule> : IModuleProvider<ModuleManifest, T
     }
 
     /// <inheritdoc />
-    public TModule LoadModule(IModuleLocation moduleLocation)
+    public ALCModule LoadModule(IModuleLocation moduleLocation)
     {
         return _loader.LoadModule(moduleLocation);
     }

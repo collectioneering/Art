@@ -9,13 +9,13 @@ namespace Art.Common;
 [RequiresUnreferencedCode("Loading artifact tools might require types that cannot be statically analyzed.")]
 public class ModularArtifactToolRegistryStore : IArtifactToolRegistryStore
 {
-    private readonly IModuleProvider<IArtifactToolRegistry> _moduleProvider;
+    private readonly IModuleProvider<ALCModule> _moduleProvider;
 
     /// <summary>
     /// Initializes an instance of <see cref="ModularArtifactToolRegistryStore"/>.
     /// </summary>
     /// <param name="moduleProvider"><see cref="IModuleProvider{TModule}"/>.</param>
-    public ModularArtifactToolRegistryStore(IModuleProvider<IArtifactToolRegistry> moduleProvider)
+    public ModularArtifactToolRegistryStore(IModuleProvider<ALCModule> moduleProvider)
     {
         _moduleProvider = moduleProvider;
     }
@@ -29,7 +29,7 @@ public class ModularArtifactToolRegistryStore : IArtifactToolRegistryStore
             artifactToolRegistry = null;
             return false;
         }
-        artifactToolRegistry = _moduleProvider.LoadModule(module);
+        artifactToolRegistry = Plugin.Create(_moduleProvider.LoadModule(module));
         return true;
     }
 
@@ -38,7 +38,7 @@ public class ModularArtifactToolRegistryStore : IArtifactToolRegistryStore
     {
         foreach (var module in _moduleProvider.LoadModuleLocations())
         {
-            yield return _moduleProvider.LoadModule(module);
+            yield return Plugin.Create(_moduleProvider.LoadModule(module));
         }
     }
 }
