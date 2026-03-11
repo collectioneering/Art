@@ -64,4 +64,16 @@ public class ModuleManifestProvider<TModule> : IModuleProvider<ModuleManifest, T
     {
         _lookup.LoadModuleLocations(dictionary);
     }
+
+    /// <inheritdoc />
+    public IEnumerable<IModuleLocation> LoadModuleLocations()
+    {
+        return _lookup.LoadModuleLocations();
+    }
+
+    /// <inheritdoc />
+    public IEnumerable<ModuleManifest> LoadTypedModuleLocations()
+    {
+        return _lookup.LoadTypedModuleLocations();
+    }
 }

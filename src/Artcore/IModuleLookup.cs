@@ -20,6 +20,12 @@ public interface IModuleLookup
     /// </summary>
     /// <param name="dictionary">Dictionary to populate.</param>
     void LoadModuleLocations(IDictionary<string, IModuleLocation> dictionary);
+
+    /// <summary>
+    /// Gets all module locations.
+    /// </summary>
+    /// <returns>Module locations.</returns>
+    IEnumerable<IModuleLocation> LoadModuleLocations();
 }
 
 /// <summary>
@@ -42,4 +48,10 @@ public interface IModuleLookup<TModuleLocation> : IModuleLookup where TModuleLoc
     /// <param name="moduleLocation">Module location, if successful.</param>
     /// <returns>True if successful.</returns>
     bool TryLocateModule(string assembly, [NotNullWhen(true)] out TModuleLocation? moduleLocation);
+
+    /// <summary>
+    /// Gets all module locations.
+    /// </summary>
+    /// <returns>Module locations.</returns>
+    IEnumerable<TModuleLocation> LoadTypedModuleLocations();
 }

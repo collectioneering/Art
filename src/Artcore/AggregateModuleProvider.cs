@@ -72,4 +72,16 @@ public class AggregateModuleProvider<TModule> : IModuleProvider<TModule>
             innerDictionary.Clear();
         }
     }
+
+    /// <inheritdoc />
+    public IEnumerable<IModuleLocation> LoadModuleLocations()
+    {
+        foreach (var provider in _providers)
+        {
+            foreach (var location in provider.LoadModuleLocations())
+            {
+                yield return location;
+            }
+        }
+    }
 }

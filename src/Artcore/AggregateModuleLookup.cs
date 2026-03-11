@@ -50,4 +50,16 @@ public class AggregateModuleLookup : IModuleLookup
             innerDictionary.Clear();
         }
     }
+
+    /// <inheritdoc />
+    public IEnumerable<IModuleLocation> LoadModuleLocations()
+    {
+        foreach (var lookup in _lookups)
+        {
+            foreach (var value in lookup.LoadModuleLocations())
+            {
+                yield return value;
+            }
+        }
+    }
 }

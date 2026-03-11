@@ -8,11 +8,12 @@ namespace Artcore;
 /// </summary>
 public class ModuleManifestLookup : IModuleLookup<ModuleManifest>
 {
+    private readonly List<ModuleManifest> _manifestsUnfiltered = new();
     private readonly Dictionary<string, ModuleManifest> _manifests = new(StringComparer.InvariantCultureIgnoreCase);
     private readonly string _moduleDirectory;
     private readonly string _directorySuffix;
     private readonly string _fileNameSuffix;
-    private readonly HashSet<string> _searched = new();
+    private readonly Dictionary<string, IReadOnlyList<ModuleManifest>> _cached = new();
 
     /// <summary>
     /// Creates an instance of <see cref="ModuleManifestLookup"/>.
@@ -42,107 +43,107 @@ public class ModuleManifestLookup : IModuleLookup<ModuleManifest>
     /// <inheritdoc />
     public bool TryLocateModule(string assembly, [NotNullWhen(true)] out ModuleManifest? moduleLocation)
     {
-        if (_manifests.TryGetValue(assembly, out var moduleManifest))
-        {
-            moduleLocation = moduleManifest;
-            return true;
-        }
-        if (!Directory.Exists(_moduleDirectory))
-        {
-            moduleLocation = null;
-            return false;
-        }
-        if (TryFind(assembly, _moduleDirectory, out moduleManifest, _manifests, _searched))
-        {
-            moduleLocation = moduleManifest;
-            return true;
-        }
-        moduleLocation = null;
-        return false;
+        return TryFind(assembly, _moduleDirectory, out moduleLocation);
     }
 
     /// <inheritdoc />
     public void LoadModuleLocations(IDictionary<string, IModuleLocation> dictionary)
     {
         if (!Directory.Exists(_moduleDirectory)) return;
-        LoadManifests(dictionary, _moduleDirectory, _manifests, _searched);
+        var tmpDict = new Dictionary<string, ModuleManifest>();
+        LoadManifests(_moduleDirectory, tmpDict);
+        foreach (var pair in tmpDict)
+        {
+            dictionary[pair.Key] = pair.Value;
+        }
     }
 
-    private bool TryFind(string assembly, string dir, [NotNullWhen(true)] out ModuleManifest? manifest, IDictionary<string, ModuleManifest>? toAugment = null, ISet<string>? searched = null)
+    /// <inheritdoc />
+    public IEnumerable<IModuleLocation> LoadModuleLocations()
     {
-        foreach (string directory in Directory.EnumerateDirectories(dir, $"*{_directorySuffix}", new EnumerationOptions { MatchCasing = MatchCasing.CaseInsensitive }))
+        return LoadTypedModuleLocations();
+    }
+
+    /// <inheritdoc />
+    public IEnumerable<ModuleManifest> LoadTypedModuleLocations()
+    {
+        if (!Directory.Exists(_moduleDirectory)) return Array.Empty<ModuleManifest>();
+        LoadManifests(_moduleDirectory, null);
+        return new List<ModuleManifest>(_manifestsUnfiltered);
+    }
+
+    private IEnumerable<string> EnumerateModuleDirectories(string directory)
+    {
+        return Directory.EnumerateDirectories(directory, $"*{_directorySuffix}", new EnumerationOptions { MatchCasing = MatchCasing.CaseInsensitive });
+    }
+
+    private IEnumerable<string> EnumerateModuleManifests(string directory)
+    {
+        return Directory.EnumerateFiles(directory, $"*{_fileNameSuffix}", new EnumerationOptions { MatchCasing = MatchCasing.CaseInsensitive });
+    }
+
+    private bool TryFind(string assembly, string directory, [NotNullWhen(true)] out ModuleManifest? manifest)
+    {
+        if (_manifests.TryGetValue(assembly, out var moduleManifest))
         {
-            if (searched != null && !searched.Add(Path.GetFullPath(directory)))
-            {
-                continue;
-            }
-            if (TryFindAtTarget(assembly, directory, out manifest, toAugment))
+            manifest = moduleManifest;
+            return true;
+        }
+        if (!Directory.Exists(_moduleDirectory))
+        {
+            manifest = null;
+            return false;
+        }
+        var tmpDict = new Dictionary<string, ModuleManifest>(StringComparer.InvariantCultureIgnoreCase);
+        foreach (string subDirectory in EnumerateModuleDirectories(directory))
+        {
+            LoadManifestsAtTarget(subDirectory, tmpDict);
+            if (tmpDict.TryGetValue(assembly, out manifest))
             {
                 return true;
             }
+            tmpDict.Clear();
         }
         manifest = null;
         return false;
     }
 
-    private bool TryFindAtTarget(string assembly, string directory, [NotNullWhen(true)] out ModuleManifest? manifest, IDictionary<string, ModuleManifest>? toAugment = null)
+    private void LoadManifests(string directory, IDictionary<string, ModuleManifest>? dictionary)
     {
-        foreach (string file in Directory.EnumerateFiles(directory, $"*{_fileNameSuffix}", new EnumerationOptions { MatchCasing = MatchCasing.CaseInsensitive }))
+        foreach (string subDirectory in EnumerateModuleDirectories(directory))
         {
-            if (TryLoad(file, out var content))
-            {
-                manifest = null;
-                if (toAugment != null && !toAugment.ContainsKey(content.Assembly))
-                {
-                    manifest = new ModuleManifest(directory, content);
-                    toAugment.Add(content.Assembly, manifest);
-                }
-                if (content.Assembly.Equals(assembly, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    manifest ??= new ModuleManifest(directory, content);
-                    return true;
-                }
-            }
-        }
-        manifest = null;
-        return false;
-    }
-
-    private void LoadManifests(IDictionary<string, IModuleLocation> dictionary, string dir, IDictionary<string, ModuleManifest>? toAugment = null, ISet<string>? searched = null)
-    {
-        if (toAugment != null)
-        {
-            foreach (var pair in toAugment)
-            {
-                dictionary[pair.Key] = pair.Value;
-            }
-        }
-        foreach (string directory in Directory.EnumerateDirectories(dir, $"*{_directorySuffix}", new EnumerationOptions { MatchCasing = MatchCasing.CaseInsensitive }))
-        {
-            if (searched != null && !searched.Add(Path.GetFullPath(directory)))
-            {
-                continue;
-            }
-            LoadManifestsAtTarget(dictionary, directory, toAugment);
+            LoadManifestsAtTarget(subDirectory, dictionary);
         }
     }
 
-    private void LoadManifestsAtTarget(IDictionary<string, IModuleLocation> dictionary, string directory, IDictionary<string, ModuleManifest>? toAugment = null)
+    private void LoadManifestsAtTarget(string directory, IDictionary<string, ModuleManifest>? dictionary)
     {
-        foreach (string file in Directory.EnumerateFiles(directory, $"*{_fileNameSuffix}", new EnumerationOptions { MatchCasing = MatchCasing.CaseInsensitive }))
+        string fullPath = Path.GetFullPath(directory);
+        if (!_cached.TryGetValue(fullPath, out var outputManifests))
         {
-            if (TryLoad(file, out var content))
+            var manifestsToAdd = new List<ModuleManifest>();
+            outputManifests = manifestsToAdd;
+            foreach (string file in EnumerateModuleManifests(directory))
             {
-                var manifest = new ModuleManifest(directory, content);
-                if (!dictionary.ContainsKey(content.Assembly))
+                if (TryLoad(file, out var content))
                 {
-                    dictionary.Add(content.Assembly, manifest);
-                }
-                if (toAugment != null && !toAugment.ContainsKey(content.Assembly))
-                {
-                    toAugment.Add(content.Assembly, manifest);
+                    manifestsToAdd.Add(new ModuleManifest(directory, content));
                 }
             }
+            foreach (var manifest in manifestsToAdd)
+            {
+                _manifests.TryAdd(manifest.Content.Assembly, manifest);
+            }
+            _manifestsUnfiltered.AddRange(manifestsToAdd);
+            _cached[fullPath] = manifestsToAdd;
+        }
+        if (dictionary == null)
+        {
+            return;
+        }
+        foreach (var manifest in outputManifests)
+        {
+            dictionary.TryAdd(manifest.Content.Assembly, manifest);
         }
     }
 
