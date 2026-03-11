@@ -6,32 +6,32 @@ namespace Artcore;
 /// Provides disk and manifest backed module provider.
 /// </summary>
 [RequiresUnreferencedCode("Loading modules might require types that cannot be statically analyzed.")]
-public class ModuleManifestProvider : IModuleProvider<ModuleManifest, ALCModule>
+public class DiskManifestModuleProvider : IModuleProvider<ModuleManifest, ALCModule>
 {
-    private readonly ModuleManifestLookup _lookup;
-    private readonly ModuleManifestLoader _loader;
+    private readonly DiskManifestModuleLookup _lookup;
+    private readonly DiskManifestModuleLoader _loader;
 
     /// <summary>
-    /// Creates an instance of <see cref="ModuleManifestProvider"/>.
+    /// Creates an instance of <see cref="DiskManifestModuleProvider"/>.
     /// </summary>
     /// <param name="moduleLoadConfiguration">Load configuration.</param>
     /// <param name="moduleDirectory">Module directory.</param>
     /// <param name="directorySuffix">Suffix on module directories.</param>
     /// <param name="fileNameSuffix">Suffix on module manifests.</param>
     /// <returns>Instance.</returns>
-    public static ModuleManifestProvider Create(
+    public static DiskManifestModuleProvider Create(
         ModuleLoadConfiguration moduleLoadConfiguration,
         string moduleDirectory,
         string directorySuffix,
         string fileNameSuffix)
     {
-        return new ModuleManifestProvider(
-            ModuleManifestLookup.Create(moduleDirectory, directorySuffix, fileNameSuffix),
-            ModuleManifestLoader.Create(moduleLoadConfiguration)
+        return new DiskManifestModuleProvider(
+            DiskManifestModuleLookup.Create(moduleDirectory, directorySuffix, fileNameSuffix),
+            DiskManifestModuleLoader.Create(moduleLoadConfiguration)
         );
     }
 
-    private ModuleManifestProvider(ModuleManifestLookup lookup, ModuleManifestLoader loader)
+    private DiskManifestModuleProvider(DiskManifestModuleLookup lookup, DiskManifestModuleLoader loader)
     {
         _lookup = lookup;
         _loader = loader;

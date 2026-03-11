@@ -6,7 +6,7 @@ namespace Artcore;
 /// <summary>
 /// Provides lookup of modules stored on disk with manifests.
 /// </summary>
-public class ModuleManifestLookup : IModuleLookup<ModuleManifest>
+public class DiskManifestModuleLookup : IModuleLookup<ModuleManifest>
 {
     private readonly Dictionary<string, ModuleManifest> _manifestsByAssemblyName = new(StringComparer.InvariantCultureIgnoreCase);
     private readonly string _moduleDirectory;
@@ -15,21 +15,21 @@ public class ModuleManifestLookup : IModuleLookup<ModuleManifest>
     private readonly Dictionary<string, IReadOnlyList<ModuleManifest>> _cached = new();
 
     /// <summary>
-    /// Creates an instance of <see cref="ModuleManifestLookup"/>.
+    /// Creates an instance of <see cref="DiskManifestModuleLookup"/>.
     /// </summary>
     /// <param name="moduleDirectory">Module directory.</param>
     /// <param name="directorySuffix">Suffix on module directories.</param>
     /// <param name="fileNameSuffix">Suffix on module manifests.</param>
     /// <returns>Instance.</returns>
-    public static ModuleManifestLookup Create(
+    public static DiskManifestModuleLookup Create(
         string moduleDirectory,
         string directorySuffix,
         string fileNameSuffix)
     {
-        return new ModuleManifestLookup(moduleDirectory, directorySuffix, fileNameSuffix);
+        return new DiskManifestModuleLookup(moduleDirectory, directorySuffix, fileNameSuffix);
     }
 
-    private ModuleManifestLookup(
+    private DiskManifestModuleLookup(
         string moduleDirectory,
         string directorySuffix,
         string fileNameSuffix)

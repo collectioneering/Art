@@ -69,7 +69,7 @@ public static class ModuleSearchConfigurationUtility
         {
             foreach (var entry in searchConfiguration.Entries)
             {
-                providers.Add(ModuleManifestProvider.Create(
+                providers.Add(DiskManifestModuleProvider.Create(
                     moduleLoadConfiguration,
                     Path.Combine(baseDirectory, entry.Path),
                     entry.DirectorySuffix,

@@ -7,21 +7,21 @@ namespace Artcore;
 /// Provides loading of modules stored on disks with manifests.
 /// </summary>
 [RequiresUnreferencedCode("Loading modules might require types that cannot be statically analyzed.")]
-public class ModuleManifestLoader : IModuleLoader<ALCModule>
+public class DiskManifestModuleLoader : IModuleLoader<ALCModule>
 {
     private readonly ModuleLoadConfiguration _moduleLoadConfiguration;
 
     /// <summary>
-    /// Creates an instance of <see cref="ModuleManifestLoader"/>.
+    /// Creates an instance of <see cref="DiskManifestModuleLoader"/>.
     /// </summary>
     /// <param name="moduleLoadConfiguration">Load configuration.</param>
     /// <returns>Instance.</returns>
-    public static ModuleManifestLoader Create(ModuleLoadConfiguration moduleLoadConfiguration)
+    public static DiskManifestModuleLoader Create(ModuleLoadConfiguration moduleLoadConfiguration)
     {
-        return new ModuleManifestLoader(moduleLoadConfiguration);
+        return new DiskManifestModuleLoader(moduleLoadConfiguration);
     }
 
-    private ModuleManifestLoader( ModuleLoadConfiguration moduleLoadConfiguration)
+    private DiskManifestModuleLoader(ModuleLoadConfiguration moduleLoadConfiguration)
     {
         _moduleLoadConfiguration = moduleLoadConfiguration;
     }
