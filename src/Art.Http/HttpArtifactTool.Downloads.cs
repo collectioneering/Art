@@ -310,7 +310,7 @@ public partial class HttpArtifactTool
             && sourceMessage.Content.Headers.ContentLength is { } contentLength
             && sourceMessage.RequestMessage is { RequestUri: { } requestUri })
         {
-            string desc = $"{(requestUri.Segments is { Length: > 0 } segments ? segments[^1] : "Incoming file")} ({DataSizes.GetSizeString(contentLength)})";
+            string desc = $"{(requestUri.Segments is { Length: > 0 } segments ? segments[^1] : "Incoming file")} ({DataSizes.GetBinarySizeString(contentLength)})";
             IOperationProgressContext? context;
             if (exportOptions?.IsConcurrent ?? false
                     ? logHandler.TryGetConcurrentOperationProgressContext(desc, s_downloadOperation, out context)
