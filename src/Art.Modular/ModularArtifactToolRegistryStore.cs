@@ -2,7 +2,7 @@
 using Art.Common;
 using Artcore;
 
-namespace Art.Tesler;
+namespace Art.Modular;
 
 /// <summary>
 /// Represents a store of dynamically loaded <see cref="IArtifactToolRegistry"/> based on a <see cref="IModuleProvider{TModule}"/>.

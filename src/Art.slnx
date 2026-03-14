@@ -9,6 +9,7 @@
   <Project Path="Art.Http.Tests/Art.Http.Tests.csproj" />
   <Project Path="Art.Http/Art.Http.csproj" />
   <Project Path="Art.M3U/Art.M3U.csproj" />
+  <Project Path="Art.Modular/Art.Modular.csproj" />
   <Project Path="Art.Tesler.Tests/Art.Tesler.Tests.csproj" />
   <Project Path="Art.Tesler/Art.Tesler.csproj" />
   <Project Path="Art.TestsBase/Art.TestsBase.csproj" />
