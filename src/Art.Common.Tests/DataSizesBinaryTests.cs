@@ -1,3 +1,4 @@
+using System.Numerics;
 using NUnit.Framework;
 
 namespace Art.Common.Tests;
@@ -8,9 +9,11 @@ public class DataSizesBinaryTests
 
     public record ULongTestCase(ulong Value, double ExpectedValue, string ExpectedUnit, double Tolerance = 0.001, bool RequireExclusiveOfCeiling = false);
 
+    public record BigIntegerTestCase(BigInteger Value, BigInteger ExpectedValueWhole, double ExpectedValueFraction, string ExpectedUnit, double Tolerance = 0.001);
+
     public record DoubleTestCase(double Value, double ExpectedValue, string ExpectedUnit, double Tolerance = 0.001, bool RequireExclusiveOfCeiling = false);
 
-    public static readonly LongTestCase[] SignedLongTestCases =
+    public static readonly LongTestCase[] UnsignedLongTestCases =
     [
         // byte
         new(0L, 0, "B"),
@@ -43,8 +46,8 @@ public class DataSizesBinaryTests
 
     public static readonly LongTestCase[] LongTestCases =
     [
-        ..SignedLongTestCases,
-        ..SignedLongTestCases.Select(static v => v with { Value = -v.Value, ExpectedValue = -v.ExpectedValue }),
+        ..UnsignedLongTestCases,
+        ..UnsignedLongTestCases.Select(static v => v with { Value = -v.Value, ExpectedValue = -v.ExpectedValue }),
         new(long.MaxValue, 7.9999, "EiB"),
         new(long.MinValue, -8, "EiB"),
     ];
@@ -81,7 +84,67 @@ public class DataSizesBinaryTests
         new(ulong.MaxValue, 16, "EiB"),
     ];
 
-    public static readonly DoubleTestCase[] SignedDoubleTestCases =
+    public static readonly BigIntegerTestCase[] UnsignedBigIntegerTestCases =
+    [
+        // byte
+        new(0L, 0, 0, "B"),
+        new(1024L - 1, 1023, 0, "B"),
+        // kibibyte
+        new(1024L, 1, 0, "KiB"),
+        new(1024L + 512, 1, 0.5, "KiB"),
+        new(1024L * 1024 - 1, 1023, 0.999, "KiB"),
+        // mebibyte
+        new(1024L * 1024, 1, 0, "MiB"),
+        new((1024L + 512) * 1024, 1, 0.5, "MiB"),
+        new(1024L * 1024 * 1024 - 1, 1023, 0.999, "MiB"),
+        // gibibyte
+        new(1024L * 1024 * 1024, 1, 0, "GiB"),
+        new((1024L + 512) * 1024 * 1024, 1, 0.5, "GiB"),
+        new(1024L * 1024 * 1024 * 1024 - 1, 1023, 0.999, "GiB"),
+        // tebibyte
+        new(1024L * 1024 * 1024 * 1024, 1, 0, "TiB"),
+        new((1024L + 512) * 1024 * 1024 * 1024, 1, 0.5, "TiB"),
+        new(1024L * 1024 * 1024 * 1024 * 1024 - 1, 1023, 0.999, "TiB"),
+        // pebibyte
+        new(1024L * 1024 * 1024 * 1024 * 1024, 1, 0, "PiB"),
+        new((1024L + 512) * 1024 * 1024 * 1024 * 1024, 1, 0.5, "PiB"),
+        new(1024L * 1024 * 1024 * 1024 * 1024 * 1024 - 1, 1023, 0.999, "PiB"),
+        // exbibyte
+        new((BigInteger)1024L * 1024 * 1024 * 1024 * 1024 * 1024, 1, 0, "EiB"),
+        new(((BigInteger)1024L + 512) * 1024 * 1024 * 1024 * 1024 * 1024, 1, 0.5, "EiB"),
+        new((BigInteger)1024L * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 - 1, 1023, 0.999, "EiB"),
+        // zebibyte
+        new((BigInteger)1024L * 1024 * 1024 * 1024 * 1024 * 1024 * 1024, 1, 0, "ZiB"),
+        new(((BigInteger)1024L + 512) * 1024 * 1024 * 1024 * 1024 * 1024 * 1024, 1, 0.5, "ZiB"),
+        new((BigInteger)1024L * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 - 1, 1023, 0.999, "ZiB"),
+        // yobibyte
+        new((BigInteger)1024L * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024, 1, 0, "YiB"),
+        new(((BigInteger)1024L + 512) * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024, 1, 0.5, "YiB"),
+        new((BigInteger)1024L * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 - 1, 1023, 0.999, "YiB"),
+        // robibyte
+        new((BigInteger)1024L * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024, 1, 0, "RiB"),
+        new(((BigInteger)1024L + 512) * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024, 1, 0.5, "RiB"),
+        new((BigInteger)1024L * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 - 1, 1023, 0.999, "RiB"),
+        // quebibyte
+        new((BigInteger)1024L * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024, 1, 0, "QiB"),
+        new(((BigInteger)1024L + 512) * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024, 1, 0.5, "QiB"),
+        new((BigInteger)1024L * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 - 1, 1023, 0.999, "QiB"),
+        new((BigInteger)1024L * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024, 1024, 0, "QiB"),
+        new((BigInteger)1024L * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024, 1024 * 1024, 0, "QiB"),
+        new((BigInteger)1 << 1024, (BigInteger)1 << (1024 - 10 * 10), 0, "QiB"),
+        new(
+            ((BigInteger)1 << 1024) + (BigInteger)512 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024,
+            (BigInteger)1 << (1024 - 10 * 10),
+            0.500,
+            "QiB"),
+    ];
+
+    public static readonly BigIntegerTestCase[] BigIntegerTestCases =
+    [
+        ..UnsignedBigIntegerTestCases,
+        ..UnsignedBigIntegerTestCases.Select(static v => v with { Value = -v.Value, ExpectedValueWhole = -v.ExpectedValueWhole }),
+    ];
+    public static readonly DoubleTestCase[] UnsignedDoubleTestCases =
     [
         // byte
         new(0L, 0, "B"),
@@ -132,8 +195,8 @@ public class DataSizesBinaryTests
 
     public static readonly DoubleTestCase[] DoubleTestCases =
     [
-        ..SignedDoubleTestCases,
-        ..SignedDoubleTestCases.Select(static v => v with { Value = -v.Value, ExpectedValue = -v.ExpectedValue }),
+        ..UnsignedDoubleTestCases,
+        ..UnsignedDoubleTestCases.Select(static v => v with { Value = -v.Value, ExpectedValue = -v.ExpectedValue }),
     ];
 
     [Test]
@@ -178,6 +241,17 @@ public class DataSizesBinaryTests
         {
             Assert.That(value, Is.AtMost(Math.Ceiling(testCase.ExpectedValue)));
         }
+    }
+
+    [Test]
+    public void GetBinarySize_BigInteger_Correct([ValueSource(nameof(BigIntegerTestCases))] BigIntegerTestCase testCase)
+    {
+        DataSizes.GetBinarySize(testCase.Value, out BigInteger valueWhole, out double valueFraction, out string unit);
+        string message = $"{DataSizes.FormatBigIntegerAndFraction(valueWhole, valueFraction)} {unit} does not match test case {testCase}";
+        Assert.That(valueFraction, Is.AtLeast(0).And.LessThan(1), message);
+        Assert.That(unit, Is.EqualTo(testCase.ExpectedUnit), message);
+        Assert.That(valueWhole, Is.EqualTo(testCase.ExpectedValueWhole), message);
+        Assert.That(valueFraction, Is.EqualTo(testCase.ExpectedValueFraction).Within(testCase.Tolerance), message);
     }
 
     [Test]

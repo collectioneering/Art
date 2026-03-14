@@ -4,9 +4,6 @@ using System.Text;
 
 namespace Art.Common;
 
-/// <summary>
-/// Constants and utility methods for data sizes.
-/// </summary>
 public static partial class DataSizes
 {
     /// <summary>
@@ -106,7 +103,6 @@ public static partial class DataSizes
         unit = s_binaryUnitNames[unitIndex];
     }
 
-
     /// <summary>
     /// Simplifies size of datum with the largest nameable binary units.
     /// </summary>
@@ -124,6 +120,43 @@ public static partial class DataSizes
     /// Simplifies size of datum with the largest nameable binary units.
     /// </summary>
     /// <param name="size">Datum size.</param>
+    /// <param name="valueWhole">Integer portion of value for given units.</param>
+    /// <param name="valueFraction">Fractional portion of value for given units.</param>
+    /// <param name="unit">Unit (e.g. B, KiB, MiB, etc.).</param>
+    public static void GetBinarySize(BigInteger size, out BigInteger valueWhole, out double valueFraction, out string unit)
+    {
+        GetBinarySize(size, out valueWhole, out valueFraction, out int unitIndex);
+        unit = s_binaryUnitNames[unitIndex];
+    }
+
+    /// <summary>
+    /// Simplifies size of datum with the largest nameable binary units.
+    /// </summary>
+    /// <param name="size">Datum size.</param>
+    /// <param name="valueWhole">Integer portion of value for given units.</param>
+    /// <param name="valueFraction">Fractional portion of value for given units.</param>
+    /// <param name="unitIndex">Unit index (e.g. 0=B, 1=KiB, 2=MiB, etc.).</param>
+    public static void GetBinarySize(BigInteger size, out BigInteger valueWhole, out double valueFraction, out int unitIndex)
+    {
+        BigInteger sizeAbs = BigInteger.Abs(size);
+        if (sizeAbs == BigInteger.Zero)
+        {
+            valueWhole = 0;
+            valueFraction = 0;
+            unitIndex = 0;
+            return;
+        }
+        long activeBits = sizeAbs.GetBitLength();
+        unitIndex = (int)Math.Min(Math.Max(activeBits - 1, 0) / 10, s_binaryUnitNames.Length - 1);
+        BigInteger divisor = (BigInteger)1 << (unitIndex * 10);
+        valueWhole = BigInteger.CopySign(BigInteger.DivRem(sizeAbs, divisor, out BigInteger remainder), size);
+        valueFraction = Math.Min(Math.Abs(GetFraction(remainder, divisor)), Math.BitDecrement(1));
+    }
+
+    /// <summary>
+    /// Simplifies size of datum with the largest nameable binary units.
+    /// </summary>
+    /// <param name="size">Datum size.</param>
     /// <param name="value">Value for given units.</param>
     /// <param name="unit">Unit (e.g. B, KiB, MiB, etc.).</param>
     public static void GetBinarySize(double size, out double value, out string unit)
@@ -132,7 +165,7 @@ public static partial class DataSizes
         {
             throw new ArgumentException("Invalid size value", nameof(size));
         }
-        GetBinarySizePositive(Math.Abs(size), out double v, out int unitIndex);
+        GetBinarySizeNonNegative(Math.Abs(size), out double v, out int unitIndex);
         value = double.CopySign(v, size);
         unit = s_binaryUnitNames[unitIndex];
     }
@@ -149,11 +182,11 @@ public static partial class DataSizes
         {
             throw new ArgumentException("Invalid size value", nameof(size));
         }
-        GetBinarySizePositive(Math.Abs(size), out double v, out unitIndex);
+        GetBinarySizeNonNegative(Math.Abs(size), out double v, out unitIndex);
         value = double.CopySign(v, size);
     }
 
-    private static void GetBinarySizePositive(double size, out double value, out int unitIndex)
+    private static void GetBinarySizeNonNegative(double size, out double value, out int unitIndex)
     {
         if (size < double.Epsilon)
         {
@@ -194,6 +227,17 @@ public static partial class DataSizes
     /// </summary>
     /// <param name="size">Data size.</param>
     /// <returns>Data size string.</returns>
+    public static string GetBinarySizeString(BigInteger size)
+    {
+        GetBinarySize(size, out BigInteger sizeValueWhole, out double sizeValueFraction, out string sizeUnits);
+        return $"{FormatBigIntegerAndFraction(sizeValueWhole, sizeValueFraction)} {sizeUnits}";
+    }
+
+    /// <summary>
+    /// Gets data size in binary units as a string (e.g. 5.4 MB).
+    /// </summary>
+    /// <param name="size">Data size.</param>
+    /// <returns>Data size string.</returns>
     public static string GetBinarySizeString(double size)
     {
         GetBinarySize(size, out double sizeValue, out string sizeUnits);
@@ -223,6 +267,19 @@ public static partial class DataSizes
     {
         GetBinarySize(size, out double sizeValue, out string sizeUnits);
         sb.Append(CultureInfo.InvariantCulture, $"{sizeValue:F3}").Append(' ').Append(sizeUnits);
+        return sb;
+    }
+
+    /// <summary>
+    /// Appends data size in binary units as a string.
+    /// </summary>
+    /// <param name="sb">String builder.</param>
+    /// <param name="size">Data size.</param>
+    /// <returns>String builder (for chaining).</returns>
+    public static StringBuilder AppendBinarySize(this StringBuilder sb, BigInteger size)
+    {
+        GetBinarySize(size, out BigInteger sizeValueWhole, out double sizeValueFraction, out string sizeUnits);
+        sb.Append(FormatBigIntegerAndFraction(sizeValueWhole, sizeValueFraction)).Append(' ').Append(sizeUnits);
         return sb;
     }
 
