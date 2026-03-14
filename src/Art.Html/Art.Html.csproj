@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageVersion>0.50.0</PackageVersion>
+    <PackageVersion>0.50.1</PackageVersion>
     <AssemblyVersion>1.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup>
-    <ReferenceLocalProject_Art_Http>true</ReferenceLocalProject_Art_Http>
+    <ReferenceLocalProject_Art_Http>false</ReferenceLocalProject_Art_Http>
   </PropertyGroup>
 
   <ItemGroup>
