@@ -28,6 +28,12 @@ internal class FindAsListTool : IArtifactListTool
         set => _baseFindTool.LogHandler = value;
     }
 
+    public LogPreferences LogPreferences
+    {
+        get => _baseFindTool.LogPreferences;
+        set => _baseFindTool.LogPreferences = value;
+    }
+
     public ArtifactToolProfile Profile => _baseFindTool.Profile;
     public ArtifactToolConfig Config => _baseFindTool.Config;
     public TimeProvider TimeProvider => _baseFindTool.TimeProvider;

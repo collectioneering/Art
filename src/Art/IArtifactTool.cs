@@ -18,6 +18,11 @@ public interface IArtifactTool : IDisposable
     IToolLogHandler? LogHandler { get; set; }
 
     /// <summary>
+    /// Preferences to use when logging.
+    /// </summary>
+    LogPreferences LogPreferences { get; set; }
+
+    /// <summary>
     /// Origin tool profile.
     /// </summary>
     ArtifactToolProfile Profile { get; }

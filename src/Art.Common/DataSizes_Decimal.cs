@@ -52,6 +52,8 @@ public static partial class DataSizes
     public const long EBl = 1000L * PBl;
 
     private static readonly string[] s_decimalUnitNames = ["B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB", "RB", "QB"];
+    private static readonly string[] s_decimalUnitNamesLong = ["byte", "kilobyte", "megabyte", "gigabyte", "terabyte", "petabyte", "exabyte", "zettabyte", "yottabyte", "ronnabyte", "quettabyte"];
+    private static readonly string[] s_decimalUnitNamesLongPlural = ["bytes", "kilobytes", "megabytes", "gigabytes", "terabytes", "petabytes", "exabytes", "zettabytes", "yottabytes", "ronnabytes", "quettabytes"];
 
     /// <summary>
     /// Simplifies size of datum with the largest nameable decimal units.
@@ -59,16 +61,21 @@ public static partial class DataSizes
     /// <param name="size">Datum size.</param>
     /// <param name="value">Value for given units.</param>
     /// <param name="unit">Unit (e.g. B, KB, MB, etc.).</param>
-    public static void GetDecimalSize(long size, out double value, out string unit)
+    /// <param name="dataUnitFormat">The format to use for units.</param>
+    public static void GetDecimalSize(
+        long size,
+        out double value,
+        out string unit,
+        DataUnitFormat dataUnitFormat = DataUnitFormat.Short)
     {
         if (size < 0)
         {
-            GetDecimalSize((ulong)-size, out double v, out unit);
+            GetDecimalSize((ulong)-size, out double v, out unit, dataUnitFormat);
             value = -v;
         }
         else
         {
-            GetDecimalSize((ulong)size, out value, out unit);
+            GetDecimalSize((ulong)size, out value, out unit, dataUnitFormat);
         }
     }
 
@@ -97,10 +104,19 @@ public static partial class DataSizes
     /// <param name="size">Datum size.</param>
     /// <param name="value">Value for given units.</param>
     /// <param name="unit">Unit (e.g. B, KB, MB, etc.).</param>
-    public static void GetDecimalSize(ulong size, out double value, out string unit)
+    /// <param name="dataUnitFormat">The format to use for units.</param>
+    public static void GetDecimalSize(
+        ulong size,
+        out double value,
+        out string unit,
+        DataUnitFormat dataUnitFormat = DataUnitFormat.Short)
     {
         GetDecimalSize(size, out value, out int unitIndex);
-        unit = s_decimalUnitNames[unitIndex];
+        unit = dataUnitFormat == DataUnitFormat.Short
+            ? s_decimalUnitNames[unitIndex]
+            : Math.Abs(value - 1) < double.Epsilon
+                ? s_decimalUnitNamesLong[unitIndex]
+                : s_decimalUnitNamesLongPlural[unitIndex];
     }
 
 
@@ -123,10 +139,20 @@ public static partial class DataSizes
     /// <param name="valueWhole">Integer portion of value for given units.</param>
     /// <param name="valueFraction">Fractional portion of value for given units.</param>
     /// <param name="unit">Unit (e.g. B, KB, MB, etc.).</param>
-    public static void GetDecimalSize(BigInteger size, out BigInteger valueWhole, out double valueFraction, out string unit)
+    /// <param name="dataUnitFormat">The format to use for units.</param>
+    public static void GetDecimalSize(
+        BigInteger size,
+        out BigInteger valueWhole,
+        out double valueFraction,
+        out string unit,
+        DataUnitFormat dataUnitFormat = DataUnitFormat.Short)
     {
         GetDecimalSize(size, out valueWhole, out valueFraction, out int unitIndex);
-        unit = s_decimalUnitNames[unitIndex];
+        unit = dataUnitFormat == DataUnitFormat.Short
+            ? s_decimalUnitNames[unitIndex]
+            : valueWhole == 1 && valueFraction < double.Epsilon
+                ? s_decimalUnitNamesLong[unitIndex]
+                : s_decimalUnitNamesLongPlural[unitIndex];
     }
 
     /// <summary>
@@ -136,7 +162,11 @@ public static partial class DataSizes
     /// <param name="valueWhole">Integer portion of value for given units.</param>
     /// <param name="valueFraction">Fractional portion of value for given units.</param>
     /// <param name="unitIndex">Unit index (e.g. 0=B, 1=KB, 2=MB, etc.).</param>
-    public static void GetDecimalSize(BigInteger size, out BigInteger valueWhole, out double valueFraction, out int unitIndex)
+    public static void GetDecimalSize(
+        BigInteger size,
+        out BigInteger valueWhole,
+        out double valueFraction,
+        out int unitIndex)
     {
         BigInteger sizeAbs = BigInteger.Abs(size);
         if (sizeAbs == BigInteger.Zero)
@@ -182,7 +212,12 @@ public static partial class DataSizes
     /// <param name="size">Datum size.</param>
     /// <param name="value">Value for given units.</param>
     /// <param name="unit">Unit (e.g. B, KB, MB, etc.).</param>
-    public static void GetDecimalSize(double size, out double value, out string unit)
+    /// <param name="dataUnitFormat">The format to use for units.</param>
+    public static void GetDecimalSize(
+        double size,
+        out double value,
+        out string unit,
+        DataUnitFormat dataUnitFormat = DataUnitFormat.Short)
     {
         if (!double.IsRealNumber(size) || double.IsInfinity(size))
         {
@@ -190,7 +225,11 @@ public static partial class DataSizes
         }
         GetDecimalSize(Math.Abs(size), out double v, out int unitIndex);
         value = double.CopySign(v, size);
-        unit = s_decimalUnitNames[unitIndex];
+        unit = dataUnitFormat == DataUnitFormat.Short
+            ? s_decimalUnitNames[unitIndex]
+            : Math.Abs(value - 1) < double.Epsilon
+                ? s_decimalUnitNamesLong[unitIndex]
+                : s_decimalUnitNamesLongPlural[unitIndex];
     }
 
     /// <summary>
@@ -225,10 +264,11 @@ public static partial class DataSizes
     /// Gets data size in decimal units as a string (e.g. 5.4 MB).
     /// </summary>
     /// <param name="size">Data size.</param>
+    /// <param name="dataUnitFormat">The format to use for units.</param>
     /// <returns>Data size string.</returns>
-    public static string GetDecimalSizeString(long size)
+    public static string GetDecimalSizeString(long size, DataUnitFormat dataUnitFormat = DataUnitFormat.Short)
     {
-        GetDecimalSize(size, out double sizeValue, out string sizeUnits);
+        GetDecimalSize(size, out double sizeValue, out string sizeUnits, dataUnitFormat);
         return $"{sizeValue:F3} {sizeUnits}";
     }
 
@@ -236,10 +276,11 @@ public static partial class DataSizes
     /// Gets data size in decimal units as a string (e.g. 5.4 MB).
     /// </summary>
     /// <param name="size">Data size.</param>
+    /// <param name="dataUnitFormat">The format to use for units.</param>
     /// <returns>Data size string.</returns>
-    public static string GetDecimalSizeString(ulong size)
+    public static string GetDecimalSizeString(ulong size, DataUnitFormat dataUnitFormat = DataUnitFormat.Short)
     {
-        GetDecimalSize(size, out double sizeValue, out string sizeUnits);
+        GetDecimalSize(size, out double sizeValue, out string sizeUnits, dataUnitFormat);
         return $"{sizeValue:F3} {sizeUnits}";
     }
 
@@ -247,10 +288,11 @@ public static partial class DataSizes
     /// Gets data size in decimal units as a string (e.g. 5.4 MB).
     /// </summary>
     /// <param name="size">Data size.</param>
+    /// <param name="dataUnitFormat">The format to use for units.</param>
     /// <returns>Data size string.</returns>
-    public static string GetDecimalSizeString(BigInteger size)
+    public static string GetDecimalSizeString(BigInteger size, DataUnitFormat dataUnitFormat = DataUnitFormat.Short)
     {
-        GetDecimalSize(size, out BigInteger sizeValueWhole, out double sizeValueFraction, out string sizeUnits);
+        GetDecimalSize(size, out BigInteger sizeValueWhole, out double sizeValueFraction, out string sizeUnits, dataUnitFormat);
         return $"{FormatBigIntegerAndFraction(sizeValueWhole, sizeValueFraction)} {sizeUnits}";
     }
 
@@ -258,73 +300,94 @@ public static partial class DataSizes
     /// Gets data size in decimal units as a string (e.g. 5.4 MB).
     /// </summary>
     /// <param name="size">Data size.</param>
+    /// <param name="dataUnitFormat">The format to use for units.</param>
     /// <returns>Data size string.</returns>
-    public static string GetDecimalSizeString(double size)
+    public static string GetDecimalSizeString(double size, DataUnitFormat dataUnitFormat = DataUnitFormat.Short)
     {
-        GetDecimalSize(size, out double sizeValue, out string sizeUnits);
+        GetDecimalSize(size, out double sizeValue, out string sizeUnits, dataUnitFormat);
         return $"{sizeValue:F3} {sizeUnits}";
     }
 
     /// <summary>
     /// Appends data size in decimal units as a string.
     /// </summary>
-    /// <param name="sb">String builder.</param>
+    /// <param name="stringBuilder">String builder.</param>
     /// <param name="size">Data size.</param>
+    /// <param name="dataUnitFormat">The format to use for units.</param>
     /// <returns>String builder (for chaining).</returns>
-    public static StringBuilder AppendDecimalSize(this StringBuilder sb, long size)
+    public static StringBuilder AppendDecimalSize(
+        this StringBuilder stringBuilder,
+        long size,
+        DataUnitFormat dataUnitFormat = DataUnitFormat.Short)
     {
-        GetDecimalSize(size, out double sizeValue, out string sizeUnits);
-        sb.Append(CultureInfo.InvariantCulture, $"{sizeValue:F3}").Append(' ').Append(sizeUnits);
-        return sb;
+        GetDecimalSize(size, out double sizeValue, out string sizeUnits, dataUnitFormat);
+        stringBuilder.Append(CultureInfo.InvariantCulture, $"{sizeValue:F3}").Append(' ').Append(sizeUnits);
+        return stringBuilder;
     }
 
     /// <summary>
     /// Appends data size in decimal units as a string.
     /// </summary>
-    /// <param name="sb">String builder.</param>
+    /// <param name="stringBuilder">String builder.</param>
     /// <param name="size">Data size.</param>
+    /// <param name="dataUnitFormat">The format to use for units.</param>
     /// <returns>String builder (for chaining).</returns>
-    public static StringBuilder AppendDecimalSize(this StringBuilder sb, ulong size)
+    public static StringBuilder AppendDecimalSize(
+        this StringBuilder stringBuilder,
+        ulong size,
+        DataUnitFormat dataUnitFormat = DataUnitFormat.Short)
     {
-        GetDecimalSize(size, out double sizeValue, out string sizeUnits);
-        sb.Append(CultureInfo.InvariantCulture, $"{sizeValue:F3}").Append(' ').Append(sizeUnits);
-        return sb;
+        GetDecimalSize(size, out double sizeValue, out string sizeUnits, dataUnitFormat);
+        stringBuilder.Append(CultureInfo.InvariantCulture, $"{sizeValue:F3}").Append(' ').Append(sizeUnits);
+        return stringBuilder;
     }
 
     /// <summary>
     /// Appends data size in decimal units as a string.
     /// </summary>
-    /// <param name="sb">String builder.</param>
+    /// <param name="stringBuilder">String builder.</param>
     /// <param name="size">Data size.</param>
+    /// <param name="dataUnitFormat">The format to use for units.</param>
     /// <returns>String builder (for chaining).</returns>
-    public static StringBuilder AppendDecimalSize(this StringBuilder sb, BigInteger size)
+    public static StringBuilder AppendDecimalSize(
+        this StringBuilder stringBuilder,
+        BigInteger size,
+        DataUnitFormat dataUnitFormat = DataUnitFormat.Short)
     {
-        GetDecimalSize(size, out BigInteger sizeValueWhole, out double sizeValueFraction, out string sizeUnits);
-        sb.Append(FormatBigIntegerAndFraction(sizeValueWhole, sizeValueFraction)).Append(' ').Append(sizeUnits);
-        return sb;
+        GetDecimalSize(size, out BigInteger sizeValueWhole, out double sizeValueFraction, out string sizeUnits, dataUnitFormat);
+        stringBuilder.Append(FormatBigIntegerAndFraction(sizeValueWhole, sizeValueFraction)).Append(' ').Append(sizeUnits);
+        return stringBuilder;
     }
 
     /// <summary>
     /// Appends data size in decimal units as a string.
     /// </summary>
-    /// <param name="sb">String builder.</param>
+    /// <param name="stringBuilder">String builder.</param>
     /// <param name="size">Data size.</param>
+    /// <param name="dataUnitFormat">The format to use for units.</param>
     /// <returns>String builder (for chaining).</returns>
-    public static StringBuilder AppendDecimalSize(this StringBuilder sb, double size)
+    public static StringBuilder AppendDecimalSize(
+        this StringBuilder stringBuilder,
+        double size,
+        DataUnitFormat dataUnitFormat = DataUnitFormat.Short)
     {
-        GetDecimalSize(size, out double sizeValue, out string sizeUnits);
-        sb.Append(CultureInfo.InvariantCulture, $"{sizeValue:F3}").Append(' ').Append(sizeUnits);
-        return sb;
+        GetDecimalSize(size, out double sizeValue, out string sizeUnits, dataUnitFormat);
+        stringBuilder.Append(CultureInfo.InvariantCulture, $"{sizeValue:F3}").Append(' ').Append(sizeUnits);
+        return stringBuilder;
     }
 
     /// <summary>
     /// Appends data rate in decimal units as a string.
     /// </summary>
-    /// <param name="sb">String builder.</param>
+    /// <param name="stringBuilder">String builder.</param>
     /// <param name="rate">Data rate.</param>
+    /// <param name="dataUnitFormat">The format to use for units.</param>
     /// <returns>String builder (for chaining).</returns>
-    public static StringBuilder AppendDecimalRate(this StringBuilder sb, double rate)
+    public static StringBuilder AppendDecimalRate(
+        this StringBuilder stringBuilder,
+        double rate,
+        DataUnitFormat dataUnitFormat = DataUnitFormat.Short)
     {
-        return sb.AppendDecimalSize(rate).Append("/s");
+        return stringBuilder.AppendDecimalSize(rate, dataUnitFormat).Append("/s");
     }
 }

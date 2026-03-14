@@ -214,7 +214,7 @@ public class DataSizesDecimalTests
     [Test]
     public void GetDecimalSize_Long_Correct([ValueSource(nameof(ULongTestCases))] ULongTestCase testCase)
     {
-        DataSizes.GetDecimalSize(testCase.Value, out double value, out string unit);
+        DataSizes.GetDecimalSize(testCase.Value, out double value, out string unit, dataUnitFormat: DataUnitFormat.Short);
         Assert.That(
             new DatumSize(value, unit),
             Has.Property(nameof(DatumSize.Unit)).EqualTo(testCase.ExpectedUnit)
@@ -236,7 +236,7 @@ public class DataSizesDecimalTests
     [Test]
     public void GetDecimalSize_ULong_Correct([ValueSource(nameof(LongTestCases))] LongTestCase testCase)
     {
-        DataSizes.GetDecimalSize(testCase.Value, out double value, out string unit);
+        DataSizes.GetDecimalSize(testCase.Value, out double value, out string unit, dataUnitFormat: DataUnitFormat.Short);
         Assert.That(
             new DatumSize(value, unit),
             Has.Property(nameof(DatumSize.Unit)).EqualTo(testCase.ExpectedUnit)
@@ -258,7 +258,7 @@ public class DataSizesDecimalTests
     [Test]
     public void GetDecimalSize_BigInteger_Correct([ValueSource(nameof(BigIntegerTestCases))] BigIntegerTestCase testCase)
     {
-        DataSizes.GetDecimalSize(testCase.Value, out BigInteger valueWhole, out double valueFraction, out string unit);
+        DataSizes.GetDecimalSize(testCase.Value, out BigInteger valueWhole, out double valueFraction, out string unit, dataUnitFormat: DataUnitFormat.Short);
         string message = $"{DataSizes.FormatBigIntegerAndFraction(valueWhole, valueFraction)} {unit} does not match test case {testCase}";
         Assert.That(valueFraction, Is.AtLeast(0).And.LessThan(1), message);
         Assert.That(unit, Is.EqualTo(testCase.ExpectedUnit), message);
@@ -269,7 +269,7 @@ public class DataSizesDecimalTests
     [Test]
     public void GetDecimalSize_Double_Correct([ValueSource(nameof(DoubleTestCases))] DoubleTestCase testCase)
     {
-        DataSizes.GetDecimalSize(testCase.Value, out double value, out string unit);
+        DataSizes.GetDecimalSize(testCase.Value, out double value, out string unit, dataUnitFormat: DataUnitFormat.Short);
         Assert.That(
             new DatumSize(value, unit),
             Has.Property(nameof(DatumSize.Unit)).EqualTo(testCase.ExpectedUnit)
