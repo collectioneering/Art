@@ -34,7 +34,6 @@ public class FindCommand : FindListCommandBase
     protected override async Task ExecuteAsync(
         ParseResult parseResult,
         IToolLogHandler logHandler,
-        LogPreferences logPreferences,
         bool listResource,
         bool detailed,
         IArtifactTool tool,
@@ -64,7 +63,7 @@ public class FindCommand : FindListCommandBase
                         listResource,
                         detailed,
                         ToolOutput,
-                        logPreferences)
+                        logHandler.LogPreferences)
                     .ConfigureAwait(false);
             }
         }

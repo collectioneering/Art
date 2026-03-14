@@ -98,7 +98,7 @@ public class ValidateCommand : ToolCommandBase
         }
         using var adm = DataProvider.CreateArtifactDataManager(parseResult);
         using var arm = RegistrationProvider.CreateArtifactRegistrationManager(parseResult);
-        var validationContext = new ValidationContext(PluginStore, arm, adm, l, logPreferences);
+        var validationContext = new ValidationContext(PluginStore, arm, adm, l);
         ValidationProcessResult result;
         ChecksumSource? checksumSourceForAdd = parseResult.GetValue(AddChecksumOption) ? checksumSource : null;
         if (profiles.Count == 0)

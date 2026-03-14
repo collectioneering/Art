@@ -50,7 +50,6 @@ public abstract class FindListCommandBase : ToolCommandBase, IToolGroupOrProfile
     protected abstract Task ExecuteAsync(
         ParseResult parseResult,
         IToolLogHandler logHandler,
-        LogPreferences logPreferences,
         bool listResource,
         bool detailed,
         IArtifactTool tool,
@@ -71,7 +70,7 @@ public abstract class FindListCommandBase : ToolCommandBase, IToolGroupOrProfile
             // keep registrations local to each run
             using var arm = new InMemoryArtifactRegistrationManager();
             using var tool = await GetToolAsync(profile, arm, adm, TimeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
-            await ExecuteAsync(parseResult, logHandler, logPreferences, listResource, detailed, tool, cancellationToken);
+            await ExecuteAsync(parseResult, logHandler, listResource, detailed, tool, cancellationToken);
         }
         return 0;
     }

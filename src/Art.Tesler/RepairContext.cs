@@ -9,22 +9,19 @@ public class RepairContext : ToolControlContext
     private readonly IArtifactRegistrationManager _arm;
     private readonly IArtifactDataManager _adm;
     private readonly IToolLogHandler _l;
-    private readonly LogPreferences _logPreferences;
 
     public RepairContext(
         IArtifactToolRegistryStore pluginStore,
         IReadOnlyDictionary<ArtifactKey, List<ArtifactResourceInfo>> failed,
         IArtifactRegistrationManager arm,
         IArtifactDataManager adm,
-        IToolLogHandler l,
-        LogPreferences logPreferences)
+        IToolLogHandler l)
         : base(pluginStore)
     {
         _failed = new Dictionary<ArtifactKey, List<ArtifactResourceInfo>>(failed);
         _arm = arm;
         _adm = adm;
         _l = l;
-        _logPreferences = logPreferences;
     }
 
     public async Task<bool> RepairAsync(
