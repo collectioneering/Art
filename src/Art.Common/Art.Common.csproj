@@ -7,14 +7,11 @@
 
   <PropertyGroup>
     <ReferenceLocalProject_Art>true</ReferenceLocalProject_Art>
-    <ReferenceLocalProject_Artcore>true</ReferenceLocalProject_Artcore>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Art" Condition="'$(ReferenceLocalProject_Art)'!='true'" />
     <ProjectReference Include="..\Art\Art.csproj" Condition="'$(ReferenceLocalProject_Art)'=='true'" />
-    <PackageReference Include="Artcore" Condition="'$(ReferenceLocalProject_Artcore)'!='true'" />
-    <ProjectReference Include="..\Artcore\Artcore.csproj" Condition="'$(ReferenceLocalProject_Artcore)'=='true'" />
   </ItemGroup>
 
   <ItemGroup>

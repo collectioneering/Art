@@ -9,6 +9,7 @@
     <ReferenceLocalProject_Art_EF_Sqlite>true</ReferenceLocalProject_Art_EF_Sqlite>
     <ReferenceLocalProject_Art_BrowserCookies>true</ReferenceLocalProject_Art_BrowserCookies>
     <ReferenceLocalProject_Art_Common>true</ReferenceLocalProject_Art_Common>
+    <ReferenceLocalProject_Artcore>true</ReferenceLocalProject_Artcore>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +19,8 @@
     <ProjectReference Include="../Art.BrowserCookies/Art.BrowserCookies.csproj" Condition="'$(ReferenceLocalProject_Art_BrowserCookies)'=='true'" />
     <PackageReference Include="Art.Common" Condition="'$(ReferenceLocalProject_Art_Common)'!='true'" />
     <ProjectReference Include="../Art.Common/Art.Common.csproj" Condition="'$(ReferenceLocalProject_Art_Common)'=='true'" />
+    <PackageReference Include="Artcore" Condition="'$(ReferenceLocalProject_Artcore)'!='true'" />
+    <ProjectReference Include="..\Artcore\Artcore.csproj" Condition="'$(ReferenceLocalProject_Artcore)'=='true'" />
   </ItemGroup>
 
   <ItemGroup>
