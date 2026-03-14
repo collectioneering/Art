@@ -1,7 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Art.Common;
 using Artcore;
 
-namespace Art.Common;
+namespace Art.Tesler;
 
 /// <summary>
 /// Represents a store of dynamically loaded <see cref="IArtifactToolRegistry"/> based on a <see cref="IModuleProvider{TModule}"/>.
@@ -29,7 +30,8 @@ public class ModularArtifactToolRegistryStore : IArtifactToolRegistryStore
             artifactToolRegistry = null;
             return false;
         }
-        artifactToolRegistry = Plugin.Create(_moduleProvider.LoadModule(module));
+        var loadedModule = _moduleProvider.LoadModule(module);
+        artifactToolRegistry = Plugin.Create(loadedModule.AssemblyLoadContext, loadedModule.Assembly);
         return true;
     }
 
@@ -38,7 +40,8 @@ public class ModularArtifactToolRegistryStore : IArtifactToolRegistryStore
     {
         foreach (var module in _moduleProvider.LoadModuleLocations())
         {
-            yield return Plugin.Create(_moduleProvider.LoadModule(module));
+            var loadedModule = _moduleProvider.LoadModule(module);
+            yield return Plugin.Create(loadedModule.AssemblyLoadContext, loadedModule.Assembly);
         }
     }
 }

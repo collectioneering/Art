@@ -2,7 +2,6 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
-using Artcore;
 
 namespace Art.Common;
 
@@ -59,17 +58,11 @@ public class Plugin : IArtifactToolSelectableRegistry<string>
     /// <returns>A <see cref="Plugin"/> for the specified assembly.</returns>
     public static Plugin Create(AssemblyLoadContext context, Assembly baseAssembly)
     {
+        if (context != AssemblyLoadContext.GetLoadContext(baseAssembly))
+        {
+            throw new ArgumentException("Assembly does not belong to the specified assembly load context");
+        }
         return new Plugin(context, baseAssembly);
-    }
-
-    /// <summary>
-    /// Creates an instance of <see cref="Plugin"/>.
-    /// </summary>
-    /// <param name="module">Source module.</param>
-    /// <returns>A <see cref="Plugin"/> for the specified assembly.</returns>
-    public static Plugin Create(ALCModule module)
-    {
-        return new Plugin(module.AssemblyLoadContext, module.Assembly);
     }
 
     private static AssemblyLoadContext ResolveAssemblyLoadContext(Assembly baseAssembly, [CallerArgumentExpression("baseAssembly")] string? argumentName = null)
