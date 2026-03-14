@@ -22,7 +22,11 @@ public class ArtifactToolListProxyTests
             return null;
         });
         await tool.InitializeAsync(profile: profile);
-        var proxy = new ArtifactToolListProxy(tool, new ArtifactToolListOptions(), null);
+        var proxy = new ArtifactToolListProxy(
+            tool,
+            new ArtifactToolListOptions(),
+            null,
+            LogPreferences.Default);
         Assert.That(async () =>
         {
 #if NET10_0_OR_GREATER
@@ -49,7 +53,11 @@ public class ArtifactToolListProxyTests
             return null;
         });
         await tool.InitializeAsync(profile: profile);
-        var proxy = new ArtifactToolListProxy(tool, new ArtifactToolListOptions(), null);
+        var proxy = new ArtifactToolListProxy(
+            tool,
+            new ArtifactToolListOptions(),
+            null,
+            LogPreferences.Default);
 #if NET10_0_OR_GREATER
         var results = await AsyncEnumerable.ToListAsync(proxy.ListAsync());
 #else
@@ -70,7 +78,11 @@ public class ArtifactToolListProxyTests
             }
         });
         await tool.InitializeAsync(profile: profile);
-        var proxy = new ArtifactToolListProxy(tool, new ArtifactToolListOptions(), null);
+        var proxy = new ArtifactToolListProxy(
+            tool,
+            new ArtifactToolListOptions(),
+            null,
+            LogPreferences.Default);
 #if NET10_0_OR_GREATER
         var results = await AsyncEnumerable.ToListAsync(proxy.ListAsync());
 #else
@@ -92,7 +104,11 @@ public class ArtifactToolListProxyTests
             }
         });
         await tool.InitializeAsync(profile: profile);
-        var proxy = new ArtifactToolListProxy(tool, new ArtifactToolListOptions(), null);
+        var proxy = new ArtifactToolListProxy(
+            tool,
+            new ArtifactToolListOptions(),
+            null,
+            LogPreferences.Default);
 #if NET10_0_OR_GREATER
         var results = await AsyncEnumerable.ToListAsync(proxy.ListAsync());
 #else

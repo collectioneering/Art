@@ -64,6 +64,7 @@ public abstract class ArcDumpCommandBase : ToolCommandBase
         }
         var profiles = GetProfiles(parseResult);
         var options = GetArtifactToolDumpOptions(parseResult, checksumSource);
+        var logPreferences = GetLogPreferences(parseResult);
         using var adm = parseResult.GetValue(NullOutputOption) ? new NullArtifactDataManager() : DataProvider.CreateArtifactDataManager(parseResult);
         using var arm = parseResult.GetValue(NoDatabaseOption) ? new NullArtifactRegistrationManager() : RegistrationProvider.CreateArtifactRegistrationManager(parseResult);
         IToolLogHandler l = ToolLogHandlerProvider.GetDefaultToolLogHandler();
@@ -73,7 +74,7 @@ public abstract class ArcDumpCommandBase : ToolCommandBase
             // no-db mode should use in-memory db to keep tool happy, but specific to each tool run
             using var armNoDb = parseResult.GetValue(NoDatabaseOption) ? new InMemoryArtifactRegistrationManager() : null;
             using var tool = await GetToolAsync(profile, armNoDb ?? arm, adm, TimeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
-            await new ArtifactToolDumpProxy(tool, options, l).DumpAsync(cancellationToken).ConfigureAwait(false);
+            await new ArtifactToolDumpProxy(tool, options, l, logPreferences).DumpAsync(cancellationToken).ConfigureAwait(false);
         }
         return 0;
     }

@@ -261,7 +261,15 @@ public partial class ArtifactTool : IArtifactTool
     {
         if (!artifactToolRegistry.TryLoad(ArtifactToolIDUtil.ParseID(artifactToolProfile.Tool), out IArtifactTool? t))
             throw new ArtifactToolNotFoundException(artifactToolProfile.Tool);
-        return PrepareToolInternalAsync(t, artifactToolProfile, artifactRegistrationManager, artifactDataManager, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken);
+        return PrepareToolInternalAsync(
+            t,
+            artifactToolProfile,
+            artifactRegistrationManager,
+            artifactDataManager,
+            timeProvider,
+            getArtifactRetrievalTimestamps,
+            getResourceRetrievalTimestamps,
+            cancellationToken);
     }
 
     /// <summary>
@@ -287,7 +295,15 @@ public partial class ArtifactTool : IArtifactTool
         CancellationToken cancellationToken = default) where T : IArtifactToolFactory
     {
         var t = T.CreateArtifactTool();
-        return PrepareToolInternalAsync(t, artifactToolProfile, artifactRegistrationManager, artifactDataManager, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken);
+        return PrepareToolInternalAsync(
+            t,
+            artifactToolProfile,
+            artifactRegistrationManager,
+            artifactDataManager,
+            timeProvider,
+            getArtifactRetrievalTimestamps,
+            getResourceRetrievalTimestamps,
+            cancellationToken);
     }
 
     private static async Task<IArtifactTool> PrepareToolInternalAsync(
@@ -300,7 +316,12 @@ public partial class ArtifactTool : IArtifactTool
         bool getResourceRetrievalTimestamps,
         CancellationToken cancellationToken = default)
     {
-        ArtifactToolConfig config = new(artifactRegistrationManager, artifactDataManager, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps);
+        ArtifactToolConfig config = new(
+            artifactRegistrationManager,
+            artifactDataManager,
+            timeProvider,
+            getArtifactRetrievalTimestamps,
+            getResourceRetrievalTimestamps);
         artifactToolProfile = artifactToolProfile.WithCoreTool(tool);
         await tool.InitializeAsync(config, artifactToolProfile, cancellationToken).ConfigureAwait(false);
         return tool;

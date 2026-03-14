@@ -20,6 +20,7 @@ public static class ArtifactDumping
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
     /// <param name="dumpOptions">Dump options.</param>
     /// <param name="toolLogHandler">Tool log handler.</param>
+    /// <param name="logPreferences">Preferences to use when logging.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="ArtifactToolNotFoundException">Thrown when tool is not found.</exception>
@@ -32,13 +33,27 @@ public static class ArtifactDumping
         bool getResourceRetrievalTimestamps,
         ArtifactToolDumpOptions? dumpOptions = null,
         IToolLogHandler? toolLogHandler = null,
+        LogPreferences? logPreferences = null,
         CancellationToken cancellationToken = default)
     {
         dumpOptions ??= new ArtifactToolDumpOptions();
         using var srm = new DiskArtifactRegistrationManager(targetDirectory);
         using var sdm = new DiskArtifactDataManager(targetDirectory);
         foreach (ArtifactToolProfile profile in ArtifactToolProfileUtil.DeserializeProfilesFromFile(artifactToolProfilePath))
-            await DumpAsync(profile, srm, sdm, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, dumpOptions, toolLogHandler, cancellationToken).ConfigureAwait(false);
+        {
+            await DumpAsync(
+                    profile,
+                    srm,
+                    sdm,
+                    timeProvider,
+                    getArtifactRetrievalTimestamps,
+                    getResourceRetrievalTimestamps,
+                    dumpOptions,
+                    toolLogHandler,
+                    logPreferences,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
     }
 
     /// <summary>
@@ -52,6 +67,7 @@ public static class ArtifactDumping
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
     /// <param name="dumpOptions">Dump options.</param>
     /// <param name="toolLogHandler">Tool log handler.</param>
+    /// <param name="logPreferences">Preferences to use when logging.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="ArtifactToolNotFoundException">Thrown when tool is not found.</exception>
@@ -65,13 +81,27 @@ public static class ArtifactDumping
         bool getResourceRetrievalTimestamps,
         ArtifactToolDumpOptions? dumpOptions = null,
         IToolLogHandler? toolLogHandler = null,
+        LogPreferences? logPreferences = null,
         CancellationToken cancellationToken = default)
     {
         dumpOptions ??= new ArtifactToolDumpOptions();
         using var srm = new DiskArtifactRegistrationManager(targetDirectory);
         using var sdm = new DiskArtifactDataManager(targetDirectory);
         foreach (ArtifactToolProfile profile in ArtifactToolProfileUtil.DeserializeProfilesFromFile(artifactToolProfilePath))
-            await DumpAsync(assemblyLoadContext, profile, srm, sdm, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, dumpOptions, toolLogHandler, cancellationToken).ConfigureAwait(false);
+        {
+            await DumpAsync(assemblyLoadContext,
+                    profile,
+                    srm,
+                    sdm,
+                    timeProvider,
+                    getArtifactRetrievalTimestamps,
+                    getResourceRetrievalTimestamps,
+                    dumpOptions,
+                    toolLogHandler,
+                    logPreferences,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
     }
 
     /// <summary>
@@ -85,6 +115,7 @@ public static class ArtifactDumping
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
     /// <param name="dumpOptions">Dump options.</param>
     /// <param name="toolLogHandler">Tool log handler.</param>
+    /// <param name="logPreferences">Preferences to use when logging.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="ArtifactToolNotFoundException">Thrown when tool is not found.</exception>
@@ -97,13 +128,26 @@ public static class ArtifactDumping
         bool getResourceRetrievalTimestamps,
         ArtifactToolDumpOptions? dumpOptions = null,
         IToolLogHandler? toolLogHandler = null,
+        LogPreferences? logPreferences = null,
         CancellationToken cancellationToken = default)
     {
         dumpOptions ??= new ArtifactToolDumpOptions();
         using var srm = new DiskArtifactRegistrationManager(targetDirectory);
         using var sdm = new DiskArtifactDataManager(targetDirectory);
         foreach (ArtifactToolProfile profile in ArtifactToolProfileUtil.DeserializeProfilesFromFile(artifactToolProfilePath))
-            await DumpAsync(artifactToolRegistry, profile, srm, sdm, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, dumpOptions, toolLogHandler, cancellationToken).ConfigureAwait(false);
+            await DumpAsync(
+                    artifactToolRegistry,
+                    profile,
+                    srm,
+                    sdm,
+                    timeProvider,
+                    getArtifactRetrievalTimestamps,
+                    getResourceRetrievalTimestamps,
+                    dumpOptions,
+                    toolLogHandler,
+                    logPreferences,
+                    cancellationToken)
+                .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -117,6 +161,7 @@ public static class ArtifactDumping
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
     /// <param name="dumpOptions">Dump options.</param>
     /// <param name="toolLogHandler">Tool log handler.</param>
+    /// <param name="logPreferences">Preferences to use when logging.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="ArgumentException">Thrown when an invalid profile is provided.</exception>
@@ -131,10 +176,17 @@ public static class ArtifactDumping
         bool getResourceRetrievalTimestamps,
         ArtifactToolDumpOptions? dumpOptions = null,
         IToolLogHandler? toolLogHandler = null,
+        LogPreferences? logPreferences = null,
         CancellationToken cancellationToken = default)
     {
         using IArtifactTool tool = await ArtifactTool.PrepareToolAsync(artifactToolProfile, artifactRegistrationManager, artifactDataManager, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
-        await new ArtifactToolDumpProxy(tool, dumpOptions ?? new ArtifactToolDumpOptions(), toolLogHandler).DumpAsync(cancellationToken).ConfigureAwait(false);
+        await new ArtifactToolDumpProxy(
+                tool,
+                dumpOptions ?? new ArtifactToolDumpOptions(),
+                toolLogHandler,
+                logPreferences ?? LogPreferences.Default
+            ).DumpAsync(cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -149,6 +201,7 @@ public static class ArtifactDumping
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
     /// <param name="dumpOptions">Dump options.</param>
     /// <param name="toolLogHandler">Tool log handler.</param>
+    /// <param name="logPreferences">Preferences to use when logging.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="ArgumentException">Thrown when an invalid profile is provided.</exception>
@@ -164,10 +217,16 @@ public static class ArtifactDumping
         bool getResourceRetrievalTimestamps,
         ArtifactToolDumpOptions? dumpOptions = null,
         IToolLogHandler? toolLogHandler = null,
+        LogPreferences? logPreferences = null,
         CancellationToken cancellationToken = default)
     {
         using IArtifactTool tool = await ArtifactTool.PrepareToolAsync(assemblyLoadContext, artifactToolProfile, artifactRegistrationManager, artifactDataManager, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
-        await new ArtifactToolDumpProxy(tool, dumpOptions ?? new ArtifactToolDumpOptions(), toolLogHandler).DumpAsync(cancellationToken).ConfigureAwait(false);
+        await new ArtifactToolDumpProxy(
+            tool,
+            dumpOptions ?? new ArtifactToolDumpOptions(),
+            toolLogHandler,
+            logPreferences ?? LogPreferences.Default
+        ).DumpAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -182,6 +241,7 @@ public static class ArtifactDumping
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
     /// <param name="dumpOptions">Dump options.</param>
     /// <param name="toolLogHandler">Tool log handler.</param>
+    /// <param name="logPreferences">Preferences to use when logging.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="ArgumentException">Thrown when an invalid profile is provided.</exception>
@@ -196,10 +256,17 @@ public static class ArtifactDumping
         bool getResourceRetrievalTimestamps,
         ArtifactToolDumpOptions? dumpOptions = null,
         IToolLogHandler? toolLogHandler = null,
+        LogPreferences? logPreferences = null,
         CancellationToken cancellationToken = default)
     {
         using IArtifactTool tool = await ArtifactTool.PrepareToolAsync(artifactToolRegistry, artifactToolProfile, artifactRegistrationManager, artifactDataManager, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
-        await new ArtifactToolDumpProxy(tool, dumpOptions ?? new ArtifactToolDumpOptions(), toolLogHandler).DumpAsync(cancellationToken).ConfigureAwait(false);
+        await new ArtifactToolDumpProxy(
+                tool,
+                dumpOptions ?? new ArtifactToolDumpOptions(),
+                toolLogHandler,
+                logPreferences ?? LogPreferences.Default
+            ).DumpAsync(cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -214,6 +281,7 @@ public static class ArtifactDumping
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
     /// <param name="dumpOptions">Dump options.</param>
     /// <param name="toolLogHandler">Tool log handler.</param>
+    /// <param name="logPreferences">Preferences to use when logging.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="ArgumentException">Thrown when an invalid profile is provided.</exception>
@@ -227,10 +295,17 @@ public static class ArtifactDumping
         bool getResourceRetrievalTimestamps,
         ArtifactToolDumpOptions? dumpOptions = null,
         IToolLogHandler? toolLogHandler = null,
+        LogPreferences? logPreferences = null,
         CancellationToken cancellationToken = default) where T : IArtifactToolFactory
     {
         using IArtifactTool tool = await ArtifactTool.PrepareToolAsync<T>(artifactToolProfile, artifactRegistrationManager, artifactDataManager, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
-        await new ArtifactToolDumpProxy(tool, dumpOptions ?? new ArtifactToolDumpOptions(), toolLogHandler).DumpAsync(cancellationToken).ConfigureAwait(false);
+        await new ArtifactToolDumpProxy(
+                tool,
+                dumpOptions ?? new ArtifactToolDumpOptions(),
+                toolLogHandler,
+                logPreferences ?? LogPreferences.Default
+            ).DumpAsync(cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -240,6 +315,7 @@ public static class ArtifactDumping
     /// <param name="artifactData">Artifact data to dump.</param>
     /// <param name="resourceUpdate">Resource update mode.</param>
     /// <param name="logHandler">Log handler.</param>
+    /// <param name="logPreferences">Preferences to use when logging.</param>
     /// <param name="checksumSource">Optional checksum source, if resources are to have their checksums computed.</param>
     /// <param name="timeProvider">Time provider.</param>
     /// <param name="getArtifactRetrievalTimestamps">Get artifact retrieval timestamps.</param>
@@ -252,6 +328,7 @@ public static class ArtifactDumping
         IArtifactData artifactData,
         ResourceUpdateMode resourceUpdate = ResourceUpdateMode.Soft,
         IToolLogHandler? logHandler = null,
+        LogPreferences? logPreferences = null,
         ChecksumSource? checksumSource = null,
         TimeProvider? timeProvider = null,
         bool? getArtifactRetrievalTimestamps = null,
@@ -259,99 +336,81 @@ public static class ArtifactDumping
         EagerFlags eagerFlags = EagerFlags.None,
         CancellationToken cancellationToken = default)
     {
-        switch (resourceUpdate)
+        var existingLogHandler = artifactTool.LogHandler;
+        var existingLogPreferences = artifactTool.LogPreferences;
+        try
         {
-            case ResourceUpdateMode.ArtifactSoft:
-            case ResourceUpdateMode.ArtifactHard:
-            case ResourceUpdateMode.Soft:
-            case ResourceUpdateMode.Hard:
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(resourceUpdate));
-        }
-        ArtifactInfo artifactInfo = artifactData.Info;
-        if ((getArtifactRetrievalTimestamps ?? false) && timeProvider != null && artifactInfo.RetrievalDate == null)
-        {
-            artifactInfo = artifactInfo with { RetrievalDate = timeProvider.GetUtcNow() };
-        }
-        ItemStateFlags iF = await artifactTool.CompareArtifactAsync(artifactInfo, cancellationToken).ConfigureAwait(false);
-        logHandler?.Log(artifactTool.Profile.Tool, artifactTool.Profile.GetGroupOrFallback(artifactInfo.Key.Group), $"{((iF & ItemStateFlags.NewerIdentityMask) != 0 ? "[NEW] " : "")}{artifactInfo.GetInfoTitleString()}", artifactInfo.GetInfoString(), LogLevel.Entry);
-        if ((iF & ItemStateFlags.NewerIdentityMask) != 0)
-        {
-            await artifactTool.RegistrationManager.AddArtifactAsync(artifactInfo with { Full = false }, cancellationToken).ConfigureAwait(false);
-        }
-        switch (resourceUpdate)
-        {
-            case ResourceUpdateMode.ArtifactSoft:
-            case ResourceUpdateMode.ArtifactHard:
-                if ((iF & ItemStateFlags.NewerIdentityMask) == 0) goto SaveArtifact;
-                break;
-            case ResourceUpdateMode.Soft:
-            case ResourceUpdateMode.Hard:
-                break;
-        }
-        // eager artifact dump: whole process can be running concurrently.
-        // eager resource obtain: resources can be retrieved concurrently.
-        bool isConcurrentObtain = (eagerFlags & (EagerFlags.ArtifactDump | EagerFlags.ResourceObtain)) != 0;
-        switch (eagerFlags & artifactTool.AllowedEagerModes & (EagerFlags.ResourceMetadata | EagerFlags.ResourceObtain))
-        {
-            case EagerFlags.ResourceMetadata | EagerFlags.ResourceObtain:
-                {
-                    Task[] tasks = artifactData.Values.Select(async v =>
-                        await UpdateResourceAsync(
-                            artifactTool,
-                            await artifactTool.DetermineUpdatedResourceAsync(v, resourceUpdate, cancellationToken).ConfigureAwait(false),
-                            logHandler,
-                            checksumSource,
-                            timeProvider,
-                            getResourceRetrievalTimestamps,
-                            isConcurrentObtain,
-                            cancellationToken).ConfigureAwait(false)).ToArray();
-                    await Task.WhenAll(tasks).ConfigureAwait(false);
+            if (logHandler != null)
+            {
+                artifactTool.LogHandler = logHandler;
+            }
+            if (logPreferences != null)
+            {
+                artifactTool.LogPreferences = logPreferences;
+            }
+            switch (resourceUpdate)
+            {
+                case ResourceUpdateMode.ArtifactSoft:
+                case ResourceUpdateMode.ArtifactHard:
+                case ResourceUpdateMode.Soft:
+                case ResourceUpdateMode.Hard:
                     break;
-                }
-            case EagerFlags.ResourceMetadata:
-                Task<ArtifactResourceInfoWithState>[] updateTasks = artifactData.Values.Select(v => artifactTool.DetermineUpdatedResourceAsync(v, resourceUpdate, cancellationToken)).ToArray();
-                ArtifactResourceInfoWithState[] items = await Task.WhenAll(updateTasks).ConfigureAwait(false);
-                foreach (ArtifactResourceInfoWithState aris in items)
-                {
-                    await UpdateResourceAsync(
-                        artifactTool,
-                        aris,
-                        logHandler,
-                        checksumSource,
-                        timeProvider,
-                        getResourceRetrievalTimestamps,
-                        isConcurrentObtain,
-                        cancellationToken).ConfigureAwait(false);
-                }
-                break;
-            case EagerFlags.ResourceObtain:
-                {
-                    List<Task> tasks = new();
-                    foreach (ArtifactResourceInfo resource in artifactData.Values)
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(resourceUpdate));
+            }
+            ArtifactInfo artifactInfo = artifactData.Info;
+            if ((getArtifactRetrievalTimestamps ?? false) && timeProvider != null && artifactInfo.RetrievalDate == null)
+            {
+                artifactInfo = artifactInfo with { RetrievalDate = timeProvider.GetUtcNow() };
+            }
+            ItemStateFlags iF = await artifactTool.CompareArtifactAsync(artifactInfo, cancellationToken).ConfigureAwait(false);
+            logHandler?.Log(artifactTool.Profile.Tool, artifactTool.Profile.GetGroupOrFallback(artifactInfo.Key.Group), $"{((iF & ItemStateFlags.NewerIdentityMask) != 0 ? "[NEW] " : "")}{artifactInfo.GetInfoTitleString()}", artifactInfo.GetInfoString(), LogLevel.Entry);
+            if ((iF & ItemStateFlags.NewerIdentityMask) != 0)
+            {
+                await artifactTool.RegistrationManager.AddArtifactAsync(artifactInfo with { Full = false }, cancellationToken).ConfigureAwait(false);
+            }
+            switch (resourceUpdate)
+            {
+                case ResourceUpdateMode.ArtifactSoft:
+                case ResourceUpdateMode.ArtifactHard:
+                    if ((iF & ItemStateFlags.NewerIdentityMask) == 0)
                     {
-                        ArtifactResourceInfoWithState aris = await artifactTool.DetermineUpdatedResourceAsync(resource, resourceUpdate, cancellationToken).ConfigureAwait(false);
-                        tasks.Add(UpdateResourceAsync(
+                        await SaveArtifactAsync(artifactTool, artifactInfo, iF, cancellationToken).ConfigureAwait(false);
+                        return;
+                    }
+                    break;
+                case ResourceUpdateMode.Soft:
+                case ResourceUpdateMode.Hard:
+                    break;
+            }
+            // eager artifact dump: whole process can be running concurrently.
+            // eager resource obtain: resources can be retrieved concurrently.
+            bool isConcurrentObtain = (eagerFlags & (EagerFlags.ArtifactDump | EagerFlags.ResourceObtain)) != 0;
+            switch (eagerFlags & artifactTool.AllowedEagerModes & (EagerFlags.ResourceMetadata | EagerFlags.ResourceObtain))
+            {
+                case EagerFlags.ResourceMetadata | EagerFlags.ResourceObtain:
+                    {
+                        Task[] tasks = artifactData.Values.Select(async v =>
+                            await UpdateResourceAsync(
+                                artifactTool,
+                                await artifactTool.DetermineUpdatedResourceAsync(v, resourceUpdate, cancellationToken).ConfigureAwait(false),
+                                logHandler,
+                                checksumSource,
+                                timeProvider,
+                                getResourceRetrievalTimestamps,
+                                isConcurrentObtain,
+                                cancellationToken).ConfigureAwait(false)).ToArray();
+                        await Task.WhenAll(tasks).ConfigureAwait(false);
+                        break;
+                    }
+                case EagerFlags.ResourceMetadata:
+                    Task<ArtifactResourceInfoWithState>[] updateTasks = artifactData.Values.Select(v => artifactTool.DetermineUpdatedResourceAsync(v, resourceUpdate, cancellationToken)).ToArray();
+                    ArtifactResourceInfoWithState[] items = await Task.WhenAll(updateTasks).ConfigureAwait(false);
+                    foreach (ArtifactResourceInfoWithState aris in items)
+                    {
+                        await UpdateResourceAsync(
                             artifactTool,
                             aris,
-                            logHandler,
-                            checksumSource,
-                            timeProvider,
-                            getResourceRetrievalTimestamps,
-                            isConcurrentObtain,
-                            cancellationToken));
-                    }
-                    await Task.WhenAll(tasks).ConfigureAwait(false);
-                    break;
-                }
-            default:
-                {
-                    foreach (ArtifactResourceInfo resource in artifactData.Values)
-                    {
-                        await UpdateResourceAsync(
-                            artifactTool,
-                            await artifactTool.DetermineUpdatedResourceAsync(resource, resourceUpdate, cancellationToken).ConfigureAwait(false),
                             logHandler,
                             checksumSource,
                             timeProvider,
@@ -360,10 +419,54 @@ public static class ArtifactDumping
                             cancellationToken).ConfigureAwait(false);
                     }
                     break;
-                }
+                case EagerFlags.ResourceObtain:
+                    {
+                        List<Task> tasks = new();
+                        foreach (ArtifactResourceInfo resource in artifactData.Values)
+                        {
+                            ArtifactResourceInfoWithState aris = await artifactTool.DetermineUpdatedResourceAsync(resource, resourceUpdate, cancellationToken).ConfigureAwait(false);
+                            tasks.Add(UpdateResourceAsync(
+                                artifactTool,
+                                aris,
+                                logHandler,
+                                checksumSource,
+                                timeProvider,
+                                getResourceRetrievalTimestamps,
+                                isConcurrentObtain,
+                                cancellationToken));
+                        }
+                        await Task.WhenAll(tasks).ConfigureAwait(false);
+                        break;
+                    }
+                default:
+                    {
+                        foreach (ArtifactResourceInfo resource in artifactData.Values)
+                        {
+                            await UpdateResourceAsync(
+                                artifactTool,
+                                await artifactTool.DetermineUpdatedResourceAsync(resource, resourceUpdate, cancellationToken).ConfigureAwait(false),
+                                logHandler,
+                                checksumSource,
+                                timeProvider,
+                                getResourceRetrievalTimestamps,
+                                isConcurrentObtain,
+                                cancellationToken).ConfigureAwait(false);
+                        }
+                        break;
+                    }
+            }
+            await SaveArtifactAsync(artifactTool, artifactInfo, iF, cancellationToken).ConfigureAwait(false);
         }
-        SaveArtifact:
-        if ((iF & ItemStateFlags.NewerIdentityMask) != 0)
+        finally
+        {
+            artifactTool.LogHandler = existingLogHandler;
+            artifactTool.LogPreferences = existingLogPreferences;
+        }
+    }
+
+    private static async Task SaveArtifactAsync(IArtifactTool artifactTool, ArtifactInfo artifactInfo, ItemStateFlags itemStateFlags, CancellationToken cancellationToken)
+    {
+        if ((itemStateFlags & ItemStateFlags.NewerIdentityMask) != 0)
         {
             await artifactTool.RegistrationManager.AddArtifactAsync(artifactInfo, cancellationToken).ConfigureAwait(false);
         }

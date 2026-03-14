@@ -79,6 +79,7 @@ public class ValidateCommand : ToolCommandBase
             }
         }
         IToolLogHandler l = ToolLogHandlerProvider.GetDefaultToolLogHandler();
+        var logPreferences = GetLogPreferences(parseResult);
         List<ArtifactToolProfile> profiles = new();
         foreach (string profileFile in parseResult.GetRequiredValue(ProfileFilesArg))
         {
@@ -97,7 +98,7 @@ public class ValidateCommand : ToolCommandBase
         }
         using var adm = DataProvider.CreateArtifactDataManager(parseResult);
         using var arm = RegistrationProvider.CreateArtifactRegistrationManager(parseResult);
-        var validationContext = new ValidationContext(PluginStore, arm, adm, l);
+        var validationContext = new ValidationContext(PluginStore, arm, adm, l, logPreferences);
         ValidationProcessResult result;
         ChecksumSource? checksumSourceForAdd = parseResult.GetValue(AddChecksumOption) ? checksumSource : null;
         if (profiles.Count == 0)

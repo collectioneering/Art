@@ -9,6 +9,7 @@ public class ValidationContext : ToolControlContext
     private readonly IArtifactRegistrationManager _arm;
     private readonly IArtifactDataManager _adm;
     private readonly IToolLogHandler _l;
+    private readonly LogPreferences _logPreferences;
 
     public bool AnyFailed => _failed.Count != 0;
 
@@ -16,11 +17,12 @@ public class ValidationContext : ToolControlContext
 
     public int CountResourceFailures() => _failed.Sum(v => v.Value.Count);
 
-    public ValidationContext(IArtifactToolRegistryStore pluginStore, IArtifactRegistrationManager arm, IArtifactDataManager adm, IToolLogHandler l) : base(pluginStore)
+    public ValidationContext(IArtifactToolRegistryStore pluginStore, IArtifactRegistrationManager arm, IArtifactDataManager adm, IToolLogHandler l, LogPreferences logPreferences) : base(pluginStore)
     {
         _arm = arm;
         _adm = adm;
         _l = l;
+        _logPreferences = logPreferences;
     }
 
     private void AddFail(ArtifactResourceInfo r)
@@ -142,7 +144,10 @@ public class ValidationContext : ToolControlContext
         return new ValidationProcessResult(artifactCount, resourceCount);
     }
 
-    public RepairContext CreateRepairContext() => new(PluginStore, _failed, _arm, _adm, _l);
+    public RepairContext CreateRepairContext()
+    {
+        return new RepairContext(PluginStore, _failed, _arm, _adm, _l, _logPreferences);
+    }
 }
 
 public readonly record struct ValidationProcessResult(int Artifacts, int Resources);

@@ -19,21 +19,28 @@ public record ArtifactToolListProxy
     /// <summary>Log handler.</summary>
     public IToolLogHandler? LogHandler { get; init; }
 
+    /// <summary>Preferences to use when logging.</summary>
+    public LogPreferences LogPreferences { get; init; }
+
     /// <summary>
     /// Proxy to run artifact tool as a list tool.
     /// </summary>
     /// <param name="artifactTool">Artifact tool.</param>
     /// <param name="options">List options.</param>
     /// <param name="logHandler">Log handler.</param>
+    /// <param name="logPreferences">Preferences to use when logging.</param>
     /// <exception cref="ArgumentException">Thrown when invalid options are specified.</exception>
-    public ArtifactToolListProxy(IArtifactTool artifactTool, ArtifactToolListOptions options, IToolLogHandler? logHandler)
+    public ArtifactToolListProxy(
+        IArtifactTool artifactTool,
+        ArtifactToolListOptions options,
+        IToolLogHandler? logHandler,
+        LogPreferences logPreferences)
     {
-        if (artifactTool == null) throw new ArgumentNullException(nameof(artifactTool));
-        if (options == null) throw new ArgumentNullException(nameof(options));
+        ArtifactTool = artifactTool ?? throw new ArgumentNullException(nameof(artifactTool));
+        Options = options ?? throw new ArgumentNullException(nameof(options));
         ArtifactToolListOptions.Validate(options, false);
-        ArtifactTool = artifactTool;
-        Options = options;
         LogHandler = logHandler;
+        LogPreferences = logPreferences;
     }
 
     #region API
@@ -55,80 +62,95 @@ public record ArtifactToolListProxy
         {
             artifactTool = new FindAsListTool(findTool, artifactList);
         }
-        if (LogHandler != null) artifactTool.LogHandler = LogHandler;
-        if (artifactTool is IArtifactListTool listTool)
+        var existingLogHandler = artifactTool.LogHandler;
+        var existingLogPreferences = artifactTool.LogPreferences;
+        try
         {
-            IAsyncEnumerable<IArtifactData> enumerable = listTool.ListAsync(cancellationToken);
-            if ((Options.EagerFlags & artifactTool.AllowedEagerModes & EagerFlags.ArtifactList) != 0) enumerable = enumerable.EagerAsync();
-            await foreach (IArtifactData data in enumerable.ConfigureAwait(false))
+            if (LogHandler != null)
             {
-                switch (Options.SkipMode)
-                {
-                    case ArtifactSkipMode.None:
-                        break;
-                    case ArtifactSkipMode.FastExit:
-                        {
-                            ArtifactInfo? info = await artifactTool.RegistrationManager.TryGetArtifactAsync(data.Info.Key, cancellationToken).ConfigureAwait(false);
-                            if (info != null)
-                                yield break;
-                            break;
-                        }
-                    case ArtifactSkipMode.Known:
-                        {
-                            ArtifactInfo? info = await artifactTool.RegistrationManager.TryGetArtifactAsync(data.Info.Key, cancellationToken).ConfigureAwait(false);
-                            if (info != null)
-                                continue;
-                            break;
-                        }
-                }
-                if (!data.Info.Full && !Options.IncludeNonFull) continue;
-                yield return data;
+                artifactTool.LogHandler = LogHandler;
             }
-            yield break;
-        }
-        if (artifactTool is IArtifactDumpTool dumpTool)
-        {
-            IArtifactDataManager previousAdm = artifactTool.DataManager;
-            IArtifactRegistrationManager previousArm = artifactTool.RegistrationManager;
-            try
+            artifactTool.LogPreferences = LogPreferences;
+            if (LogHandler != null) artifactTool.LogHandler = LogHandler;
+            if (artifactTool is IArtifactListTool listTool)
             {
-                InMemoryArtifactDataManager adm = new();
-                InMemoryArtifactRegistrationManager arm = new();
-                artifactTool.DataManager = adm;
-                artifactTool.RegistrationManager = arm;
-                await dumpTool.DumpAsync(cancellationToken).ConfigureAwait(false);
-                HashSet<ArtifactKey> known = new();
-                foreach ((ArtifactKey ak, List<ArtifactResourceInfo> resources) in adm.Artifacts)
+                IAsyncEnumerable<IArtifactData> enumerable = listTool.ListAsync(cancellationToken);
+                if ((Options.EagerFlags & artifactTool.AllowedEagerModes & EagerFlags.ArtifactList) != 0) enumerable = enumerable.EagerAsync();
+                await foreach (IArtifactData data in enumerable.ConfigureAwait(false))
                 {
-                    if (await artifactTool.RegistrationManager.TryGetArtifactAsync(ak, cancellationToken).ConfigureAwait(false) is not { } info)
+                    switch (Options.SkipMode)
                     {
-                        continue;
+                        case ArtifactSkipMode.None:
+                            break;
+                        case ArtifactSkipMode.FastExit:
+                            {
+                                ArtifactInfo? info = await artifactTool.RegistrationManager.TryGetArtifactAsync(data.Info.Key, cancellationToken).ConfigureAwait(false);
+                                if (info != null)
+                                    yield break;
+                                break;
+                            }
+                        case ArtifactSkipMode.Known:
+                            {
+                                ArtifactInfo? info = await artifactTool.RegistrationManager.TryGetArtifactAsync(data.Info.Key, cancellationToken).ConfigureAwait(false);
+                                if (info != null)
+                                    continue;
+                                break;
+                            }
                     }
-                    if (!known.Add(ak))
-                    {
-                        continue;
-                    }
-                    ArtifactData data = new(info);
-                    data.AddRange(resources);
+                    if (!data.Info.Full && !Options.IncludeNonFull) continue;
                     yield return data;
                 }
-                foreach (var info in await arm.ListArtifactsAsync(cancellationToken).ConfigureAwait(false))
-                {
-                    if (!known.Add(info.Key))
-                    {
-                        continue;
-                    }
-                    yield return new ArtifactData(info);
-                }
+                yield break;
             }
-            finally
+            if (artifactTool is IArtifactDumpTool dumpTool)
             {
-                artifactTool.DataManager = previousAdm;
-                artifactTool.RegistrationManager = previousArm;
+                IArtifactDataManager previousAdm = artifactTool.DataManager;
+                IArtifactRegistrationManager previousArm = artifactTool.RegistrationManager;
+                try
+                {
+                    InMemoryArtifactDataManager adm = new();
+                    InMemoryArtifactRegistrationManager arm = new();
+                    artifactTool.DataManager = adm;
+                    artifactTool.RegistrationManager = arm;
+                    await dumpTool.DumpAsync(cancellationToken).ConfigureAwait(false);
+                    HashSet<ArtifactKey> known = new();
+                    foreach ((ArtifactKey ak, List<ArtifactResourceInfo> resources) in adm.Artifacts)
+                    {
+                        if (await artifactTool.RegistrationManager.TryGetArtifactAsync(ak, cancellationToken).ConfigureAwait(false) is not { } info)
+                        {
+                            continue;
+                        }
+                        if (!known.Add(ak))
+                        {
+                            continue;
+                        }
+                        ArtifactData data = new(info);
+                        data.AddRange(resources);
+                        yield return data;
+                    }
+                    foreach (var info in await arm.ListArtifactsAsync(cancellationToken).ConfigureAwait(false))
+                    {
+                        if (!known.Add(info.Key))
+                        {
+                            continue;
+                        }
+                        yield return new ArtifactData(info);
+                    }
+                }
+                finally
+                {
+                    artifactTool.DataManager = previousAdm;
+                    artifactTool.RegistrationManager = previousArm;
+                }
+                yield break;
             }
-            yield break;
+            throw new NotSupportedException("Artifact tool is not a supported type");
         }
-        throw new NotSupportedException("Artifact tool is not a supported type");
+        finally
+        {
+            artifactTool.LogHandler = existingLogHandler;
+            artifactTool.LogPreferences = existingLogPreferences;
+        }
     }
 
     #endregion

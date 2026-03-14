@@ -31,6 +31,6 @@ public class ArtifactToolSelfFactoryTests
     }
 }
 
-internal partial class ArtifactToolSelfFactoryTestsDummyTool : ArtifactTool, IArtifactToolSelfFactory<ArtifactToolSelfFactoryTestsDummyTool>
+internal class ArtifactToolSelfFactoryTestsDummyTool : ArtifactTool, IArtifactToolSelfFactory<ArtifactToolSelfFactoryTestsDummyTool>
 {
 }

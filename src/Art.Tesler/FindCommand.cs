@@ -34,12 +34,13 @@ public class FindCommand : FindListCommandBase
     protected override async Task ExecuteAsync(
         ParseResult parseResult,
         IToolLogHandler logHandler,
+        LogPreferences logPreferences,
         bool listResource,
         bool detailed,
         IArtifactTool tool,
         CancellationToken cancellationToken)
     {
-        ArtifactToolFindProxy proxy = new(tool, logHandler);
+        ArtifactToolFindProxy proxy = new(tool, logHandler, logPreferences);
         foreach (string id in parseResult.GetRequiredValue(IdsArg))
         {
             IArtifactData? data = null;

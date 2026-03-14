@@ -29,6 +29,10 @@ public abstract class ToolCommandBase : CommandBase
 
     protected Option<bool> NoResourceRetrievalTimestampsOption;
 
+    protected Option<DataUnits> LogDataUnitsOption;
+
+    protected Option<DataUnitFormat> LogDataUnitFormatOption;
+
     protected ToolCommandBase(
         IToolLogHandlerProvider toolLogHandlerProvider,
         IArtifactToolRegistryStore pluginStore,
@@ -55,6 +59,14 @@ public abstract class ToolCommandBase : CommandBase
         Add(NoArtifactRetrievalTimestampsOption);
         NoResourceRetrievalTimestampsOption = new Option<bool>("--no-resource-retrieval-timestamps") { Description = "Don't apply resource retrieval timestamps" };
         Add(NoResourceRetrievalTimestampsOption);
+        LogDataUnitsOption = new Option<DataUnits>("--log-data-units") { Description = $"Data size units ({Common.DataUnitsModes})" };
+        LogDataUnitsOption.HelpName = "units";
+        LogDataUnitsOption.DefaultValueFactory = static _ => DataUnits.Binary;
+        Add(LogDataUnitsOption);
+        LogDataUnitFormatOption = new Option<DataUnitFormat>("--log-data-unit-format") { Description = $"Data size format ({Common.DataUnitFormatModes})" };
+        LogDataUnitFormatOption.HelpName = "format";
+        LogDataUnitFormatOption.DefaultValueFactory = static _ => DataUnitFormat.Short;
+        Add(LogDataUnitFormatOption);
     }
 
     protected ArtifactToolProfile PrepareProfile(ParseResult parseResult, ArtifactToolProfile artifactToolProfile)
@@ -92,6 +104,13 @@ public abstract class ToolCommandBase : CommandBase
         return (getArtifactRetrievalTimestamps: !noArtifactRetrievalTimestamps, getResourceRetrievalTimestamps: !noResourceRetrievalTimestamps);
     }
 
+    protected LogPreferences GetLogPreferences(ParseResult parseResult)
+    {
+        DataUnits dataUnits = parseResult.GetRequiredValue(LogDataUnitsOption);
+        DataUnitFormat dataUnitFormat = parseResult.GetRequiredValue(LogDataUnitFormatOption);
+        return new LogPreferences(DataUnits: dataUnits, DataUnitFormat: dataUnitFormat);
+    }
+
     protected async Task<IArtifactTool> GetToolAsync(
         ArtifactToolProfile artifactToolProfile,
         IArtifactRegistrationManager arm,
@@ -105,7 +124,16 @@ public abstract class ToolCommandBase : CommandBase
         {
             throw new ArtifactToolNotFoundException(artifactToolProfile.Tool);
         }
-        return await ArtifactTool.PrepareToolAsync(plugin, artifactToolProfile, arm, adm, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
+        return await ArtifactTool.PrepareToolAsync(
+                plugin,
+                artifactToolProfile,
+                arm,
+                adm,
+                timeProvider,
+                getArtifactRetrievalTimestamps,
+                getResourceRetrievalTimestamps,
+                cancellationToken)
+            .ConfigureAwait(false);
     }
 
     protected IToolPropertyProvider? GetOptionalToolPropertyProvider(ParseResult parseResult)

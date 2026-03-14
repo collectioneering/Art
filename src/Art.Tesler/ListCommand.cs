@@ -30,13 +30,14 @@ public class ListCommand : FindListCommandBase
     protected override async Task ExecuteAsync(
         ParseResult parseResult,
         IToolLogHandler logHandler,
+        LogPreferences logPreferences,
         bool listResource,
         bool detailed,
         IArtifactTool tool,
         CancellationToken cancellationToken)
     {
         ArtifactToolListOptions options = new();
-        ArtifactToolListProxy proxy = new(tool, options, logHandler);
+        ArtifactToolListProxy proxy = new(tool, options, logHandler, logPreferences);
         await foreach (IArtifactData data in proxy.ListAsync(cancellationToken).ConfigureAwait(false))
         {
             await Common.DisplayAsync(data, listResource, detailed, ToolOutput).ConfigureAwait(false);
