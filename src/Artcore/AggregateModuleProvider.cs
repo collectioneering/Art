@@ -56,9 +56,9 @@ public class AggregateModuleProvider<TModule> : IModuleProvider<TModule>
     {
         foreach (var provider in _providers)
         {
-            foreach (var location in provider.LoadModuleLocations())
+            foreach (var innerModuleLocation in provider.LoadModuleLocations())
             {
-                yield return location;
+                yield return new AggregateModuleLocation(provider, innerModuleLocation);
             }
         }
     }
