@@ -6,6 +6,11 @@
 public interface ILogHandler
 {
     /// <summary>
+    /// Preferences to use when logging.
+    /// </summary>
+    LogPreferences LogPreferences { get; set; }
+
+    /// <summary>
     /// Logs a message.
     /// </summary>
     /// <param name="title">Log title.</param>

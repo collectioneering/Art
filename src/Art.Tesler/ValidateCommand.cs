@@ -78,8 +78,8 @@ public class ValidateCommand : ToolCommandBase
                 return 2;
             }
         }
-        IToolLogHandler l = ToolLogHandlerProvider.GetDefaultToolLogHandler();
         var logPreferences = GetLogPreferences(parseResult);
+        IToolLogHandler l = ToolLogHandlerProvider.GetDefaultToolLogHandler(logPreferences);
         List<ArtifactToolProfile> profiles = new();
         foreach (string profileFile in parseResult.GetRequiredValue(ProfileFilesArg))
         {

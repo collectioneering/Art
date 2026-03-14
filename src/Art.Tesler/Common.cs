@@ -33,11 +33,16 @@ internal static class Common
                 Display(r, detailed, console);
     }
 
-    internal static Task DisplayAsync(IArtifactData d, bool listResource, bool detailed, IOutputControl console)
+    internal static Task DisplayAsync(
+        IArtifactData d,
+        bool listResource,
+        bool detailed,
+        IOutputControl console,
+        LogPreferences logPreferences)
     {
         if (console is ObjectToolLogHandlerProvider provider)
         {
-            var handler = provider.GetDefaultToolLogHandler();
+            var handler = provider.GetDefaultToolLogHandler(logPreferences);
             handler.Log(new ArtifactDataObjectLog(null, null, LogLevel.Information, d));
             return Task.CompletedTask;
         }

@@ -27,8 +27,7 @@ public class ArtifactToolDumpProxyTests
         var proxy = new ArtifactToolDumpProxy(
             tool,
             new ArtifactToolDumpOptions(),
-            null,
-            LogPreferences.Default);
+            null);
         Assert.That(async () => await proxy.DumpAsync(), Throws.InstanceOf<NotSupportedException>());
     }
 
@@ -52,8 +51,7 @@ public class ArtifactToolDumpProxyTests
         var proxy = new ArtifactToolDumpProxy(
             tool,
             new ArtifactToolDumpOptions(),
-            null,
-            LogPreferences.Default);
+            null);
         await proxy.DumpAsync();
         Assert.That((await arm.ListArtifactsAsync()).Select(v => int.Parse(v.Key.Id)), Is.EquivalentTo([1, 2, 3]));
     }
@@ -126,8 +124,7 @@ public class ArtifactToolDumpProxyTests
         var proxy = new ArtifactToolDumpProxy(
             tool,
             new ArtifactToolDumpOptions(),
-            null,
-            LogPreferences.Default);
+            null);
         await proxy.DumpAsync();
         Assert.That((await arm.ListArtifactsAsync())
             .Select(v => (id: int.Parse(v.Key.Id), timestamp: v.RetrievalDate)),
@@ -161,8 +158,7 @@ public class ArtifactToolDumpProxyTests
         var proxy = new ArtifactToolDumpProxy(
             tool,
             new ArtifactToolDumpOptions(),
-            null,
-            LogPreferences.Default);
+            null);
         await proxy.DumpAsync();
         Assert.That((await arm.ListArtifactsAsync()).Select(v => int.Parse(v.Key.Id)), Is.EquivalentTo([1, 2, 3]));
     }
@@ -185,8 +181,7 @@ public class ArtifactToolDumpProxyTests
         var proxy = new ArtifactToolDumpProxy(
             tool,
             new ArtifactToolDumpOptions(),
-            null,
-            LogPreferences.Default);
+            null);
         await proxy.DumpAsync();
         Assert.That((await arm.ListArtifactsAsync()).Select(v => int.Parse(v.Key.Id)), Is.EquivalentTo([1, 2, 3]));
     }

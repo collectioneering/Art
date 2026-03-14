@@ -18,13 +18,13 @@ public class ObjectToolLogHandlerProvider : ToolLogHandlerProviderBase
         ErrorQueue = errorQueue;
     }
 
-    public override ObjectToolLogHandler GetStreamToolLogHandler()
+    public override ObjectToolLogHandler GetStreamToolLogHandler(LogPreferences logPreferences)
     {
-        return new ObjectToolLogHandler(OutQueue, ErrorQueue, true);
+        return new ObjectToolLogHandler(OutQueue, ErrorQueue, true, logPreferences);
     }
 
-    public override ObjectToolLogHandler GetDefaultToolLogHandler()
+    public override ObjectToolLogHandler GetDefaultToolLogHandler(LogPreferences logPreferences)
     {
-        return new ObjectToolLogHandler(OutQueue, ErrorQueue, false);
+        return new ObjectToolLogHandler(OutQueue, ErrorQueue, false, logPreferences);
     }
 }

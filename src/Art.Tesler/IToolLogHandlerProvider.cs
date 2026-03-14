@@ -2,9 +2,9 @@
 
 public interface IToolLogHandlerProvider : IOutputControl
 {
-    internal IToolLogHandler GetStreamToolLogHandler();
+    internal IToolLogHandler GetStreamToolLogHandler(LogPreferences logPreferences);
 
-    internal IToolLogHandler GetDefaultToolLogHandler();
+    internal IToolLogHandler GetDefaultToolLogHandler(LogPreferences logPreferences);
 
     internal Stream GetOutStream();
 }

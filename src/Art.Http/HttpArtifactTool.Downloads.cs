@@ -310,7 +310,7 @@ public partial class HttpArtifactTool
             && sourceMessage.Content.Headers.ContentLength is { } contentLength
             && sourceMessage.RequestMessage is { RequestUri: { } requestUri })
         {
-            var logPreferences = LogPreferences;
+            var logPreferences = logHandler.LogPreferences;
             string sizeString = DataSizes.GetSizeString(contentLength, logPreferences.DataUnits, logPreferences.DataUnitFormat);
             string desc = $"{(requestUri.Segments is { Length: > 0 } segments ? segments[^1] : "Incoming file")} ({sizeString})";
             IOperationProgressContext? context;

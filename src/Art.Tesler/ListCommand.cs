@@ -37,10 +37,15 @@ public class ListCommand : FindListCommandBase
         CancellationToken cancellationToken)
     {
         ArtifactToolListOptions options = new();
-        ArtifactToolListProxy proxy = new(tool, options, logHandler, logPreferences);
+        ArtifactToolListProxy proxy = new(tool, options, logHandler);
         await foreach (IArtifactData data in proxy.ListAsync(cancellationToken).ConfigureAwait(false))
         {
-            await Common.DisplayAsync(data, listResource, detailed, ToolOutput).ConfigureAwait(false);
+            await Common.DisplayAsync(
+                data,
+                listResource,
+                detailed,
+                ToolOutput,
+                logPreferences).ConfigureAwait(false);
         }
     }
 }

@@ -105,7 +105,12 @@ public class LoggingTests : CommandTestBase
     private static string ConstructOutput(string outputDelimiter, string toolString, string group, string? title, string? body, LogLevel logLevel)
     {
         var expectedOutput = new StringWriter { NewLine = outputDelimiter };
-        var expectedOutputHandler = new PlainLogHandler(expectedOutput, TextWriter.Null, TextWriter.Null, false);
+        var expectedOutputHandler = new PlainLogHandler(
+            expectedOutput,
+            TextWriter.Null,
+            TextWriter.Null,
+            LogPreferences.Default,
+            false);
         expectedOutputHandler.Log(toolString, group, title, body, logLevel);
         return expectedOutput.ToString();
     }
@@ -113,7 +118,12 @@ public class LoggingTests : CommandTestBase
     private static string ConstructWarnOutput(string outputDelimiter, string toolString, string group, string? title, string? body, LogLevel logLevel)
     {
         var expectedWarnOutput = new StringWriter { NewLine = outputDelimiter };
-        var expectedWarnOutputHandler = new PlainLogHandler(TextWriter.Null, expectedWarnOutput, TextWriter.Null, false);
+        var expectedWarnOutputHandler = new PlainLogHandler(
+            TextWriter.Null,
+            expectedWarnOutput,
+            TextWriter.Null,
+            LogPreferences.Default,
+            false);
         expectedWarnOutputHandler.Log(toolString, group, title, body, logLevel);
         return expectedWarnOutput.ToString();
     }
@@ -121,7 +131,12 @@ public class LoggingTests : CommandTestBase
     private static string ConstructErrorOutput(string outputDelimiter, string toolString, string group, string? title, string? body, LogLevel logLevel)
     {
         var expectedErrorOutput = new StringWriter { NewLine = outputDelimiter };
-        var expectedErrorOutputHandler = new PlainLogHandler(TextWriter.Null, TextWriter.Null, expectedErrorOutput, false);
+        var expectedErrorOutputHandler = new PlainLogHandler(
+            TextWriter.Null,
+            TextWriter.Null,
+            expectedErrorOutput,
+            LogPreferences.Default,
+            false);
         expectedErrorOutputHandler.Log(toolString, group, title, body, logLevel);
         return expectedErrorOutput.ToString();
     }

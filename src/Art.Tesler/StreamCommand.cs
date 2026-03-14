@@ -45,7 +45,8 @@ public class StreamCommand : ToolCommandBase
 
     protected override async Task<int> RunAsync(ParseResult parseResult, CancellationToken cancellationToken)
     {
-        IToolLogHandler l = ToolLogHandlerProvider.GetStreamToolLogHandler();
+        var logPreferences = GetLogPreferences(parseResult);
+        IToolLogHandler l = ToolLogHandlerProvider.GetStreamToolLogHandler(logPreferences);
         List<ArtifactToolProfile> profiles = new();
         ResolveAndAddProfiles(ProfileResolver, profiles, parseResult.GetRequiredValue(ProfileFileArg));
         if (profiles.Count == 0)
@@ -58,13 +59,12 @@ public class StreamCommand : ToolCommandBase
             throw new ArtUserException("Multiple profiles were loaded from specified inputs, this command requires exactly one");
         }
 
-        var logPreferences = GetLogPreferences(parseResult);
         var profile = PrepareProfile(parseResult, profiles[0]);
         using var arm = new InMemoryArtifactRegistrationManager();
         using var adm = new InMemoryArtifactDataManager();
         (bool getArtifactRetrievalTimestamps, bool getResourceRetrievalTimestamps) = GetArtifactRetrievalOptions(parseResult);
         using var tool = await GetToolAsync(profile, arm, adm, TimeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
-        var listProxy = new ArtifactToolListProxy(tool, ArtifactToolListOptions.Default, l, logPreferences);
+        var listProxy = new ArtifactToolListProxy(tool, ArtifactToolListOptions.Default, l);
 #if NET10_0_OR_GREATER
         var res = await AsyncEnumerable.ToListAsync(listProxy.ListAsync(cancellationToken), cancellationToken: cancellationToken).ConfigureAwait(false);
 #else

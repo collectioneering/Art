@@ -13,13 +13,13 @@ public class PlainToolLogHandlerProvider : ToolLogHandlerProviderBase
     {
     }
 
-    public override IToolLogHandler GetStreamToolLogHandler()
+    public override IToolLogHandler GetStreamToolLogHandler(LogPreferences logPreferences)
     {
-        return new PlainLogHandler(Out, Warn, Error, true);
+        return new PlainLogHandler(Out, Warn, Error, logPreferences, true);
     }
 
-    public override IToolLogHandler GetDefaultToolLogHandler()
+    public override IToolLogHandler GetDefaultToolLogHandler(LogPreferences logPreferences)
     {
-        return new PlainLogHandler(Out, Warn, Error, false);
+        return new PlainLogHandler(Out, Warn, Error, logPreferences, false);
     }
 }

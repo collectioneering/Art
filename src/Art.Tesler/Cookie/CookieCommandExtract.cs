@@ -56,8 +56,13 @@ public class CookieCommandExtract : CommandBase
     private async Task ExportAsync(CookieSource source, IEnumerable<string> domains, bool includeSubdomains, TextWriter output, CancellationToken cancellationToken)
     {
         CookieContainer cc = new();
-        await source.LoadCookiesAsync(cc, domains.Select(v => new CookieFilter(v, includeSubdomains)).ToList(), _toolLogHandlerProvider.GetDefaultToolLogHandler(), cancellationToken).ConfigureAwait(false);
-        output.Write("# Netscape HTTP Cookie File\n");
+        await source.LoadCookiesAsync(
+                cc,
+                domains.Select(v => new CookieFilter(v, includeSubdomains)).ToList(),
+                _toolLogHandlerProvider.GetDefaultToolLogHandler(LogPreferences.Default),
+                cancellationToken)
+            .ConfigureAwait(false);
+        await output.WriteAsync("# Netscape HTTP Cookie File\n").ConfigureAwait(false);
         StringBuilder sb = new();
         foreach (object? cookie in cc.GetAllCookies())
         {
@@ -69,7 +74,7 @@ public class CookieCommandExtract : CommandBase
             sb.Append(c.Expires == DateTime.MinValue ? 0 : (long)c.Expires.Subtract(DateTime.UnixEpoch).TotalSeconds).Append('\t');
             sb.Append(c.Name).Append('\t');
             sb.Append(c.Value).Append('\n');
-            output.Write(sb.ToString());
+            await output.WriteAsync(sb.ToString()).ConfigureAwait(false);
             sb.Clear();
         }
     }

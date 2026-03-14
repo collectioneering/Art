@@ -54,7 +54,7 @@ public class RepairContext : ToolControlContext
                 // ReSharper disable SuspiciousTypeConversion.Global
                 case IArtifactFindTool:
                     {
-                        var findProxy = new ArtifactToolFindProxy(tool, _l, _logPreferences);
+                        var findProxy = new ArtifactToolFindProxy(tool, _l);
                         foreach ((ArtifactKey key, List<ArtifactResourceInfo> list) in _failed.Where(v => v.Key.Tool == actualProfile.Tool && v.Key.Group == group).ToList())
                         {
                             if (await findProxy.FindAsync(key.Id, cancellationToken).ConfigureAwait(false) is { } data)
@@ -70,7 +70,7 @@ public class RepairContext : ToolControlContext
                     }
                 case IArtifactListTool:
                     {
-                        var listProxy = new ArtifactToolListProxy(tool, ArtifactToolListOptions.Default, _l, _logPreferences);
+                        var listProxy = new ArtifactToolListProxy(tool, ArtifactToolListOptions.Default, _l);
                         await foreach (IArtifactData data in listProxy.ListAsync(cancellationToken).ConfigureAwait(false))
                         {
                             if (_failed.TryGetValue(data.Info.Key, out List<ArtifactResourceInfo>? list))

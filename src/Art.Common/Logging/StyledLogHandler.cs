@@ -10,6 +10,9 @@ public class StyledLogHandler : IToolLogHandler
     private readonly AutoResetEvent _wh;
     private readonly bool _itsumoError;
 
+    /// <inheritdoc />
+    public LogPreferences LogPreferences { get; set; }
+
     /// <summary>
     /// Output writer.
     /// </summary>
@@ -51,13 +54,21 @@ public class StyledLogHandler : IToolLogHandler
     /// <param name="outWriter">Writer for normal output.</param>
     /// <param name="warnWriter">Writer for warning output.</param>
     /// <param name="errorWriter">Writer for error output.</param>
+    /// <param name="logPreferences">Preferences to use when logging.</param>
     /// <param name="alwaysPrintToErrorStream">If true, always print output to error stream.</param>
     /// <param name="enableFancy">Enable fancy output.</param>
-    public StyledLogHandler(TextWriter outWriter, TextWriter warnWriter, TextWriter errorWriter, bool alwaysPrintToErrorStream, bool enableFancy = false)
+    public StyledLogHandler(
+        TextWriter outWriter,
+        TextWriter warnWriter,
+        TextWriter errorWriter,
+        LogPreferences logPreferences,
+        bool alwaysPrintToErrorStream,
+        bool enableFancy = false)
     {
         Out = outWriter ?? throw new ArgumentNullException(nameof(outWriter));
         Warn = warnWriter ?? throw new ArgumentNullException(nameof(warnWriter));
         Error = errorWriter ?? throw new ArgumentNullException(nameof(errorWriter));
+        LogPreferences = logPreferences;
         _pre = enableFancy ? s_preOsx : s_preDefault;
         _wh = new AutoResetEvent(true);
         _itsumoError = alwaysPrintToErrorStream;

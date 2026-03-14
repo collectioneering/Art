@@ -40,7 +40,7 @@ public class FindCommand : FindListCommandBase
         IArtifactTool tool,
         CancellationToken cancellationToken)
     {
-        ArtifactToolFindProxy proxy = new(tool, logHandler, logPreferences);
+        ArtifactToolFindProxy proxy = new(tool, logHandler);
         foreach (string id in parseResult.GetRequiredValue(IdsArg))
         {
             IArtifactData? data = null;
@@ -59,7 +59,13 @@ public class FindCommand : FindListCommandBase
             }
             if (data != null)
             {
-                await Common.DisplayAsync(data, listResource, detailed, ToolOutput).ConfigureAwait(false);
+                await Common.DisplayAsync(
+                        data,
+                        listResource,
+                        detailed,
+                        ToolOutput,
+                        logPreferences)
+                    .ConfigureAwait(false);
             }
         }
     }

@@ -42,7 +42,7 @@ public class ConsoleStyledToolLogHandlerProvider : ToolLogHandlerProviderBase
             Console.OpenStandardOutput);
     }
 
-    public override IToolLogHandler GetStreamToolLogHandler()
+    public override IToolLogHandler GetStreamToolLogHandler(LogPreferences logPreferences)
     {
         return new ConsoleStyledLogHandler(
             Out,
@@ -53,10 +53,11 @@ public class ConsoleStyledToolLogHandlerProvider : ToolLogHandlerProviderBase
             _widthFunc,
             _heightFunc,
             _initialRowFunc,
+            logPreferences,
             true);
     }
 
-    public override IToolLogHandler GetDefaultToolLogHandler()
+    public override IToolLogHandler GetDefaultToolLogHandler(LogPreferences logPreferences)
     {
         return new ConsoleStyledLogHandler(
             Out,
@@ -67,6 +68,7 @@ public class ConsoleStyledToolLogHandlerProvider : ToolLogHandlerProviderBase
             _widthFunc,
             _heightFunc,
             _initialRowFunc,
+            logPreferences,
             false,
             OperatingSystem.IsMacOS());
     }
@@ -95,9 +97,10 @@ public class ConsoleStyledLogHandler : StyledLogHandler, IOperationProgressConte
         Func<int> widthFunc,
         Func<int> heightFunc,
         Func<int> initialRowFunc,
+        LogPreferences logPreferences,
         bool alwaysPrintToErrorStream,
         bool enableFancy = false)
-        : base(outWriter, warnWriter, errorWriter, alwaysPrintToErrorStream, enableFancy)
+        : base(outWriter, warnWriter, errorWriter, logPreferences, alwaysPrintToErrorStream, enableFancy)
     {
         _forceFallback = forceFallback;
         _errorRedirectedFunc = errorRedirectedFunc;

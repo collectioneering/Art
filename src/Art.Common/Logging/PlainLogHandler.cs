@@ -11,18 +11,28 @@ public class PlainLogHandler : IToolLogHandler
     private readonly TextWriter _warn;
     private readonly TextWriter _error;
 
+    /// <inheritdoc />
+    public LogPreferences LogPreferences { get; set; }
+
     /// <summary>
     /// Initializes an instance of <see cref="StyledLogHandler"/>.
     /// </summary>
     /// <param name="outWriter">Writer for normal output.</param>
     /// <param name="warnWriter">Writer for warning output.</param>
     /// <param name="errorWriter">Writer for error output.</param>
+    /// <param name="logPreferences">Preferences to use when logging.</param>
     /// <param name="alwaysPrintToErrorStream">If true, always print output to error stream.</param>
-    public PlainLogHandler(TextWriter outWriter, TextWriter warnWriter, TextWriter errorWriter, bool alwaysPrintToErrorStream)
+    public PlainLogHandler(
+        TextWriter outWriter,
+        TextWriter warnWriter,
+        TextWriter errorWriter,
+        LogPreferences logPreferences,
+        bool alwaysPrintToErrorStream)
     {
         _out = outWriter ?? throw new ArgumentNullException(nameof(outWriter));
         _warn = warnWriter ?? throw new ArgumentNullException(nameof(warnWriter));
         _error = errorWriter ?? throw new ArgumentNullException(nameof(errorWriter));
+        LogPreferences = logPreferences;
         _wh = new AutoResetEvent(true);
         _itsumoError = alwaysPrintToErrorStream;
     }

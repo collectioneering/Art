@@ -16,27 +16,21 @@ public record ArtifactToolDumpProxy
     /// <summary>Log handler.</summary>
     public IToolLogHandler? LogHandler { get; init; }
 
-    /// <summary>Preferences to use when logging.</summary>
-    public LogPreferences LogPreferences { get; init; }
-
     /// <summary>
     /// Proxy to run artifact tool as a dump tool.
     /// </summary>
     /// <param name="artifactTool">Artifact tool.</param>
     /// <param name="options">Dump options.</param>
     /// <param name="logHandler">Log handler.</param>
-    /// <param name="logPreferences">Preferences to use when logging.</param>
     public ArtifactToolDumpProxy(
         IArtifactTool artifactTool,
         ArtifactToolDumpOptions options,
-        IToolLogHandler? logHandler,
-        LogPreferences logPreferences)
+        IToolLogHandler? logHandler)
     {
         ArtifactTool = artifactTool ?? throw new ArgumentNullException(nameof(artifactTool));
         Options = options ?? throw new ArgumentNullException(nameof(options));
         Validate(options, true);
         LogHandler = logHandler;
-        LogPreferences = logPreferences;
     }
 
     private static void Validate(ArtifactToolDumpOptions options, bool constructor)
@@ -70,14 +64,12 @@ public record ArtifactToolDumpProxy
             artifactTool = new FindAsListTool(findTool, artifactList);
         }
         var existingLogHandler = artifactTool.LogHandler;
-        var existingLogPreferences = artifactTool.LogPreferences;
         try
         {
             if (LogHandler != null)
             {
                 artifactTool.LogHandler = LogHandler;
             }
-            artifactTool.LogPreferences = LogPreferences;
             if (artifactTool is IArtifactDumpTool dumpTool)
             {
                 await dumpTool.DumpAsync(cancellationToken).ConfigureAwait(false);
@@ -116,7 +108,6 @@ public record ArtifactToolDumpProxy
                             data,
                             Options.ResourceUpdate,
                             LogHandler,
-                            LogPreferences,
                             Options.ChecksumSource,
                             artifactTool.TimeProvider,
                             artifactTool.Config.GetArtifactRetrievalTimestamps,
@@ -175,7 +166,6 @@ public record ArtifactToolDumpProxy
                                     data,
                                     Options.ResourceUpdate,
                                     LogHandler,
-                                    LogPreferences,
                                     Options.ChecksumSource,
                                     artifactTool.TimeProvider,
                                     artifactTool.Config.GetArtifactRetrievalTimestamps,
@@ -199,7 +189,6 @@ public record ArtifactToolDumpProxy
         finally
         {
             artifactTool.LogHandler = existingLogHandler;
-            artifactTool.LogPreferences = existingLogPreferences;
         }
     }
 }

@@ -24,9 +24,6 @@ public partial class ArtifactTool : IArtifactTool
     public IToolLogHandler? LogHandler { get; set; }
 
     /// <inheritdoc />
-    public LogPreferences LogPreferences { get; set; }
-
-    /// <inheritdoc />
     public ArtifactToolProfile Profile { get; private set; }
 
     /// <inheritdoc />
@@ -80,7 +77,6 @@ public partial class ArtifactTool : IArtifactTool
         Profile = null!;
         Config = null!;
         TimeProvider = null!;
-        LogPreferences = LogPreferences.Default;
     }
 
     #endregion

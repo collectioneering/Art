@@ -19,28 +19,22 @@ public record ArtifactToolListProxy
     /// <summary>Log handler.</summary>
     public IToolLogHandler? LogHandler { get; init; }
 
-    /// <summary>Preferences to use when logging.</summary>
-    public LogPreferences LogPreferences { get; init; }
-
     /// <summary>
     /// Proxy to run artifact tool as a list tool.
     /// </summary>
     /// <param name="artifactTool">Artifact tool.</param>
     /// <param name="options">List options.</param>
     /// <param name="logHandler">Log handler.</param>
-    /// <param name="logPreferences">Preferences to use when logging.</param>
     /// <exception cref="ArgumentException">Thrown when invalid options are specified.</exception>
     public ArtifactToolListProxy(
         IArtifactTool artifactTool,
         ArtifactToolListOptions options,
-        IToolLogHandler? logHandler,
-        LogPreferences logPreferences)
+        IToolLogHandler? logHandler)
     {
         ArtifactTool = artifactTool ?? throw new ArgumentNullException(nameof(artifactTool));
         Options = options ?? throw new ArgumentNullException(nameof(options));
         ArtifactToolListOptions.Validate(options, false);
         LogHandler = logHandler;
-        LogPreferences = logPreferences;
     }
 
     #region API
@@ -63,14 +57,12 @@ public record ArtifactToolListProxy
             artifactTool = new FindAsListTool(findTool, artifactList);
         }
         var existingLogHandler = artifactTool.LogHandler;
-        var existingLogPreferences = artifactTool.LogPreferences;
         try
         {
             if (LogHandler != null)
             {
                 artifactTool.LogHandler = LogHandler;
             }
-            artifactTool.LogPreferences = LogPreferences;
             if (LogHandler != null) artifactTool.LogHandler = LogHandler;
             if (artifactTool is IArtifactListTool listTool)
             {
@@ -149,7 +141,6 @@ public record ArtifactToolListProxy
         finally
         {
             artifactTool.LogHandler = existingLogHandler;
-            artifactTool.LogPreferences = existingLogPreferences;
         }
     }
 

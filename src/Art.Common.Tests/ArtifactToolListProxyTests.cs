@@ -25,8 +25,7 @@ public class ArtifactToolListProxyTests
         var proxy = new ArtifactToolListProxy(
             tool,
             new ArtifactToolListOptions(),
-            null,
-            LogPreferences.Default);
+            null);
         Assert.That(async () =>
         {
 #if NET10_0_OR_GREATER
@@ -56,8 +55,7 @@ public class ArtifactToolListProxyTests
         var proxy = new ArtifactToolListProxy(
             tool,
             new ArtifactToolListOptions(),
-            null,
-            LogPreferences.Default);
+            null);
 #if NET10_0_OR_GREATER
         var results = await AsyncEnumerable.ToListAsync(proxy.ListAsync());
 #else
@@ -81,8 +79,7 @@ public class ArtifactToolListProxyTests
         var proxy = new ArtifactToolListProxy(
             tool,
             new ArtifactToolListOptions(),
-            null,
-            LogPreferences.Default);
+            null);
 #if NET10_0_OR_GREATER
         var results = await AsyncEnumerable.ToListAsync(proxy.ListAsync());
 #else
@@ -107,8 +104,7 @@ public class ArtifactToolListProxyTests
         var proxy = new ArtifactToolListProxy(
             tool,
             new ArtifactToolListOptions(),
-            null,
-            LogPreferences.Default);
+            null);
 #if NET10_0_OR_GREATER
         var results = await AsyncEnumerable.ToListAsync(proxy.ListAsync());
 #else

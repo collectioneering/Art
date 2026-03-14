@@ -20,7 +20,6 @@ public static class ArtifactDumping
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
     /// <param name="dumpOptions">Dump options.</param>
     /// <param name="toolLogHandler">Tool log handler.</param>
-    /// <param name="logPreferences">Preferences to use when logging.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="ArtifactToolNotFoundException">Thrown when tool is not found.</exception>
@@ -33,7 +32,6 @@ public static class ArtifactDumping
         bool getResourceRetrievalTimestamps,
         ArtifactToolDumpOptions? dumpOptions = null,
         IToolLogHandler? toolLogHandler = null,
-        LogPreferences? logPreferences = null,
         CancellationToken cancellationToken = default)
     {
         dumpOptions ??= new ArtifactToolDumpOptions();
@@ -50,7 +48,6 @@ public static class ArtifactDumping
                     getResourceRetrievalTimestamps,
                     dumpOptions,
                     toolLogHandler,
-                    logPreferences,
                     cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -67,7 +64,6 @@ public static class ArtifactDumping
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
     /// <param name="dumpOptions">Dump options.</param>
     /// <param name="toolLogHandler">Tool log handler.</param>
-    /// <param name="logPreferences">Preferences to use when logging.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="ArtifactToolNotFoundException">Thrown when tool is not found.</exception>
@@ -81,7 +77,6 @@ public static class ArtifactDumping
         bool getResourceRetrievalTimestamps,
         ArtifactToolDumpOptions? dumpOptions = null,
         IToolLogHandler? toolLogHandler = null,
-        LogPreferences? logPreferences = null,
         CancellationToken cancellationToken = default)
     {
         dumpOptions ??= new ArtifactToolDumpOptions();
@@ -98,7 +93,6 @@ public static class ArtifactDumping
                     getResourceRetrievalTimestamps,
                     dumpOptions,
                     toolLogHandler,
-                    logPreferences,
                     cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -115,7 +109,6 @@ public static class ArtifactDumping
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
     /// <param name="dumpOptions">Dump options.</param>
     /// <param name="toolLogHandler">Tool log handler.</param>
-    /// <param name="logPreferences">Preferences to use when logging.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="ArtifactToolNotFoundException">Thrown when tool is not found.</exception>
@@ -128,7 +121,6 @@ public static class ArtifactDumping
         bool getResourceRetrievalTimestamps,
         ArtifactToolDumpOptions? dumpOptions = null,
         IToolLogHandler? toolLogHandler = null,
-        LogPreferences? logPreferences = null,
         CancellationToken cancellationToken = default)
     {
         dumpOptions ??= new ArtifactToolDumpOptions();
@@ -145,7 +137,6 @@ public static class ArtifactDumping
                     getResourceRetrievalTimestamps,
                     dumpOptions,
                     toolLogHandler,
-                    logPreferences,
                     cancellationToken)
                 .ConfigureAwait(false);
     }
@@ -161,7 +152,6 @@ public static class ArtifactDumping
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
     /// <param name="dumpOptions">Dump options.</param>
     /// <param name="toolLogHandler">Tool log handler.</param>
-    /// <param name="logPreferences">Preferences to use when logging.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="ArgumentException">Thrown when an invalid profile is provided.</exception>
@@ -176,15 +166,13 @@ public static class ArtifactDumping
         bool getResourceRetrievalTimestamps,
         ArtifactToolDumpOptions? dumpOptions = null,
         IToolLogHandler? toolLogHandler = null,
-        LogPreferences? logPreferences = null,
         CancellationToken cancellationToken = default)
     {
         using IArtifactTool tool = await ArtifactTool.PrepareToolAsync(artifactToolProfile, artifactRegistrationManager, artifactDataManager, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
         await new ArtifactToolDumpProxy(
                 tool,
                 dumpOptions ?? new ArtifactToolDumpOptions(),
-                toolLogHandler,
-                logPreferences ?? LogPreferences.Default
+                toolLogHandler
             ).DumpAsync(cancellationToken)
             .ConfigureAwait(false);
     }
@@ -201,7 +189,6 @@ public static class ArtifactDumping
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
     /// <param name="dumpOptions">Dump options.</param>
     /// <param name="toolLogHandler">Tool log handler.</param>
-    /// <param name="logPreferences">Preferences to use when logging.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="ArgumentException">Thrown when an invalid profile is provided.</exception>
@@ -217,15 +204,13 @@ public static class ArtifactDumping
         bool getResourceRetrievalTimestamps,
         ArtifactToolDumpOptions? dumpOptions = null,
         IToolLogHandler? toolLogHandler = null,
-        LogPreferences? logPreferences = null,
         CancellationToken cancellationToken = default)
     {
         using IArtifactTool tool = await ArtifactTool.PrepareToolAsync(assemblyLoadContext, artifactToolProfile, artifactRegistrationManager, artifactDataManager, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
         await new ArtifactToolDumpProxy(
             tool,
             dumpOptions ?? new ArtifactToolDumpOptions(),
-            toolLogHandler,
-            logPreferences ?? LogPreferences.Default
+            toolLogHandler
         ).DumpAsync(cancellationToken).ConfigureAwait(false);
     }
 
@@ -241,7 +226,6 @@ public static class ArtifactDumping
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
     /// <param name="dumpOptions">Dump options.</param>
     /// <param name="toolLogHandler">Tool log handler.</param>
-    /// <param name="logPreferences">Preferences to use when logging.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="ArgumentException">Thrown when an invalid profile is provided.</exception>
@@ -256,15 +240,13 @@ public static class ArtifactDumping
         bool getResourceRetrievalTimestamps,
         ArtifactToolDumpOptions? dumpOptions = null,
         IToolLogHandler? toolLogHandler = null,
-        LogPreferences? logPreferences = null,
         CancellationToken cancellationToken = default)
     {
         using IArtifactTool tool = await ArtifactTool.PrepareToolAsync(artifactToolRegistry, artifactToolProfile, artifactRegistrationManager, artifactDataManager, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
         await new ArtifactToolDumpProxy(
                 tool,
                 dumpOptions ?? new ArtifactToolDumpOptions(),
-                toolLogHandler,
-                logPreferences ?? LogPreferences.Default
+                toolLogHandler
             ).DumpAsync(cancellationToken)
             .ConfigureAwait(false);
     }
@@ -281,7 +263,6 @@ public static class ArtifactDumping
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
     /// <param name="dumpOptions">Dump options.</param>
     /// <param name="toolLogHandler">Tool log handler.</param>
-    /// <param name="logPreferences">Preferences to use when logging.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="ArgumentException">Thrown when an invalid profile is provided.</exception>
@@ -295,15 +276,13 @@ public static class ArtifactDumping
         bool getResourceRetrievalTimestamps,
         ArtifactToolDumpOptions? dumpOptions = null,
         IToolLogHandler? toolLogHandler = null,
-        LogPreferences? logPreferences = null,
         CancellationToken cancellationToken = default) where T : IArtifactToolFactory
     {
         using IArtifactTool tool = await ArtifactTool.PrepareToolAsync<T>(artifactToolProfile, artifactRegistrationManager, artifactDataManager, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
         await new ArtifactToolDumpProxy(
                 tool,
                 dumpOptions ?? new ArtifactToolDumpOptions(),
-                toolLogHandler,
-                logPreferences ?? LogPreferences.Default
+                toolLogHandler
             ).DumpAsync(cancellationToken)
             .ConfigureAwait(false);
     }
@@ -315,7 +294,6 @@ public static class ArtifactDumping
     /// <param name="artifactData">Artifact data to dump.</param>
     /// <param name="resourceUpdate">Resource update mode.</param>
     /// <param name="logHandler">Log handler.</param>
-    /// <param name="logPreferences">Preferences to use when logging.</param>
     /// <param name="checksumSource">Optional checksum source, if resources are to have their checksums computed.</param>
     /// <param name="timeProvider">Time provider.</param>
     /// <param name="getArtifactRetrievalTimestamps">Get artifact retrieval timestamps.</param>
@@ -328,7 +306,6 @@ public static class ArtifactDumping
         IArtifactData artifactData,
         ResourceUpdateMode resourceUpdate = ResourceUpdateMode.Soft,
         IToolLogHandler? logHandler = null,
-        LogPreferences? logPreferences = null,
         ChecksumSource? checksumSource = null,
         TimeProvider? timeProvider = null,
         bool? getArtifactRetrievalTimestamps = null,
@@ -337,16 +314,11 @@ public static class ArtifactDumping
         CancellationToken cancellationToken = default)
     {
         var existingLogHandler = artifactTool.LogHandler;
-        var existingLogPreferences = artifactTool.LogPreferences;
         try
         {
             if (logHandler != null)
             {
                 artifactTool.LogHandler = logHandler;
-            }
-            if (logPreferences != null)
-            {
-                artifactTool.LogPreferences = logPreferences;
             }
             switch (resourceUpdate)
             {
@@ -460,7 +432,6 @@ public static class ArtifactDumping
         finally
         {
             artifactTool.LogHandler = existingLogHandler;
-            artifactTool.LogPreferences = existingLogPreferences;
         }
     }
 

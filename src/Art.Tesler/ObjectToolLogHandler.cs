@@ -6,11 +6,14 @@ public class ObjectToolLogHandler : IToolLogHandler
     public Queue<ObjectLog> ErrorQueue;
     public bool AlwaysPrintToErrorStream;
 
-    public ObjectToolLogHandler(Queue<ObjectLog> outQueue, Queue<ObjectLog> errorQueue, bool alwaysPrintToErrorStream)
+    public LogPreferences LogPreferences { get; set; }
+
+    public ObjectToolLogHandler(Queue<ObjectLog> outQueue, Queue<ObjectLog> errorQueue, bool alwaysPrintToErrorStream, LogPreferences logPreferences)
     {
         OutQueue = outQueue;
         ErrorQueue = errorQueue;
         AlwaysPrintToErrorStream = alwaysPrintToErrorStream;
+        LogPreferences = logPreferences;
     }
 
     public void Log(ObjectLog objectLog)

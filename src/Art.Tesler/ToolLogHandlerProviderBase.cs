@@ -24,9 +24,9 @@ public abstract class ToolLogHandlerProviderBase : IToolLogHandlerProvider
         OutStreamAccessFunc = outStreamAccessFunc;
     }
 
-    public abstract IToolLogHandler GetStreamToolLogHandler();
+    public abstract IToolLogHandler GetStreamToolLogHandler(LogPreferences logPreferences);
 
-    public abstract IToolLogHandler GetDefaultToolLogHandler();
+    public abstract IToolLogHandler GetDefaultToolLogHandler(LogPreferences logPreferences);
 
     public Stream GetOutStream() => OutStreamAccessFunc();
 }

@@ -45,7 +45,11 @@ public class CommandTestBase
             Error.NewLine = newLine;
         }
         OutStream = new MemoryStream();
-        ToolOutput = toolLogHandlerProvider = new PlainToolLogHandlerProvider(Out, Warn, Error, () => new NonDisposingStream(OutStream));
+        ToolOutput = toolLogHandlerProvider = new PlainToolLogHandlerProvider(
+            Out,
+            Warn,
+            Error,
+            () => new NonDisposingStream(OutStream));
         console = TestConsole = new TestConsole(Out, Error);
     }
 
@@ -65,7 +69,11 @@ public class CommandTestBase
             Warn.NewLine = newLine;
             Error.NewLine = newLine;
         }
-        ToolOutput = toolLogHandlerProvider = new PlainToolLogHandlerProvider(Out, Warn, Error, () => throw new NotSupportedException());
+        ToolOutput = toolLogHandlerProvider = new PlainToolLogHandlerProvider(
+            Out,
+            Warn,
+            Error,
+            () => throw new NotSupportedException());
         console = TestConsole = new TestConsole(Out, Error);
     }
 
@@ -89,7 +97,13 @@ public class CommandTestBase
         }
         OutQueue = new Queue<ObjectLog>();
         ErrorQueue = new Queue<ObjectLog>();
-        ToolOutput = toolLogHandlerProvider = new ObjectToolLogHandlerProvider(Out, Warn, Error, () => throw new NotSupportedException(), OutQueue, ErrorQueue);
+        ToolOutput = toolLogHandlerProvider = new ObjectToolLogHandlerProvider(
+            Out,
+            Warn,
+            Error,
+            () => throw new NotSupportedException(),
+            OutQueue,
+            ErrorQueue);
         console = TestConsole = new TestConsole(Out, Error);
     }
 
@@ -108,7 +122,11 @@ public class CommandTestBase
             Warn.NewLine = newLine;
             Error.NewLine = newLine;
         }
-        ToolOutput = toolLogHandlerProvider = new PlainToolLogHandlerProvider(outWriter, Warn, Error, () => new NonDisposingStream(outStream));
+        ToolOutput = toolLogHandlerProvider = new PlainToolLogHandlerProvider(
+            outWriter,
+            Warn,
+            Error,
+            () => new NonDisposingStream(outStream));
         console = TestConsole = new TestConsole(outWriter, Error);
     }
 

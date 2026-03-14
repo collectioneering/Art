@@ -5,6 +5,13 @@
 /// </summary>
 public class NullLogHandler : IToolLogHandler
 {
+    /// <inheritdoc />
+    public LogPreferences LogPreferences
+    {
+        get => LogPreferences.Default;
+        set { }
+    }
+
     /// <summary>
     /// Shared instance.
     /// </summary>

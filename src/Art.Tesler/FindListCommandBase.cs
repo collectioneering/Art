@@ -60,10 +60,10 @@ public abstract class FindListCommandBase : ToolCommandBase, IToolGroupOrProfile
     {
         var profiles = DumpFindListUtil.GetProfiles(this, parseResult);
         (bool getArtifactRetrievalTimestamps, bool getResourceRetrievalTimestamps) = GetArtifactRetrievalOptions(parseResult);
-        IToolLogHandler logHandler = ToolLogHandlerProvider.GetDefaultToolLogHandler();
+        var logPreferences = GetLogPreferences(parseResult);
+        IToolLogHandler logHandler = ToolLogHandlerProvider.GetDefaultToolLogHandler(logPreferences);
         bool listResource = parseResult.GetValue(ListResourceOption);
         bool detailed = parseResult.GetValue(DetailedOption);
-        var logPreferences = GetLogPreferences(parseResult);
         // not expecting any output
         using var adm = new NullArtifactDataManager();
         foreach (var profile in PrepareProfiles(parseResult, profiles))
