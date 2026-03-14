@@ -4,16 +4,17 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- Local dependenices -->
-    <PackageVersion Include="Artcore" Version="0.49.0" />
-    <PackageVersion Include="Art" Version="0.49.0" />
-    <PackageVersion Include="Art.BrowserCookies" Version="0.49.0" />
-    <PackageVersion Include="Art.Common" Version="0.49.0" />
-    <PackageVersion Include="Art.EF" Version="0.49.0" />
-    <PackageVersion Include="Art.EF.Sqlite" Version="0.49.0" />
-    <PackageVersion Include="Art.Html" Version="0.49.0" />
-    <PackageVersion Include="Art.Http" Version="0.49.0" />
-    <PackageVersion Include="Art.M3U" Version="0.49.0" />
-    <PackageVersion Include="Art.Tesler" Version="0.49.0" />
+    <PackageVersion Include="Artcore" Version="0.50.0" />
+    <PackageVersion Include="Art" Version="0.50.0" />
+    <PackageVersion Include="Art.BrowserCookies" Version="0.50.0" />
+    <PackageVersion Include="Art.Common" Version="0.50.0" />
+    <PackageVersion Include="Art.EF" Version="0.50.0" />
+    <PackageVersion Include="Art.EF.Sqlite" Version="0.50.0" />
+    <PackageVersion Include="Art.Html" Version="0.50.0" />
+    <PackageVersion Include="Art.Http" Version="0.50.0" />
+    <PackageVersion Include="Art.M3U" Version="0.50.0" />
+    <PackageVersion Include="Art.Modular" Version="0.50.0" />
+    <PackageVersion Include="Art.Tesler" Version="0.50.0" />
     <!-- Package dependenices -->
     <PackageVersion Include="AngleSharp" Version="1.4.0" />
     <PackageVersion Include="ConFormat" Version="0.4.0" />
