@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ReferenceLocalProject_Art_Http>false</ReferenceLocalProject_Art_Http>
+    <ReferenceLocalProject_Art_Http>true</ReferenceLocalProject_Art_Http>
   </PropertyGroup>
 
   <ItemGroup>
