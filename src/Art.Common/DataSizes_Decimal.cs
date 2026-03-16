@@ -184,7 +184,7 @@ public static partial class DataSizes
             unitIndex = 0;
             return;
         }
-        BigInteger divisor = BigInteger.Pow(10, unitIndex * 3);
+        BigInteger divisor = BigInteger.Pow(1000, unitIndex);
         valueWhole = BigInteger.CopySign(BigInteger.DivRem(sizeAbs, divisor, out BigInteger remainder), size);
         valueFraction = Math.Min(Math.Abs(GetFraction(remainder, divisor)), Math.BitDecrement(1));
     }
@@ -192,16 +192,21 @@ public static partial class DataSizes
     private static int GetBestLog1000(BigInteger valuePositive)
     {
         double valueLog1000 = BigInteger.Log10(valuePositive) / 3;
-        double valueLog1000Round = double.Round(BigInteger.Log10(valuePositive) / 3);
+        double valueLog1000Round = double.Round(valueLog1000);
         // bail out if it's just too big
         if (valueLog1000Round > int.MaxValue)
         {
             return 0;
         }
         int valueLog1000RoundInt = (int)valueLog1000Round;
-        if (valueLog1000RoundInt > valueLog1000 && valuePositive >= BigInteger.Pow(10, valueLog1000RoundInt * 3))
+        BigInteger divisor = BigInteger.Pow(1000, valueLog1000RoundInt);
+        if (valueLog1000RoundInt > valueLog1000 && valuePositive >= divisor)
         {
             return valueLog1000RoundInt;
+        }
+        if (valuePositive < divisor)
+        {
+            return valueLog1000RoundInt - 1;
         }
         return (int)Math.Floor(valueLog1000);
     }
