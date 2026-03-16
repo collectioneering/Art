@@ -41,4 +41,15 @@ public static partial class DataSizes
         }
         return (double)dividend / (double)divisor;
     }
+
+    private static double GetFraction(ulong dividend, ulong divisor)
+    {
+        // preserve at least 52 bits
+        long shiftBits = Math.Min(64 - BitOperations.LeadingZeroCount(dividend), 64 - BitOperations.LeadingZeroCount(divisor)) - 54;
+        if (shiftBits is > 0 and <= int.MaxValue)
+        {
+            return (double)(dividend >> (int)shiftBits) / (divisor >> (int)shiftBits);
+        }
+        return (double)dividend / divisor;
+    }
 }

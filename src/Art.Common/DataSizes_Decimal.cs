@@ -55,6 +55,17 @@ public static partial class DataSizes
     private static readonly string[] s_decimalUnitNamesLong = ["byte", "kilobyte", "megabyte", "gigabyte", "terabyte", "petabyte", "exabyte", "zettabyte", "yottabyte", "ronnabyte", "quettabyte"];
     private static readonly string[] s_decimalUnitNamesLongPlural = ["bytes", "kilobytes", "megabytes", "gigabytes", "terabytes", "petabytes", "exabytes", "zettabytes", "yottabytes", "ronnabytes", "quettabytes"];
 
+    private static readonly ulong[] s_power1000 =
+    [
+        1ul,
+        1_000ul,
+        1_000_000ul,
+        1_000_000_000ul,
+        1_000_000_000_000ul,
+        1_000_000_000_000_000ul,
+        1_000_000_000_000_000_000ul,
+    ];
+
     /// <summary>
     /// Simplifies size of datum with the largest nameable decimal units.
     /// </summary>
@@ -128,8 +139,23 @@ public static partial class DataSizes
     /// <param name="unitIndex">Unit index (e.g. 0=B, 1=KB, 2=MB, etc.).</param>
     public static void GetDecimalSize(ulong size, out double value, out int unitIndex)
     {
-        unitIndex = Math.Max((int)Math.Floor(double.Log10(size) / 3), 0);
-        value = size / Math.Pow(10, unitIndex * 3);
+        if (size == 0)
+        {
+            value = 0;
+            unitIndex = 0;
+            return;
+        }
+        unitIndex = Math.Min(Math.Max(GetBestLog1000(size), 0), s_decimalUnitNames.Length - 1);
+        if (unitIndex == 0)
+        {
+            value = size;
+            unitIndex = 0;
+            return;
+        }
+        ulong divisor = s_power1000[unitIndex];
+        (ulong valueWhole, ulong remainder) = ulong.DivRem(size, divisor);
+        // 64 bits won't exceed around 19 EB, so clamp resulting value
+        value = Math.Clamp(valueWhole + Math.Abs(GetFraction(remainder, divisor)), 0, Math.BitDecrement(1000));
     }
 
     /// <summary>
@@ -187,6 +213,28 @@ public static partial class DataSizes
         BigInteger divisor = BigInteger.Pow(1000, unitIndex);
         valueWhole = BigInteger.CopySign(BigInteger.DivRem(sizeAbs, divisor, out BigInteger remainder), size);
         valueFraction = Math.Min(Math.Abs(GetFraction(remainder, divisor)), Math.BitDecrement(1));
+    }
+
+    private static int GetBestLog1000(ulong valuePositive)
+    {
+        double valueLog1000 = BigInteger.Log10(valuePositive) / 3;
+        double valueLog1000Round = double.Round(valueLog1000);
+        // bail out if it's just too big
+        if (valueLog1000Round > int.MaxValue)
+        {
+            return 0;
+        }
+        int valueLog1000RoundInt = (int)valueLog1000Round;
+        ulong divisor = s_power1000[Math.Clamp(valueLog1000RoundInt, 0, s_power1000.Length - 1)];
+        if (valueLog1000RoundInt > valueLog1000 && valuePositive >= divisor)
+        {
+            return valueLog1000RoundInt;
+        }
+        if (valuePositive < divisor)
+        {
+            return valueLog1000RoundInt - 1;
+        }
+        return (int)Math.Floor(valueLog1000);
     }
 
     private static int GetBestLog1000(BigInteger valuePositive)

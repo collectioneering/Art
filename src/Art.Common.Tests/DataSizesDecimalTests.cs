@@ -33,14 +33,11 @@ public class DataSizesDecimalTests
         // terabyte
         new(1000L * 1000 * 1000 * 1000, 1, "TB"),
         new((1000L + 500) * 1000 * 1000 * 1000, 1.5, "TB"),
-        //new(1000L * 1000 * 1000 * 1000 * 1000 - 1, 999.9999, "TB", RequireExclusiveOfCeiling: true),
-        new((1000L * 1000 * 1000 * 1000 - 1) * 1000, 999.9999, "TB", RequireExclusiveOfCeiling: true),
+        new(1000L * 1000 * 1000 * 1000 * 1000 - 1, 999.9999, "TB", RequireExclusiveOfCeiling: true),
         // petabyte
         new(1000L * 1000 * 1000 * 1000 * 1000, 1, "PB"),
         new((1000L + 500) * 1000 * 1000 * 1000 * 1000, 1.5, "PB"),
-        //new((1000L * 1000 * 1000 * 1000 * 1000 - 1) * 1000, 999.9999, "PB", RequireExclusiveOfCeiling: true),
-        //new(1000L * 1000 * 1000 * 1000 * 1000 * 1000 - 1, 999.9999, "PB", RequireExclusiveOfCeiling: false),
-        new((1000L * 1000 * 1000 * 1000 - 1) * 1000 * 1000, 999.9999, "PB", RequireExclusiveOfCeiling: true),
+        new(1000L * 1000 * 1000 * 1000 * 1000 * 1000 - 1, 999.9999, "PB", RequireExclusiveOfCeiling: true),
         // exabyte
         new(1000L * 1000 * 1000 * 1000 * 1000 * 1000, 1, "EB"),
         new((1000L + 500) * 1000 * 1000 * 1000 * 1000 * 1000, 1.5, "EB"),
@@ -74,14 +71,11 @@ public class DataSizesDecimalTests
         // terabyte
         new(1000L * 1000 * 1000 * 1000, 1, "TB"),
         new((1000L + 500) * 1000 * 1000 * 1000, 1.5, "TB"),
-        //new(1000L * 1000 * 1000 * 1000 * 1000 - 1, 999.9999, "TB", RequireExclusiveOfCeiling: true),
-        new((1000L * 1000 * 1000 * 1000 - 1) * 1000, 999.9999, "TB", RequireExclusiveOfCeiling: true),
+        new(1000L * 1000 * 1000 * 1000 * 1000 - 1, 999.9999, "TB", RequireExclusiveOfCeiling: true),
         // petabyte
         new(1000L * 1000 * 1000 * 1000 * 1000, 1, "PB"),
         new((1000L + 500) * 1000 * 1000 * 1000 * 1000, 1.5, "PB"),
-        //new((1000L * 1000 * 1000 * 1000 * 1000 - 1) * 1000, 999.9999, "PB", RequireExclusiveOfCeiling: true),
-        //new(1000L * 1000 * 1000 * 1000 * 1000 * 1000 - 1, 999.9999, "PB", RequireExclusiveOfCeiling: false),
-        new((1000L * 1000 * 1000 * 1000 - 1) * 1000 * 1000, 999.9999, "PB", RequireExclusiveOfCeiling: true),
+        new(1000L * 1000 * 1000 * 1000 * 1000 * 1000 - 1, 999.9999, "PB", RequireExclusiveOfCeiling: true),
         // exabyte
         new(1000L * 1000 * 1000 * 1000 * 1000 * 1000, 1, "EB"),
         new((1000L + 500) * 1000 * 1000 * 1000 * 1000 * 1000, 1.5, "EB"),
@@ -128,7 +122,7 @@ public class DataSizesDecimalTests
         // ronnabyte
         new((BigInteger)1000L * 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000, 1, 0, "RB"),
         new(((BigInteger)1000L + 500) * 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000, 1, 0.5, "RB"),
-        new(((BigInteger)1000L * 1000 * 1000 * 1000 - 1) * 1000 * 1000 * 1000 * 1000 * 1000 * 1000, 999, 0.9999, "RB"),
+        new((BigInteger)1000L * 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000 - 1, 999, 0.9999, "RB"),
         // quettabyte
         new((BigInteger)1000L * 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000, 1, 0, "QB"),
         new(((BigInteger)1000L + 500) * 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000, 1, 0.5, "QB"),
