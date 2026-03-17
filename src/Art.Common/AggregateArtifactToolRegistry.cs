@@ -3,88 +3,31 @@
 namespace Art.Common;
 
 /// <summary>
-/// Represents an aggregate registry that tries registries in LIFO order.
+/// Represents a registry of artifact tools composed of multiple <see cref="IArtifactToolRegistry"/>.
 /// </summary>
+/// <remarks>
+/// Contains, TryGetType, TryLoad, TryIdentify, GetToolDescriptions uses FIFO order for registries.
+/// </remarks>
 public class AggregateArtifactToolRegistry : IArtifactToolSelectableRegistry<string>
 {
-    /// <summary>
-    /// Contained registries.
-    /// </summary>
-    public IReadOnlyList<IArtifactToolRegistry> Registries => _registries;
-
-    private readonly List<IArtifactToolRegistry> _registries = new();
+    private readonly IArtifactToolRegistry[] _artifactToolRegistries;
 
     /// <summary>
-    /// Adds a registry.
+    /// Initializes an instance of <see cref="StaticArtifactToolRegistryStore"/>.
     /// </summary>
-    /// <param name="registry">Registry to add.</param>
-    /// <exception cref="ArgumentException">Thrown if registry was already added.</exception>
-    public void Add(IArtifactToolRegistry registry)
+    /// <param name="artifactToolRegistries">Registries to use, with earlier entries having precedence.</param>
+    public AggregateArtifactToolRegistry(IReadOnlyList<IArtifactToolRegistry> artifactToolRegistries)
     {
-        if (registry == null)
-        {
-            throw new ArgumentNullException(nameof(registry));
-        }
-        if (_registries.Contains(registry))
-        {
-            throw new ArgumentException("Cannot add existing registry. It must first be removed.");
-        }
-        _registries.Add(registry);
-    }
-
-    /// <summary>
-    /// Attempts to add a registry.
-    /// </summary>
-    /// <param name="registry">Registry to add.</param>
-    /// <returns>True if registry was added.</returns>
-    /// <remarks>This method can return false if the registry was already added - entries must be removed before they are added again.</remarks>
-    public bool TryAdd(IArtifactToolRegistry registry)
-    {
-        // BCL collections can throw for null, do likewise on these
-        if (registry == null)
-        {
-            throw new ArgumentNullException(nameof(registry));
-        }
-        if (_registries.Contains(registry))
-        {
-            return false;
-        }
-        _registries.Add(registry);
-        return true;
-    }
-
-    /// <summary>
-    /// Checks if registry is contained in this registry.
-    /// </summary>
-    /// <param name="registry">Registry.</param>
-    /// <returns>True if contained.</returns>
-    public bool Contains(ArtifactToolRegistry registry)
-    {
-        return _registries.Contains(registry);
-    }
-
-    /// <summary>
-    /// Attempts to remove a registry.
-    /// </summary>
-    /// <param name="registry">Registry to remove.</param>
-    /// <returns>True if successfully removed.</returns>
-    public bool Remove(IArtifactToolRegistry registry)
-    {
-        return _registries.Remove(registry);
-    }
-
-    /// <summary>
-    /// Removes all contained registries.
-    /// </summary>
-    public void Clear()
-    {
-        _registries.Clear();
+        _artifactToolRegistries = artifactToolRegistries.ToArray();
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// This method uses FIFO order for the underlying registries.
+    /// </remarks>
     public bool Contains(ArtifactToolID artifactToolId)
     {
-        foreach (var registry in _registries)
+        foreach (var registry in _artifactToolRegistries)
         {
             if (registry.Contains(artifactToolId))
             {
@@ -95,11 +38,14 @@ public class AggregateArtifactToolRegistry : IArtifactToolSelectableRegistry<str
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// This method uses FIFO order for the underlying registries.
+    /// </remarks>
     public bool TryGetType(ArtifactToolID artifactToolId, [NotNullWhen(true)] out Type? type)
     {
-        for (int i = _registries.Count - 1; i >= 0; i--)
+        foreach (var registry in _artifactToolRegistries)
         {
-            if (_registries[i].TryGetType(artifactToolId, out type))
+            if (registry.TryGetType(artifactToolId, out type))
             {
                 return true;
             }
@@ -109,11 +55,14 @@ public class AggregateArtifactToolRegistry : IArtifactToolSelectableRegistry<str
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// This method uses FIFO order for the underlying registries.
+    /// </remarks>
     public bool TryLoad(ArtifactToolID artifactToolId, [NotNullWhen(true)] out IArtifactTool? tool)
     {
-        for (int i = _registries.Count - 1; i >= 0; i--)
+        foreach (var registry in _artifactToolRegistries)
         {
-            if (_registries[i].TryLoad(artifactToolId, out tool))
+            if (registry.TryLoad(artifactToolId, out tool))
             {
                 return true;
             }
@@ -123,10 +72,13 @@ public class AggregateArtifactToolRegistry : IArtifactToolSelectableRegistry<str
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// This method uses FIFO order for the underlying registries.
+    /// </remarks>
     public IEnumerable<ArtifactToolDescription> GetToolDescriptions()
     {
         HashSet<ArtifactToolID> known = new();
-        foreach (var registry in _registries)
+        foreach (var registry in _artifactToolRegistries)
         {
             foreach (var description in registry.GetToolDescriptions())
             {
@@ -139,11 +91,14 @@ public class AggregateArtifactToolRegistry : IArtifactToolSelectableRegistry<str
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// This method uses FIFO order for the underlying registries.
+    /// </remarks>
     public bool TryIdentify(string key, [NotNullWhen(true)] out ArtifactToolID? artifactToolId, [NotNullWhen(true)] out string? artifactId)
     {
-        for (int i = _registries.Count - 1; i >= 0; i--)
+        foreach (var registry in _artifactToolRegistries)
         {
-            if (_registries[i] is IArtifactToolSelectableRegistry<string> selectorRegistry && selectorRegistry.TryIdentify(key, out artifactToolId, out artifactId))
+            if (registry is IArtifactToolSelectableRegistry<string> selectorRegistry && selectorRegistry.TryIdentify(key, out artifactToolId, out artifactId))
             {
                 return true;
             }

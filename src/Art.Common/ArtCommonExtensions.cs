@@ -16,7 +16,10 @@ public static class ArtCommonExtensions
     /// </summary>
     /// <param name="name">String.</param>
     /// <returns>Better filename.</returns>
-    public static string SafeifyFileName(this string name) => s_invalid.Aggregate(Path.GetFileName(name), (f, v) => f.Contains(v) ? f.Replace(v, '-') : f);
+    public static string SafeifyFileName(this string name)
+    {
+        return s_invalid.Aggregate(name, (f, v) => f.Contains(v) ? f.Replace(v, '-') : f);
+    }
 
     /// <summary>
     /// Copies all elements to a list asynchronously.

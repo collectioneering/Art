@@ -149,7 +149,9 @@ public class CommittableFileStream : CommittableDelegatingStream
     private static void EnsureWriting(FileAccess access, string arg)
     {
         if ((access & FileAccess.Write) == 0)
+        {
             throw new ArgumentException($"Cannot create an instance of {nameof(CommittableFileStream)} that does not write", arg);
+        }
     }
 
     private static void EnsureAccess(string path, string arg, out string pathForStream, out string? tempPath, bool preferTemporaryLocation)
@@ -157,16 +159,16 @@ public class CommittableFileStream : CommittableDelegatingStream
         FileInfo fi = new(path);
         if (fi.Exists)
         {
-            if (fi.IsReadOnly) throw new IOException("File exists and is read-only");
+            if (fi.IsReadOnly) throw new IOException($"File [{path}] exists and is read-only");
             tempPath = ArtIOUtility.CreateRandomPathForSibling(path, ".tmp");
             pathForStream = tempPath;
         }
         else
         {
             string? dir = Path.GetDirectoryName(path);
-            if (dir == null) throw new ArgumentException("Target path is not a valid file path", arg);
+            if (dir == null) throw new ArgumentException($"Target path [{path}] is not a valid file path", arg);
             DirectoryInfo di = new(dir);
-            if (!di.Exists) throw new ArgumentException("Directory for file does not exist");
+            if (!di.Exists) throw new ArgumentException($"Directory [{dir}] for file [{path}] does not exist");
             if (preferTemporaryLocation)
             {
                 tempPath = ArtIOUtility.CreateRandomPathForSibling(path, ".tmp");

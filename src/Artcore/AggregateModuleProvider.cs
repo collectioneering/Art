@@ -5,6 +5,9 @@ namespace Artcore;
 /// <summary>
 /// Provides prioritized access to multiple <see cref="IModuleProvider{TModule}"/>.
 /// </summary>
+/// <remarks>
+/// TryLocateModule and LoadModuleLocations use FIFO order for providers.
+/// </remarks>
 public class AggregateModuleProvider<TModule> : IModuleProvider<TModule>
 {
     private readonly IModuleProvider<TModule>[] _providers;
@@ -19,6 +22,9 @@ public class AggregateModuleProvider<TModule> : IModuleProvider<TModule>
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// This method uses FIFO order for the underlying providers.
+    /// </remarks>
     public bool TryLocateModule(string assembly, [NotNullWhen(true)] out IModuleLocation? moduleLocation)
     {
         foreach (var provider in _providers)
@@ -52,6 +58,9 @@ public class AggregateModuleProvider<TModule> : IModuleProvider<TModule>
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// This method uses FIFO order for the underlying providers.
+    /// </remarks>
     public IEnumerable<IModuleLocation> LoadModuleLocations()
     {
         foreach (var provider in _providers)

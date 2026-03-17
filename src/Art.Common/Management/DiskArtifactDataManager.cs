@@ -113,7 +113,7 @@ public class DiskArtifactDataManager : ArtifactDataManager, INamespacedArtifactD
     private CommittableFileStream CreateOutputStream(string basePath, string file, string path, OutputStreamOptions? options)
     {
         string dir = _baseDirectoryContext.JoinValidated(basePath, path);
-        string filePath = _baseDirectoryContext.JoinValidated(dir, file);
+        string filePath = _baseDirectoryContext.JoinValidated(dir, file.SafeifyFileName());
         if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
         FileStreamOptions fso = new() { Mode = FileMode.Create, Access = FileAccess.ReadWrite };
         bool preferTemporaryLocation = true;

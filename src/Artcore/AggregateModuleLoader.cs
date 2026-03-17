@@ -3,6 +3,9 @@ namespace Artcore;
 /// <summary>
 /// Provides prioritized access to multiple <see cref="IModuleLoader{TModule}"/>.
 /// </summary>
+/// <remarks>
+/// CanLoadModule and LoadModule use FIFO order for loaders.
+/// </remarks>
 public class AggregateModuleLoader<TModule> : IModuleLoader<TModule>
 {
     private readonly IModuleLoader<TModule>[] _loaders;
@@ -10,13 +13,16 @@ public class AggregateModuleLoader<TModule> : IModuleLoader<TModule>
     /// <summary>
     /// Initializes an instance of <see cref="AggregateModuleProvider{TModule}"/>.
     /// </summary>
-    /// <param name="providers"></param>
-    public AggregateModuleLoader(IReadOnlyList<IModuleLoader<TModule>> providers)
+    /// <param name="loaders">Individual loaders, with earlier entries having precedence.</param>
+    public AggregateModuleLoader(IReadOnlyList<IModuleLoader<TModule>> loaders)
     {
-        _loaders = providers.ToArray();
+        _loaders = loaders.ToArray();
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// This method uses FIFO order for the underlying loaders.
+    /// </remarks>
     public bool CanLoadModule(IModuleLocation moduleLocation)
     {
         foreach (var loader in _loaders)
@@ -30,6 +36,9 @@ public class AggregateModuleLoader<TModule> : IModuleLoader<TModule>
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// This method uses FIFO order for the underlying loaders.
+    /// </remarks>
     public TModule LoadModule(IModuleLocation moduleLocation)
     {
         foreach (var loader in _loaders)

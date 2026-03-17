@@ -2,11 +2,11 @@
 
 namespace Art.Common.Tests;
 
-public class AggregateArtifactToolRegistryTests
+public class MutableAggregateArtifactToolRegistryTests
 {
     private static readonly ArtifactToolID s_dummyToolId = new("Art.Common.Tests", "Art.Common.Tests.AggregateArtifactToolRegistryTestsDummyTool");
 
-    private readonly AggregateArtifactToolRegistry _registry = new();
+    private readonly MutableAggregateArtifactToolRegistry _registry = new();
     private ArtifactToolRegistry? _subRegistry0;
     private ArtifactToolRegistry? _subRegistry1;
 
