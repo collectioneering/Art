@@ -12,7 +12,7 @@ public class AggregateModuleProvider<TModule> : IModuleProvider<TModule>
     /// <summary>
     /// Initializes an instance of <see cref="AggregateModuleProvider{TModule}"/>.
     /// </summary>
-    /// <param name="providers"></param>
+    /// <param name="providers">Individual providers, with earlier entries having precedence.</param>
     public AggregateModuleProvider(IReadOnlyList<IModuleProvider<TModule>> providers)
     {
         _providers = providers.ToArray();
