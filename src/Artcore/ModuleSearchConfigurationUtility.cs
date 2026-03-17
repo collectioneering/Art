@@ -65,13 +65,25 @@ public static class ModuleSearchConfigurationUtility
         IEnumerable<ModuleSearchConfiguration> searchConfigurations)
     {
         var providers = new List<IModuleProvider<ALCModule>>();
+        string? userDirectory = null;
         foreach (var searchConfiguration in searchConfigurations)
         {
             foreach (var entry in searchConfiguration.Entries)
             {
+                string entryPath = entry.Path;
+                if (entryPath.StartsWith('~')
+                    && (entryPath.Length == 1 || entryPath[1] == Path.DirectorySeparatorChar || entryPath[1] == Path.AltDirectorySeparatorChar))
+                {
+                    userDirectory ??= GetUserDirectory();
+                    entryPath = entryPath.Length == 1 ? userDirectory : $"{userDirectory}{Path.DirectorySeparatorChar}{entryPath.AsSpan(2)}";
+                }
+                else
+                {
+                    entryPath = Path.Combine(baseDirectory, entryPath);
+                }
                 providers.Add(DiskManifestModuleProvider.Create(
                     moduleLoadConfiguration,
-                    Path.Combine(baseDirectory, entry.Path),
+                    entryPath,
                     entry.DirectorySuffix,
                     entry.FileNameSuffix));
             }
@@ -79,4 +91,8 @@ public static class ModuleSearchConfigurationUtility
         return providers;
     }
 
+    private static string GetUserDirectory()
+    {
+        return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile, Environment.SpecialFolderOption.DoNotVerify);
+    }
 }
