@@ -24,6 +24,6 @@ public class DiskTeslerDataProvider : ITeslerDataProvider
 
     public IArtifactDataManager CreateArtifactDataManager(ParseResult parseResult)
     {
-        return new DiskArtifactDataManager(parseResult.GetValue(OutputOption)!);
+        return new DiskArtifactDataManager(parseResult.GetRequiredValue(OutputOption));
     }
 }
