@@ -4,13 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Art.Common.IO;
 using Microsoft.Data.Sqlite;
-using NUnit.Framework;
 
 namespace Art.EF.Sqlite.Tests;
 
 public class SqliteTests
 {
-    [Test]
+    [Fact]
     public async Task TestSqliteDatabaseFile()
     {
         string tempFile = ArtIOUtility.CreateRandomPath(Path.GetTempPath(), ".db");
@@ -26,7 +25,7 @@ public class SqliteTests
         }
     }
 
-    [Test]
+    [Fact]
     public async Task TestSqliteDatabaseFileVacuum()
     {
         string tempFile = ArtIOUtility.CreateRandomPath(Path.GetTempPath(), ".db");
@@ -82,7 +81,7 @@ public class SqliteTests
                 SqliteConnection.ClearAllPools();
             }
             long fileSizeD = new FileInfo(tempFile).Length;
-            Assert.That(fileSizeD, Is.LessThan(fileSizeC));
+            Assert.True(fileSizeD < fileSizeC);
         }
         finally
         {
@@ -91,17 +90,17 @@ public class SqliteTests
         }
     }
 
-    [Test]
+    [Fact]
     public async Task TestSqliteDatabaseMemory()
     {
-        using SqliteArtifactRegistrationManager r = new();
+        await using SqliteArtifactRegistrationManager r = new();
         await TestSqliteDatabase(r);
     }
 
-    [Test]
+    [Fact]
     public async Task TestSqliteDatabaseMemoryExplicit()
     {
-        using SqliteArtifactRegistrationManager r = new(true);
+        await using SqliteArtifactRegistrationManager r = new(true);
         await TestSqliteDatabase(r);
     }
 
@@ -140,17 +139,17 @@ public class SqliteTests
         await r.RemoveArtifactAsync(k1);
         await r.RemoveResourceAsync(i2_k3);
 
-        Assert.That(await r.TryGetArtifactAsync(k1), Is.Null);
-        Assert.That(await r.TryGetResourceAsync(i1_k1), Is.Null);
-        Assert.That(await r.TryGetResourceAsync(i1_k2), Is.Null);
-        Assert.That(await r.TryGetArtifactAsync(k2), Is.EqualTo(i2));
-        Assert.That(await r.TryGetResourceAsync(i2_k1), Is.EqualTo(i2_r1));
-        Assert.That(await r.TryGetResourceAsync(i2_k2), Is.EqualTo(i2_r2));
-        Assert.That(await r.TryGetResourceAsync(i2_k3), Is.Null);
-        Assert.That((await r.ListArtifactsAsync("abec")).Count, Is.EqualTo(1));
-        Assert.That((await r.ListArtifactsAsync("abec", "group1")).Count, Is.EqualTo(1));
-        Assert.That((await r.ListArtifactsAsync("abec2", "group1")).Count, Is.EqualTo(0));
-        Assert.That((await r.ListResourcesAsync(k2)).Count, Is.EqualTo(2));
-        Assert.That((await r.ListResourcesAsync(k1)).Count, Is.EqualTo(0));
+        Assert.Null(await r.TryGetArtifactAsync(k1));
+        Assert.Null(await r.TryGetResourceAsync(i1_k1));
+        Assert.Null(await r.TryGetResourceAsync(i1_k2));
+        Assert.Equal(i2, await r.TryGetArtifactAsync(k2));
+        Assert.Equal(i2_r1, await r.TryGetResourceAsync(i2_k1));
+        Assert.Equal(i2_r2, await r.TryGetResourceAsync(i2_k2));
+        Assert.Null(await r.TryGetResourceAsync(i2_k3));
+        Assert.Single(await r.ListArtifactsAsync("abec"));
+        Assert.Single(await r.ListArtifactsAsync("abec", "group1"));
+        Assert.Empty(await r.ListArtifactsAsync("abec2", "group1"));
+        Assert.Equal(2, (await r.ListResourcesAsync(k2)).Count);
+        Assert.Empty(await r.ListResourcesAsync(k1));
     }
 }

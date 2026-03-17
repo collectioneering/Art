@@ -21,7 +21,7 @@ public class ListCommandTests : CommandTestBase
         Command = new ListCommand(toolLogHandlerProvider, artifactToolRegistryStore, toolPropertyProvider, timeProvider);
     }
 
-    [Test]
+    [Fact]
     public void EmptyInvocation_Fails()
     {
         var store = GetSingleStore(ProgrammableArtifactListTool.CreateRegistryEntry(_ => []));
@@ -29,14 +29,14 @@ public class ListCommandTests : CommandTestBase
         CreateObjectOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider());
         int rc = InvokeCommand(Command, [], console);
-        Assert.That(Out.ToString(), Is.Not.Empty);
-        Assert.That(OutQueue, Is.Empty);
-        Assert.That(Error.ToString(), Is.Not.Empty);
-        Assert.That(ErrorQueue, Is.Empty);
-        Assert.That(rc, Is.Not.EqualTo(0));
+        Assert.NotEmpty(Out.ToString());
+        Assert.Empty(OutQueue);
+        Assert.NotEmpty(Error.ToString());
+        Assert.Empty(ErrorQueue);
+        Assert.NotEqual(0, rc);
     }
 
-    [Test]
+    [Fact]
     public void MissingTool_Fails()
     {
         var store = GetSingleStore(ProgrammableArtifactListTool.CreateRegistryEntry(_ => []));
@@ -45,14 +45,14 @@ public class ListCommandTests : CommandTestBase
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider());
         string[] line = ["-t", new ArtifactToolID("NOT_AN_ASSEMBLY", "MALO").GetToolString()];
         int rc = InvokeCommand(Command, line, console);
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(OutQueue, Is.Empty);
-        Assert.That(Error.ToString(), Is.Not.Empty);
-        Assert.That(ErrorQueue, Is.Empty);
-        Assert.That(rc, Is.Not.EqualTo(0));
+        Assert.Empty(Out.ToString());
+        Assert.Empty(OutQueue);
+        Assert.NotEmpty(Error.ToString());
+        Assert.Empty(ErrorQueue);
+        Assert.NotEqual(0, rc);
     }
 
-    [Test]
+    [Fact]
     public void NoResults_Success()
     {
         var store = GetSingleStore(ProgrammableArtifactListTool.CreateRegistryEntry(_ => []));
@@ -61,14 +61,14 @@ public class ListCommandTests : CommandTestBase
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider());
         string[] line = ["-t", ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactListTool>()];
         int rc = InvokeCommand(Command, line, console);
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(OutQueue, Is.Empty);
-        Assert.That(Error.ToString(), Is.Empty);
-        Assert.That(ErrorQueue, Is.Empty);
-        Assert.That(rc, Is.EqualTo(0));
+        Assert.Empty(Out.ToString());
+        Assert.Empty(OutQueue);
+        Assert.Empty(Error.ToString());
+        Assert.Empty(ErrorQueue);
+        Assert.Equal(0, rc);
     }
 
-    [Test]
+    [Fact]
     public void OneResult_Success()
     {
         const string group = "GROUP_1";
@@ -86,24 +86,25 @@ public class ListCommandTests : CommandTestBase
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactListTool>();
         string[] line = ["-t", toolString, "-g", group];
         int rc = InvokeCommand(Command, line, console);
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(OutQueue, Has.Count.EqualTo(1));
-        Assert.That(Error.ToString(), Is.Empty);
-        Assert.That(ErrorQueue, Is.Empty);
-        Assert.That(rc, Is.EqualTo(0));
+        Assert.Empty(Out.ToString());
+        Assert.Single(OutQueue);
+        Assert.Empty(Error.ToString());
+        Assert.Empty(ErrorQueue);
+        Assert.Equal(0, rc);
         var vq = OutQueue.Dequeue();
-        Assert.That(vq, Is.InstanceOf<ArtifactDataObjectLog>());
-        var data = ((ArtifactDataObjectLog)vq).ArtifactData;
+        var vqObject = Assert.IsType<ArtifactDataObjectLog>(vq);
+        var data = vqObject.ArtifactData;
         var key = data.Info.Key;
-        Assert.That(key.Id, Is.EqualTo("ID_1"));
-        Assert.That(key.Tool, Is.EqualTo(toolString));
-        Assert.That(key.Group, Is.EqualTo(group));
+        Assert.Equal("ID_1", key.Id);
+        Assert.Equal(toolString, key.Tool);
+        Assert.Equal(group, key.Group);
         var rkey1 = new ArtifactResourceKey(key, "RES_1");
-        Assert.That(data.Keys, Is.EquivalentTo([rkey1]));
-        Assert.That(data[rkey1], Is.InstanceOf<StringArtifactResourceInfo>().With.Property("Resource").EqualTo("RES_1_CONTENT"));
+        Assert.Equal([rkey1], data.Keys);
+        var stringArtifactResourceInfo = Assert.IsType<StringArtifactResourceInfo>(data[rkey1]);
+        Assert.Equal("RES_1_CONTENT", stringArtifactResourceInfo.Resource);
     }
 
-    [Test]
+    [Fact]
     public void MultiResult_Success()
     {
         const string group = "GROUP_1";
@@ -124,30 +125,32 @@ public class ListCommandTests : CommandTestBase
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactListTool>();
         string[] line = ["-t", toolString, "-g", group];
         int rc = InvokeCommand(Command, line, console);
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(OutQueue, Has.Count.EqualTo(2));
-        Assert.That(Error.ToString(), Is.Empty);
-        Assert.That(ErrorQueue, Is.Empty);
-        Assert.That(rc, Is.EqualTo(0));
+        Assert.Empty(Out.ToString());
+        Assert.Equal(2, OutQueue.Count);
+        Assert.Empty(Error.ToString());
+        Assert.Empty(ErrorQueue);
+        Assert.Equal(0, rc);
         var vq1 = OutQueue.Dequeue();
-        Assert.That(vq1, Is.InstanceOf<ArtifactDataObjectLog>());
-        var data1 = ((ArtifactDataObjectLog)vq1).ArtifactData;
+        var vq1Obj = Assert.IsType<ArtifactDataObjectLog>(vq1);
+        var data1 = vq1Obj.ArtifactData;
         var vq2 = OutQueue.Dequeue();
-        Assert.That(vq2, Is.InstanceOf<ArtifactDataObjectLog>());
-        var data2 = ((ArtifactDataObjectLog)vq2).ArtifactData;
+        var vq2Obj = Assert.IsType<ArtifactDataObjectLog>(vq2);
+        var data2 = vq2Obj.ArtifactData;
         var key1 = data1.Info.Key;
-        Assert.That(key1.Id, Is.EqualTo("ID_1"));
-        Assert.That(key1.Tool, Is.EqualTo(toolString));
-        Assert.That(key1.Group, Is.EqualTo(group));
+        Assert.Equal("ID_1", key1.Id);
+        Assert.Equal(toolString, key1.Tool);
+        Assert.Equal(group, key1.Group);
         var rkey1 = new ArtifactResourceKey(key1, "RES_1");
-        Assert.That(data1.Keys, Is.EquivalentTo([rkey1]));
-        Assert.That(data1[rkey1], Is.InstanceOf<StringArtifactResourceInfo>().With.Property(nameof(StringArtifactResourceInfo.Resource)).EqualTo("RES_1_CONTENT"));
+        Assert.Equal([rkey1], data1.Keys);
+        var stringArtifactResourceInfo1 = Assert.IsType<StringArtifactResourceInfo>(data1[rkey1]);
+        Assert.Equal("RES_1_CONTENT", stringArtifactResourceInfo1.Resource);
         var key2 = data2.Info.Key;
-        Assert.That(key2.Id, Is.EqualTo("ID_2"));
-        Assert.That(key2.Tool, Is.EqualTo(toolString));
-        Assert.That(key2.Group, Is.EqualTo(group));
+        Assert.Equal("ID_2", key2.Id);
+        Assert.Equal(toolString, key2.Tool);
+        Assert.Equal(group, key2.Group);
         var rkey2 = new ArtifactResourceKey(key2, "RES_2");
-        Assert.That(data2.Keys, Is.EquivalentTo([rkey2]));
-        Assert.That(data2[rkey2], Is.InstanceOf<StringArtifactResourceInfo>().With.Property(nameof(StringArtifactResourceInfo.Resource)).EqualTo("RES_2_CONTENT"));
+        Assert.Equal([rkey2], data2.Keys);
+        var stringArtifactResourceInfo2 = Assert.IsType<StringArtifactResourceInfo>(data2[rkey2]);
+        Assert.Equal("RES_2_CONTENT", stringArtifactResourceInfo2.Resource);
     }
 }

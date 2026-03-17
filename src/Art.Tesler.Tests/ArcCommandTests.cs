@@ -27,7 +27,7 @@ public class ArcCommandTests : CommandTestBase
         Command = new ArcCommand(toolLogHandlerProvider, artifactToolRegistryStore, toolPropertyProvider, dataProvider, registrationProvider, timeProvider, profileResolver);
     }
 
-    [Test]
+    [Fact]
     public void NoProfilesPassed_Fails()
     {
         var store = GetEmptyStore();
@@ -37,12 +37,12 @@ public class ArcCommandTests : CommandTestBase
         var profileResolver = CreateDictionaryProfileResolver();
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, dataProvider, registrationProvider, new FakeTimeProvider(), profileResolver);
-        Assert.That(InvokeCommand(Command, [], console), Is.Not.EqualTo(0));
-        Assert.That(Out.ToString(), Is.Not.Empty);
-        Assert.That(Error.ToString(), Is.Not.Empty);
+        Assert.NotEqual(0, InvokeCommand(Command, [], console));
+        Assert.NotEmpty(Out.ToString());
+        Assert.NotEmpty(Error.ToString());
     }
 
-    [Test]
+    [Fact]
     public void OneItemPassed_Unmatched_Fails()
     {
         var store = GetEmptyStore();
@@ -53,12 +53,12 @@ public class ArcCommandTests : CommandTestBase
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, dataProvider, registrationProvider, new FakeTimeProvider(), profileResolver);
         string[] line = [BadProfileName];
-        Assert.That(InvokeCommand(Command, line, console), Is.Not.EqualTo(0));
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(Error.ToString(), Is.Not.Empty);
+        Assert.NotEqual(0, InvokeCommand(Command, line, console));
+        Assert.Empty(Out.ToString());
+        Assert.NotEmpty(Error.ToString());
     }
 
-    [Test]
+    [Fact]
     public void OneItemPassed_AllMatch_WithNoResultingProfiles_Success()
     {
         var store = GetEmptyStore();
@@ -69,12 +69,12 @@ public class ArcCommandTests : CommandTestBase
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, dataProvider, registrationProvider, new FakeTimeProvider(), profileResolver);
         string[] line = [ProfileName];
-        Assert.That(InvokeCommand(Command, line, console), Is.EqualTo(0));
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(Error.ToString(), Is.Empty);
+        Assert.Equal(0, InvokeCommand(Command, line, console));
+        Assert.Empty(Out.ToString());
+        Assert.Empty(Error.ToString());
     }
 
-    [Test]
+    [Fact]
     public void OneItemPassed_AllMatch_WithResultingProfiles_ProfilesValid_Success()
     {
         int ctr = 0;
@@ -86,13 +86,13 @@ public class ArcCommandTests : CommandTestBase
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, dataProvider, registrationProvider, new FakeTimeProvider(), profileResolver);
         string[] line = [ProfileName];
-        Assert.That(InvokeCommand(Command, line, console), Is.EqualTo(0));
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(Error.ToString(), Is.Empty);
-        Assert.That(ctr, Is.EqualTo(1));
+        Assert.Equal(0, InvokeCommand(Command, line, console));
+        Assert.Empty(Out.ToString());
+        Assert.Empty(Error.ToString());
+        Assert.Equal(1, ctr);
     }
 
-    [Test]
+    [Fact]
     public void OneItemPassed_AllMatch_WithResultingProfiles_ProfilesInvalid_Fails()
     {
         int ctr = 0;
@@ -104,9 +104,9 @@ public class ArcCommandTests : CommandTestBase
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, dataProvider, registrationProvider, new FakeTimeProvider(), profileResolver);
         string[] line = [ProfileName];
-        Assert.That(InvokeCommand(Command, line, console), Is.Not.EqualTo(0));
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(Error.ToString(), Is.Not.Empty);
-        Assert.That(ctr, Is.EqualTo(0));
+        Assert.NotEqual(0, InvokeCommand(Command, line, console));
+        Assert.Empty(Out.ToString());
+        Assert.NotEmpty(Error.ToString());
+        Assert.Equal(0, ctr);
     }
 }

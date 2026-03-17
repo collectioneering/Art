@@ -1,24 +1,34 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Security.Cryptography;
-using NUnit.Framework;
 
 namespace Art.Common.Tests.Crypto;
 
 public class HashProxyTests
 {
-    [Test, Combinatorial]
-    public void TestHashProxy(
-        [Values(0, 8, 3098 * 1024)] int inputSize,
-        [Values(typeof(SHA1), typeof(SHA256), typeof(SHA384), typeof(SHA512), typeof(MD5))]
-        Type hashType)
+    [Theory]
+    [InlineData(typeof(SHA1), 0)]
+    [InlineData(typeof(SHA1), 8)]
+    [InlineData(typeof(SHA1), 3098 * 1024)]
+    [InlineData(typeof(SHA256), 0)]
+    [InlineData(typeof(SHA256), 8)]
+    [InlineData(typeof(SHA256), 3098 * 1024)]
+    [InlineData(typeof(SHA384), 0)]
+    [InlineData(typeof(SHA384), 8)]
+    [InlineData(typeof(SHA384), 3098 * 1024)]
+    [InlineData(typeof(SHA512), 0)]
+    [InlineData(typeof(SHA512), 8)]
+    [InlineData(typeof(SHA512), 3098 * 1024)]
+    [InlineData(typeof(MD5), 0)]
+    [InlineData(typeof(MD5), 8)]
+    [InlineData(typeof(MD5), 3098 * 1024)]
+    public void TestHashProxy(Type hashType, int inputSize)
     {
-        MethodInfo method = hashType.GetMethod("Create", BindingFlags.Static | BindingFlags.Public, Array.Empty<Type>())!;
-        HashAlgorithm hashAlgorithm = (HashAlgorithm)method.Invoke(null, Array.Empty<object?>())!;
-        TestHashProxy(inputSize, hashAlgorithm);
+        MethodInfo method = hashType.GetMethod("Create", BindingFlags.Static | BindingFlags.Public, []) ?? throw new InvalidOperationException($"Missing Create for {hashType}");
+        HashAlgorithm hashAlgorithm = method.Invoke(null, []) as HashAlgorithm ?? throw new InvalidOperationException("Missing hash algorithm from return");
+        TestHashProxy_Internal(inputSize, hashAlgorithm);
     }
 
-    private static void TestHashProxy(int inputSize, HashAlgorithm hashAlgorithm)
+    private static void TestHashProxy_Internal(int inputSize, HashAlgorithm hashAlgorithm)
     {
         byte[] arr = new byte[inputSize];
         Random.Shared.NextBytes(arr);
@@ -26,25 +36,24 @@ public class HashProxyTests
         HashProxyStream hps = new(new MemoryStream(arr), hashAlgorithm, false, true);
         hps.CopyTo(new MemoryStream());
         byte[] actual = hps.GetHash();
-        Assert.That(actual, Is.EqualTo(expected));
+        Assert.Equal(expected, actual);
     }
 
-    [Test]
-    [SuppressMessage("ReSharper", "AccessToDisposedClosure")]
+    [Fact]
     public void TestHashProxyDisposal()
     {
         HashProxyStream hps = new(new MemoryStream(), SHA256.Create());
-        Assert.That(() => hps.Read(new byte[1], 0, 1), Throws.Nothing);
+        _ = hps.Read(new byte[1], 0, 1);
         hps.Dispose();
-        Assert.That(() => hps.Read(new byte[1], 0, 1), Throws.InstanceOf<ObjectDisposedException>());
+        Assert.Throws<ObjectDisposedException>(() => hps.Read(new byte[1], 0, 1));
     }
 
-    [Test]
+    [Fact]
     public void TestHashProxyNoDisposalFromGetHash()
     {
         HashProxyStream hps = new(new MemoryStream(), SHA256.Create());
-        Assert.That(() => hps.Read(new byte[1], 0, 1), Throws.Nothing);
+        _ = hps.Read(new byte[1], 0, 1);
         hps.GetHash();
-        Assert.That(() => hps.Read(new byte[1], 0, 1), Throws.Nothing);
+        _ = hps.Read(new byte[1], 0, 1);
     }
 }

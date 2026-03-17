@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Art.Common;
 using Art.Common.Crypto;
 using Art.Http.Resources;
-using NUnit.Framework;
 using RichardSzalay.MockHttp;
 using PaddingMode = System.Security.Cryptography.PaddingMode;
 
@@ -14,36 +13,34 @@ namespace Art.Http.Tests.Resources;
 
 public class UriArtifactResourceInfoTests : HttpTestsBase
 {
-    [Test]
-    public void WithMetadataAsync_Nonexistent_Throws()
+    [Fact]
+    public async Task WithMetadataAsync_Nonexistent_Throws()
     {
         MockHandler.When("http://localhost/harmony.bin").Respond(HttpStatusCode.NotFound);
         var ari = Data.Uri("http://localhost/harmony.bin", "file");
-        Assert.That(() => ari.Info.WithMetadataAsync().AsTask().Wait(),
-            Throws.InstanceOf<AggregateException>().With.InnerException.Matches(
-                Is.InstanceOf<ArtHttpResponseMessageException>().With.Property("StatusCode").EqualTo(HttpStatusCode.NotFound)));
+        var artHttpResponseMessageException = await Assert.ThrowsAsync<ArtHttpResponseMessageException>(() => ari.Info.WithMetadataAsync().AsTask());
+        Assert.Equal(HttpStatusCode.NotFound, artHttpResponseMessageException.StatusCode);
     }
 
-    [Test]
-    public void ExportStreamAsync_Nonexistent_Throws()
+    [Fact]
+    public async Task ExportStreamAsync_Nonexistent_Throws()
     {
         MockHandler.When("http://localhost/wintercontingency.bin").Respond(HttpStatusCode.NotFound);
         var inf = Data.Uri("http://localhost/wintercontingency.bin", "file").Info;
-        Assert.That(() => inf.ExportStreamAsync(Stream.Null).AsTask().Wait(),
-            Throws.InstanceOf<AggregateException>().With.InnerException.Matches(
-                Is.InstanceOf<ArtHttpResponseMessageException>().With.Property("StatusCode").EqualTo(HttpStatusCode.NotFound)));
+        var artHttpResponseMessageException = await Assert.ThrowsAsync<ArtHttpResponseMessageException>(() => inf.ExportStreamAsync(Stream.Null).AsTask());
+        Assert.Equal(HttpStatusCode.NotFound, artHttpResponseMessageException.StatusCode);
     }
 
-    [Test]
+    [Fact]
     public async Task WithMetadataAsync_Json_IsJson()
     {
         MockHandler.When("http://localhost/harmony.json").Respond("application/json", @"null");
         var ari = Data.Uri("http://localhost/harmony.json", "file");
         var met = await ari.Info.WithMetadataAsync();
-        Assert.That(met.ContentType, Is.EqualTo("application/json"));
+        Assert.Equal("application/json", met.ContentType);
     }
 
-    [Test]
+    [Fact]
     public async Task ExportStreamAsync_Data_Matches()
     {
         PreludeRandomContent(30495, out byte[] originalData, out MemoryStream source);
@@ -52,11 +49,11 @@ public class UriArtifactResourceInfoTests : HttpTestsBase
         MemoryStream read = new();
         await inf.ExportStreamAsync(read);
         byte[] actual = read.ToArray();
-        Assert.That(actual.Length, Is.EqualTo(originalData.Length));
-        Assert.That(actual.AsSpan().SequenceEqual(originalData));
+        Assert.Equal(originalData.Length, actual.Length);
+        Assert.True(actual.AsSpan().SequenceEqual(originalData));
     }
 
-    [Test]
+    [Fact]
     public async Task ExportStreamAsync_Aes256Encryption_Matches()
     {
         PreludeRandomEncryptedContent(Aes.Create, CipherMode.CBC, PaddingMode.PKCS7, 30495, 256, 128, out byte[] originalData, out byte[] key, out byte[] iv, out MemoryStream encrypted);
@@ -66,11 +63,11 @@ public class UriArtifactResourceInfoTests : HttpTestsBase
         MemoryStream decrypted = new();
         await inf.ExportStreamAsync(decrypted);
         byte[] newDec = decrypted.ToArray();
-        Assert.That(newDec.Length, Is.EqualTo(originalData.Length));
-        Assert.That(newDec.AsSpan().SequenceEqual(originalData));
+        Assert.Equal(originalData.Length, newDec.Length);
+        Assert.True(newDec.AsSpan().SequenceEqual(originalData));
     }
 
-    [Test]
+    [Fact]
     public async Task ExportStreamAsync_Aes256EncryptionWithManualPadding_Matches()
     {
         PreludeRandomEncryptedContent(Aes.Create, CipherMode.CBC, PaddingMode.PKCS7, 30495, 256, 128, out byte[] originalData, out byte[] key, out byte[] iv, out MemoryStream encrypted);
@@ -81,7 +78,7 @@ public class UriArtifactResourceInfoTests : HttpTestsBase
         MemoryStream decrypted = new();
         await inf.ExportStreamAsync(decrypted);
         byte[] newDec = decrypted.ToArray();
-        Assert.That(newDec.Length, Is.EqualTo(originalData.Length));
-        Assert.That(newDec.AsSpan().SequenceEqual(originalData));
+        Assert.Equal(originalData.Length, newDec.Length);
+        Assert.True(newDec.AsSpan().SequenceEqual(originalData));
     }
 }

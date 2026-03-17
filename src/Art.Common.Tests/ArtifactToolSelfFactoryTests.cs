@@ -1,23 +1,22 @@
-﻿using NUnit.Framework;
-
+﻿
 namespace Art.Common.Tests;
 
 public class ArtifactToolSelfFactoryTests
 {
     private static readonly ArtifactToolID s_dummyToolId = new("Art.Common.Tests", "Art.Common.Tests.ArtifactToolSelfFactoryTestsDummyTool");
 
-    [Test]
+    [Fact]
     public void GetArtifactToolId_MatchesExpected()
     {
         var id = GetArtifactToolId<ArtifactToolSelfFactoryTestsDummyTool>();
-        Assert.That(id, Is.EqualTo(s_dummyToolId));
+        Assert.Equal(s_dummyToolId, id);
     }
 
-    [Test]
+    [Fact]
     public void CreateArtifactTool_MatchesType()
     {
         var tool = CreateArtifactTool<ArtifactToolSelfFactoryTestsDummyTool>();
-        Assert.That(tool, Is.InstanceOf<ArtifactToolSelfFactoryTestsDummyTool>());
+        Assert.IsType<ArtifactToolSelfFactoryTestsDummyTool>(tool);
     }
 
     private static ArtifactToolID GetArtifactToolId<T>() where T : IArtifactToolSelfFactory<T>, IArtifactTool, new()

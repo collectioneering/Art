@@ -22,7 +22,7 @@ public class DumpCommandTests : CommandTestBase
         Command = new DumpCommand(toolLogHandlerProvider, artifactToolRegistryStore, toolPropertyProvider, dataProvider, registrationProvider, timeProvider);
     }
 
-    [Test]
+    [Fact]
     public void EmptyInvocation_Fails()
     {
         var store = GetSingleStore(ProgrammableArtifactDumpTool.CreateRegistryEntry(_ => { }));
@@ -31,12 +31,12 @@ public class DumpCommandTests : CommandTestBase
         var registrationProvider = CreateSharedMemoryRegistrationProvider();
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, dataProvider, registrationProvider, new FakeTimeProvider());
-        Assert.That(InvokeCommand(Command, [], console), Is.Not.EqualTo(0));
-        Assert.That(Out.ToString(), Is.Not.Empty);
-        Assert.That(Error.ToString(), Is.Not.Empty);
+        Assert.NotEqual(0, InvokeCommand(Command, [], console));
+        Assert.NotEmpty(Out.ToString());
+        Assert.NotEmpty(Error.ToString());
     }
 
-    [Test]
+    [Fact]
     public void MissingTool_Fails()
     {
         var store = GetSingleStore(ProgrammableArtifactDumpTool.CreateRegistryEntry(_ => { }));
@@ -46,12 +46,12 @@ public class DumpCommandTests : CommandTestBase
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, dataProvider, registrationProvider, new FakeTimeProvider());
         string[] line = ["-t", new ArtifactToolID("NOT_AN_ASSEMBLY", "MALO").GetToolString()];
-        Assert.That(InvokeCommand(Command, line, console), Is.Not.EqualTo(0));
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(Error.ToString(), Is.Not.Empty);
+        Assert.NotEqual(0, InvokeCommand(Command, line, console));
+        Assert.Empty(Out.ToString());
+        Assert.NotEmpty(Error.ToString());
     }
 
-    [Test]
+    [Fact]
     public void NoopTool_Success()
     {
         var store = GetSingleStore(ProgrammableArtifactDumpTool.CreateRegistryEntry(_ => { }));
@@ -61,8 +61,8 @@ public class DumpCommandTests : CommandTestBase
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, dataProvider, registrationProvider, new FakeTimeProvider());
         string[] line = ["-t", ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactDumpTool>()];
-        Assert.That(InvokeCommand(Command, line, console), Is.EqualTo(0));
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(Error.ToString(), Is.Empty);
+        Assert.Equal(0, InvokeCommand(Command, line, console));
+        Assert.Empty(Out.ToString());
+        Assert.Empty(Error.ToString());
     }
 }

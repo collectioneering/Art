@@ -1,13 +1,12 @@
 ﻿using System.Text.Json;
 using Art.Common.Proxies;
 using Art.TestsBase;
-using NUnit.Framework;
 
 namespace Art.Common.Tests;
 
 public class ArtifactToolListProxyTests
 {
-    [Test]
+    [Fact]
     public async Task FindOnlyTool_WithoutArtifactList_Throws()
     {
         var profile = new ArtifactToolProfile("tool", null, null);
@@ -26,17 +25,17 @@ public class ArtifactToolListProxyTests
             tool,
             new ArtifactToolListOptions(),
             null);
-        Assert.That(async () =>
+        await Assert.ThrowsAsync<NotSupportedException>(async () =>
         {
 #if NET10_0_OR_GREATER
-            return await AsyncEnumerable.ToListAsync(proxy.ListAsync());
+            _ = await AsyncEnumerable.ToListAsync(proxy.ListAsync());
 #else
-            return await proxy.ListAsync().ToListAsync();
+            _ = await proxy.ListAsync().ToListAsync();
 #endif
-        }, Throws.InstanceOf<NotSupportedException>());
+        });
     }
 
-    [Test]
+    [Fact]
     public async Task FindOnlyTool_WithArtifactList_Success()
     {
         var options = new Dictionary<string, JsonElement> { { "artifactList", JsonSerializer.SerializeToElement(new[] { "1", "2", "3" }) } };
@@ -61,10 +60,13 @@ public class ArtifactToolListProxyTests
 #else
         var results = await proxy.ListAsync().ToListAsync();
 #endif
-        Assert.That(results.Select(v => int.Parse(v.Info.Key.Id)), Is.EquivalentTo([1, 2, 3]));
+        Assert.Equal(
+            [1, 2, 3],
+            results.Select(v => int.Parse(v.Info.Key.Id)).OrderBy(static v => v)
+        );
     }
 
-    [Test]
+    [Fact]
     public async Task DumpOnlyTool_WithoutArtifactList_Success()
     {
         var profile = new ArtifactToolProfile("tool", null, null);
@@ -85,10 +87,13 @@ public class ArtifactToolListProxyTests
 #else
         var results = await proxy.ListAsync().ToListAsync();
 #endif
-        Assert.That(results.Select(v => int.Parse(v.Info.Key.Id)), Is.EquivalentTo([1, 2, 3]));
+        Assert.Equal(
+            [1, 2, 3],
+            results.Select(v => int.Parse(v.Info.Key.Id)).OrderBy(static v => v)
+        );
     }
 
-    [Test]
+    [Fact]
     public async Task DumpOnlyTool_WithArtifactList_DoesNotFilter()
     {
         var options = new Dictionary<string, JsonElement> { { "artifactList", JsonSerializer.SerializeToElement(new[] { "1", "2" }) } };
@@ -110,7 +115,10 @@ public class ArtifactToolListProxyTests
 #else
         var results = await proxy.ListAsync().ToListAsync();
 #endif
-        Assert.That(results.Select(v => int.Parse(v.Info.Key.Id)), Is.EquivalentTo([1, 2, 3]));
+        Assert.Equal(
+            [1, 2, 3],
+            results.Select(v => int.Parse(v.Info.Key.Id)).OrderBy(static v => v)
+        );
     }
 
     // TODO prioritisation tests

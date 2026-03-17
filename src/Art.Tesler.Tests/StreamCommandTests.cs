@@ -26,7 +26,7 @@ public class StreamCommandTests : CommandTestBase
         Command = new StreamCommand(toolLogHandlerProvider, artifactToolRegistryStore, toolPropertyProvider, timeProvider, profileResolver);
     }
 
-    [Test]
+    [Fact]
     public void NoProfilesPassed_Fails()
     {
         var store = GetEmptyStore();
@@ -35,12 +35,12 @@ public class StreamCommandTests : CommandTestBase
         CreateStreamOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider(), profileResolver);
         int rc = InvokeCommand(Command, [], console);
-        Assert.That(Out.ToString(), Is.Not.Empty);
-        Assert.That(Error.ToString(), Is.Not.Empty);
-        Assert.That(rc, Is.Not.EqualTo(0));
+        Assert.NotEmpty(Out.ToString());
+        Assert.NotEmpty(Error.ToString());
+        Assert.NotEqual(0, rc);
     }
 
-    [Test]
+    [Fact]
     public void ItemPassed_Unmatched_Fails()
     {
         var store = GetEmptyStore();
@@ -50,12 +50,12 @@ public class StreamCommandTests : CommandTestBase
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider(), profileResolver);
         string[] line = [BadProfileName];
         int rc = InvokeCommand(Command, line, console);
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(Error.ToString(), Is.Not.Empty);
-        Assert.That(rc, Is.Not.EqualTo(0));
+        Assert.Empty(Out.ToString());
+        Assert.NotEmpty(Error.ToString());
+        Assert.NotEqual(0, rc);
     }
 
-    [Test]
+    [Fact]
     public void ItemPassed_Matches_WithNoResultingProfiles_Fails()
     {
         var store = GetEmptyStore();
@@ -65,12 +65,12 @@ public class StreamCommandTests : CommandTestBase
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider(), profileResolver);
         string[] line = [ProfileName];
         int rc = InvokeCommand(Command, line, console);
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(Error.ToString(), Is.Not.Empty);
-        Assert.That(rc, Is.Not.EqualTo(0));
+        Assert.Empty(Out.ToString());
+        Assert.NotEmpty(Error.ToString());
+        Assert.NotEqual(0, rc);
     }
 
-    [Test]
+    [Fact]
     public void ItemPassed_Matches_WithMultipleResultingProfiles_Fails()
     {
         var store = GetEmptyStore();
@@ -80,12 +80,12 @@ public class StreamCommandTests : CommandTestBase
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider(), profileResolver);
         string[] line = [ProfileName];
         int rc = InvokeCommand(Command, line, console);
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(Error.ToString(), Is.Not.Empty);
-        Assert.That(rc, Is.Not.EqualTo(0));
+        Assert.Empty(Out.ToString());
+        Assert.NotEmpty(Error.ToString());
+        Assert.NotEqual(0, rc);
     }
 
-    [Test]
+    [Fact]
     public void ItemPassed_Matches_WithOneResultingProfile_ProfileValid_OneArtifact_Success()
     {
         byte[] data = new byte[128];
@@ -97,14 +97,14 @@ public class StreamCommandTests : CommandTestBase
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider(), profileResolver);
         string[] line = [ProfileName];
         int rc = InvokeCommand(Command, line, console);
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(Error.ToString(), Is.Empty);
-        Assert.That(rc, Is.EqualTo(0));
-        Assert.That(OutStream.TryGetBuffer(out var segment), Is.True);
-        Assert.That(segment.AsSpan().SequenceEqual(data), Is.True);
+        Assert.Empty(Out.ToString());
+        Assert.Empty(Error.ToString());
+        Assert.Equal(0, rc);
+        Assert.True(OutStream.TryGetBuffer(out var segment));
+        Assert.True(segment.AsSpan().SequenceEqual(data));
     }
 
-    [Test]
+    [Fact]
     public void ItemPassed_Matches_WithOneResultingProfile_ProfileValid_BadToolType_Fails()
     {
         var store = GetSingleStore(ProgrammableArtifactFindTool.CreateRegistryEntry(s_toolId, (_, _) => null));
@@ -114,12 +114,12 @@ public class StreamCommandTests : CommandTestBase
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider(), profileResolver);
         string[] line = [ProfileName];
         int rc = InvokeCommand(Command, line, console);
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(Error.ToString(), Is.Not.Empty);
-        Assert.That(rc, Is.Not.EqualTo(0));
+        Assert.Empty(Out.ToString());
+        Assert.NotEmpty(Error.ToString());
+        Assert.NotEqual(0, rc);
     }
 
-    [Test]
+    [Fact]
     public void ItemPassed_Matches_WithOneResultingProfile_ProfileValid_NoArtifacts_Fails()
     {
         var store = GetSingleStore(ProgrammableArtifactListTool.CreateRegistryEntry(s_toolId, _ => []));
@@ -129,12 +129,12 @@ public class StreamCommandTests : CommandTestBase
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider(), profileResolver);
         string[] line = [ProfileName];
         int rc = InvokeCommand(Command, line, console);
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(Error.ToString(), Is.Not.Empty);
-        Assert.That(rc, Is.Not.EqualTo(0));
+        Assert.Empty(Out.ToString());
+        Assert.NotEmpty(Error.ToString());
+        Assert.NotEqual(0, rc);
     }
 
-    [Test]
+    [Fact]
     public void ItemPassed_Matches_WithOneResultingProfile_ProfileValid_MultiArtifacts_Fails()
     {
         var store = GetSingleStore(ProgrammableArtifactListTool.CreateRegistryEntry(s_toolId, v => [CommitStreamArtifact(v, new MemoryStream()), CommitStreamArtifact(v, new MemoryStream())]));
@@ -144,12 +144,12 @@ public class StreamCommandTests : CommandTestBase
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider(), profileResolver);
         string[] line = [ProfileName];
         int rc = InvokeCommand(Command, line, console);
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(Error.ToString(), Is.Not.Empty);
-        Assert.That(rc, Is.Not.EqualTo(0));
+        Assert.Empty(Out.ToString());
+        Assert.NotEmpty(Error.ToString());
+        Assert.NotEqual(0, rc);
     }
 
-    [Test]
+    [Fact]
     public void ItemPassed_Matches_WithOneResultingProfile_ProfileInvalid_Fails()
     {
         var store = GetSingleStore(ProgrammableArtifactListTool.CreateRegistryEntry(s_toolId, _ => []));
@@ -159,9 +159,9 @@ public class StreamCommandTests : CommandTestBase
         InitCommandDefault(toolOutput, store, toolPropertyProvider, new FakeTimeProvider(), profileResolver);
         string[] line = [ProfileName];
         int rc = InvokeCommand(Command, line, console);
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(Error.ToString(), Is.Not.Empty);
-        Assert.That(rc, Is.Not.EqualTo(0));
+        Assert.Empty(Out.ToString());
+        Assert.NotEmpty(Error.ToString());
+        Assert.NotEqual(0, rc);
     }
 
     private static IArtifactData CommitStreamArtifact(ProgrammableArtifactListTool tool, Stream stream)

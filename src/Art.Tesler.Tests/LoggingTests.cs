@@ -27,69 +27,69 @@ public class LoggingTests : CommandTestBase
         Command = new DumpCommand(toolLogHandlerProvider, artifactToolRegistryStore, toolPropertyProvider, dataProvider, registrationProvider, timeProvider);
     }
 
-    [Test]
+    [Fact]
     public void Dump_LogInfoTool_OutputMatches()
     {
         CreateOutputs(out var toolOutput, out var console, OutputDelimiter);
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactDumpTool>();
         int code = Execute(toolOutput, console, t => t.LogInformation(Message), ["-t", toolString, "-g", Group]);
-        Assert.That(code, Is.EqualTo(0));
+        Assert.Equal(0, code);
         string outputContent = Out.ToString();
-        Assert.That(outputContent, Is.Not.Empty);
-        Assert.That(outputContent, Is.EqualTo(ConstructOutput(OutputDelimiter, toolString, Group, Message, null, LogLevel.Information)));
-        Assert.That(Error.ToString(), Is.Empty);
+        Assert.NotEmpty(outputContent);
+        Assert.Equal(ConstructOutput(OutputDelimiter, toolString, Group, Message, null, LogLevel.Information), outputContent);
+        Assert.Empty(Error.ToString());
     }
 
-    [Test]
+    [Fact]
     public void Dump_LogTitleTool_OutputMatches()
     {
         CreateOutputs(out var toolOutput, out var console, OutputDelimiter);
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactDumpTool>();
         int code = Execute(toolOutput, console, t => t.LogTitle(Message), ["-t", toolString, "-g", Group]);
-        Assert.That(code, Is.EqualTo(0));
+        Assert.Equal(0, code);
         string outputContent = Out.ToString();
-        Assert.That(outputContent, Is.Not.Empty);
-        Assert.That(outputContent, Is.EqualTo(ConstructOutput(OutputDelimiter, toolString, Group, Message, null, LogLevel.Title)));
-        Assert.That(Error.ToString(), Is.Empty);
+        Assert.NotEmpty(outputContent);
+        Assert.Equal(ConstructOutput(OutputDelimiter, toolString, Group, Message, null, LogLevel.Title), outputContent);
+        Assert.Empty(Error.ToString());
     }
 
-    [Test]
+    [Fact]
     public void Dump_LogEntryTool_OutputMatches()
     {
         CreateOutputs(out var toolOutput, out var console, OutputDelimiter);
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactDumpTool>();
         int code = Execute(toolOutput, console, t => t.LogEntry(Message), ["-t", toolString, "-g", Group]);
-        Assert.That(code, Is.EqualTo(0));
+        Assert.Equal(0, code);
         string outputContent = Out.ToString();
-        Assert.That(outputContent, Is.Not.Empty);
-        Assert.That(outputContent, Is.EqualTo(ConstructOutput(OutputDelimiter, toolString, Group, Message, null, LogLevel.Entry)));
-        Assert.That(Error.ToString(), Is.Empty);
+        Assert.NotEmpty(outputContent);
+        Assert.Equal(ConstructOutput(OutputDelimiter, toolString, Group, Message, null, LogLevel.Entry), outputContent);
+        Assert.Empty(Error.ToString());
     }
 
-    [Test]
+    [Fact]
     public void Dump_LogWarningTool_OutputMatches()
     {
         CreateOutputs(out var toolOutput, out var console, OutputDelimiter);
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactDumpTool>();
         int code = Execute(toolOutput, console, t => t.LogWarning(Message), ["-t", toolString, "-g", Group]);
-        Assert.That(code, Is.EqualTo(0));
-        Assert.That(Out.ToString(), Is.Empty);
+        Assert.Equal(0, code);
+        Assert.Empty(Out.ToString());
         string warnContent = Warn.ToString();
-        Assert.That(warnContent, Is.Not.Empty);
-        Assert.That(warnContent, Is.EqualTo(ConstructWarnOutput(OutputDelimiter, toolString, Group, Message, null, LogLevel.Warning)));
+        Assert.NotEmpty(warnContent);
+        Assert.Equal(ConstructWarnOutput(OutputDelimiter, toolString, Group, Message, null, LogLevel.Warning), warnContent);
     }
 
-    [Test]
+    [Fact]
     public void Dump_LogErrorTool_OutputMatches()
     {
         CreateOutputs(out var toolOutput, out var console, OutputDelimiter);
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactDumpTool>();
         int code = Execute(toolOutput, console, t => t.LogError(Message), ["-t", toolString, "-g", Group]);
-        Assert.That(code, Is.EqualTo(0));
-        Assert.That(Out.ToString(), Is.Empty);
+        Assert.Equal(0, code);
+        Assert.Empty(Out.ToString());
         string errorContent = Error.ToString();
-        Assert.That(errorContent, Is.Not.Empty);
-        Assert.That(errorContent, Is.EqualTo(ConstructErrorOutput(OutputDelimiter, toolString, Group, Message, null, LogLevel.Error)));
+        Assert.NotEmpty(errorContent);
+        Assert.Equal(ConstructErrorOutput(OutputDelimiter, toolString, Group, Message, null, LogLevel.Error), errorContent);
     }
 
     private int Execute(IToolLogHandlerProvider toolLogHandlerProvider,TestConsole testConsole, Action<ProgrammableArtifactDumpTool> action, string[] line)

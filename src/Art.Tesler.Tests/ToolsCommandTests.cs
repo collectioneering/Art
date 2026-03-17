@@ -13,45 +13,45 @@ public class ToolsCommandTests : CommandTestBase
         Command = new ToolsCommand(toolOutput, artifactToolRegistryStore);
     }
 
-    [Test]
+    [Fact]
     public void DefaultExecution_Empty_Success()
     {
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, GetEmptyStore());
-        Assert.That(InvokeCommand(Command, [], console), Is.EqualTo(0));
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(Error.ToString(), Is.Empty);
+        Assert.Equal(0, InvokeCommand(Command, [], console));
+        Assert.Empty(Out.ToString());
+        Assert.Empty(Error.ToString());
     }
 
-    [Test]
+    [Fact]
     public void DefaultExecution_Single_Success()
     {
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, GetSingleStore(ProgrammableArtifactDumpTool.CreateRegistryEntry(_ => { })));
-        Assert.That(InvokeCommand(Command, [], console), Is.EqualTo(0));
-        Assert.That(Out.ToString(), Contains.Substring(nameof(ProgrammableArtifactDumpTool)));
-        Assert.That(Error.ToString(), Is.Empty);
+        Assert.Equal(0, InvokeCommand(Command, [], console));
+        Assert.Contains(nameof(ProgrammableArtifactDumpTool), Out.ToString());
+        Assert.Empty(Error.ToString());
     }
 
-    [Test]
+    [Fact]
     public void Search_NoMatch_NotFound()
     {
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, GetSingleStore(ProgrammableArtifactDumpTool.CreateRegistryEntry(_ => { })));
         string[] line = ["-s", "$$NOT_A_REAL_TOOL$$"];
-        Assert.That(InvokeCommand(Command, line, console), Is.EqualTo(0));
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(Error.ToString(), Is.Empty);
+        Assert.Equal(0, InvokeCommand(Command, line, console));
+        Assert.Empty(Out.ToString());
+        Assert.Empty(Error.ToString());
     }
 
-    [Test]
+    [Fact]
     public void Search_SingleMatching_Found()
     {
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, GetSingleStore(ProgrammableArtifactDumpTool.CreateRegistryEntry(_ => { })));
         string[] line = ["-s", nameof(ProgrammableArtifactDumpTool)];
-        Assert.That(InvokeCommand(Command, line, console), Is.EqualTo(0));
-        Assert.That(Out.ToString(), Contains.Substring(nameof(ProgrammableArtifactDumpTool)));
-        Assert.That(Error.ToString(), Is.Empty);
+        Assert.Equal(0, InvokeCommand(Command, line, console));
+        Assert.Contains(nameof(ProgrammableArtifactDumpTool), Out.ToString());
+        Assert.Empty(Error.ToString());
     }
 }

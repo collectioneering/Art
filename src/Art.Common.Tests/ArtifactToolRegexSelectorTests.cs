@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
-using NUnit.Framework;
 
 namespace Art.Common.Tests;
 
@@ -8,22 +7,22 @@ public class ArtifactToolRegexSelectorTests
 {
     private static readonly ArtifactToolID s_dummyToolId = new("Art.Common.Tests", "Art.Common.Tests.ArtifactToolRegexSelectorTestsDummyTool");
 
-    [Test]
+    [Fact]
     public void TryIdentify_ValidKey_Succeeds()
     {
         bool success = TryIdentify<ArtifactToolRegexSelectorTestsDummyTool>("ID_1234", out ArtifactToolID? artifactToolId, out string? artifactId);
-        Assert.That(success, Is.True);
-        Assert.That(artifactToolId, Is.EqualTo(s_dummyToolId));
-        Assert.That(artifactId, Is.EqualTo("1234"));
+        Assert.True(success);
+        Assert.Equal(s_dummyToolId, artifactToolId);
+        Assert.Equal("1234", artifactId);
     }
 
-    [Test]
+    [Fact]
     public void TryIdentify_InvalidKey_Fails()
     {
         bool success = TryIdentify<ArtifactToolRegexSelectorTestsDummyTool>("INVALID_1234", out ArtifactToolID? artifactToolId, out string? artifactId);
-        Assert.That(success, Is.False);
-        Assert.That(artifactToolId, Is.EqualTo(default(ArtifactToolID)));
-        Assert.That(artifactId, Is.Null);
+        Assert.False(success);
+        Assert.Null(artifactToolId);
+        Assert.Null(artifactId);
     }
 
     private static bool TryIdentify<T>(string key, [NotNullWhen(true)] out ArtifactToolID? artifactToolId, [NotNullWhen(true)] out string? artifactId) where T : IArtifactToolSelector<string>

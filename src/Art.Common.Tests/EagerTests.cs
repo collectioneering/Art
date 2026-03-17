@@ -1,12 +1,13 @@
 using Art.Common.Async;
-using NUnit.Framework;
 
 namespace Art.Common.Tests;
 
 public class EagerTests
 {
-    [Test]
-    public async Task UnlimitedEager_CompletesFully([Values] bool syncCounter)
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UnlimitedEager_CompletesFully(bool syncCounter)
     {
         SharedValue sharedValue = new() { Value = 5 };
         var v = (syncCounter ? CounterSync(5, 5) : CounterAsync(5, 5, TimeSpan.FromMilliseconds(30)))
@@ -29,13 +30,15 @@ public class EagerTests
             await CompleteBatch(10, sharedValue, TimeSpan.FromSeconds(10));
         }
         Task<bool> tE = v2.MoveNextAsync().AsTask();
-        Assert.That(tE.IsCompleted, Is.True);
-        Assert.That(tE.IsCompletedSuccessfully, Is.True);
-        Assert.That(tE.Result, Is.EqualTo(false));
+        Assert.True(tE.IsCompleted);
+        Assert.True(tE.IsCompletedSuccessfully);
+        Assert.False(await tE);
     }
 
-    [Test]
-    public async Task LimitedEager_PartiallyCompletes([Values] bool syncCounter)
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LimitedEager_PartiallyCompletes(bool syncCounter)
     {
         const int initialLimit = 5;
         SharedValue sharedValue = new() { Value = 5 };
@@ -69,9 +72,9 @@ public class EagerTests
             await CompleteBatch(20, sharedValue, TimeSpan.FromSeconds(10));
         }
         Task<bool> tE = v2.MoveNextAsync().AsTask();
-        Assert.That(tE.IsCompleted, Is.True);
-        Assert.That(tE.IsCompletedSuccessfully, Is.True);
-        Assert.That(tE.Result, Is.EqualTo(false));
+        Assert.True(tE.IsCompleted);
+        Assert.True(tE.IsCompletedSuccessfully);
+        Assert.False(await tE);
     }
 
     private static async Task CompleteBatch(int waitValue, SharedValue sharedValue, TimeSpan cancellationDuration)
@@ -95,10 +98,10 @@ public class EagerTests
         for (int i = 0; i < count; i++)
         {
             Task<bool> t = v2.MoveNextAsync().AsTask();
-            Assert.That(t.IsCompleted, Is.True);
-            Assert.That(t.IsCompletedSuccessfully, Is.True);
-            Assert.That(t.Result, Is.EqualTo(true));
-            Assert.That(v2.Current, Is.EqualTo(start + i));
+            Assert.True(t.IsCompleted);
+            Assert.True(t.IsCompletedSuccessfully);
+            Assert.True(t.Result);
+            Assert.Equal(start + i, v2.Current);
         }
     }
 

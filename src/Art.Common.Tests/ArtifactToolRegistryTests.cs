@@ -1,5 +1,4 @@
 ﻿using System.Text.RegularExpressions;
-using NUnit.Framework;
 
 namespace Art.Common.Tests;
 
@@ -8,178 +7,172 @@ public class ArtifactToolRegistryTests
     private static readonly ArtifactToolID s_dummyToolId = new("Art.Common.Tests", "Art.Common.Tests.ArtifactToolRegistryTestsDummyTool");
     private static readonly ArtifactToolID s_customToolId = new("CustomAssembly", "CustomType");
 
-    private ArtifactToolRegistry _registry = null!;
+    private readonly ArtifactToolRegistry _registry = new();
 
-    [SetUp]
-    public void SetUp()
-    {
-        _registry = new ArtifactToolRegistry();
-    }
-
-    [Test]
+    [Fact]
     public void Add_Generic_AllowsLoad()
     {
         _registry.AddSelectable<ArtifactToolRegistryTestsDummyTool>();
         bool success = _registry.TryLoad(s_dummyToolId, out IArtifactTool? artifactTool);
-        Assert.That(success, Is.True);
-        Assert.That(artifactTool, Is.InstanceOf<ArtifactToolRegistryTestsDummyTool>());
-        artifactTool?.Dispose();
+        Assert.True(success);
+        Assert.IsType<ArtifactToolRegistryTestsDummyTool>(artifactTool);
+        artifactTool.Dispose();
     }
 
-    [Test]
+    [Fact]
     public void AddSelectable_Generic_AllowsLoad()
     {
         _registry.AddSelectable<ArtifactToolRegistryTestsDummyTool>();
         bool success = _registry.TryLoad(s_dummyToolId, out IArtifactTool? artifactTool);
-        Assert.That(success, Is.True);
-        Assert.That(artifactTool, Is.InstanceOf<ArtifactToolRegistryTestsDummyTool>());
-        artifactTool?.Dispose();
+        Assert.True(success);
+        Assert.IsType<ArtifactToolRegistryTestsDummyTool>(artifactTool);
+        artifactTool.Dispose();
     }
 
-    [Test]
+    [Fact]
     public void Add_DuplicateButCustomId_AllowsLoad()
     {
         _registry.AddSelectable<ArtifactToolRegistryTestsDummyTool>();
         _registry.Add(new ArtifactToolSelectableRegistryEntry<ArtifactToolRegistryTestsDummyTool>(s_customToolId));
         bool success = _registry.TryLoad(s_dummyToolId, out IArtifactTool? artifactTool);
-        Assert.That(success, Is.True);
-        Assert.That(artifactTool, Is.InstanceOf<ArtifactToolRegistryTestsDummyTool>());
-        artifactTool?.Dispose();
+        Assert.True(success);
+        Assert.IsType<ArtifactToolRegistryTestsDummyTool>(artifactTool);
+        artifactTool.Dispose();
     }
 
-    [Test]
+    [Fact]
     public void Add_DuplicateGeneric_ThrowsArgumentException()
     {
         _registry.AddSelectable<ArtifactToolRegistryTestsDummyTool>();
-        Assert.That(() => _registry.AddSelectable<ArtifactToolRegistryTestsDummyTool>(), Throws.InstanceOf<ArgumentException>());
+        Assert.Throws<ArgumentException>(() => _registry.AddSelectable<ArtifactToolRegistryTestsDummyTool>());
     }
 
-    [Test]
+    [Fact]
     public void AddSelectable_DuplicateGeneric_ThrowsArgumentException()
     {
         _registry.AddSelectable<ArtifactToolRegistryTestsDummyTool>();
-        Assert.That(() => _registry.AddSelectable<ArtifactToolRegistryTestsDummyTool>(), Throws.InstanceOf<ArgumentException>());
+        Assert.Throws<ArgumentException>(() => _registry.AddSelectable<ArtifactToolRegistryTestsDummyTool>());
     }
 
-    [Test]
+    [Fact]
     public void Add_WithSelectableType_DisallowsSelectionOfSelectable()
     {
         _registry.Add<ArtifactToolRegistryTestsDummyTool>();
         bool success = _registry.TryIdentify("ID_1234", out ArtifactToolID? artifactToolId, out string? artifactId);
-        Assert.That(success, Is.False);
-        Assert.That(artifactToolId, Is.EqualTo(default(ArtifactToolID)));
-        Assert.That(artifactId, Is.Null);
+        Assert.False(success);
+        Assert.Null(artifactToolId);
+        Assert.Null(artifactId);
     }
 
-    [Test]
+    [Fact]
     public void AddSelectable_WithSelectableType_AllowsSelectionOfSelectable()
     {
         _registry.AddSelectable<ArtifactToolRegistryTestsDummyTool>();
         bool success = _registry.TryIdentify("ID_1234", out ArtifactToolID? artifactToolId, out string? artifactId);
-        Assert.That(success, Is.True);
-        Assert.That(artifactToolId, Is.EqualTo(s_dummyToolId));
+        Assert.True(success);
+        Assert.Equal(s_dummyToolId, artifactToolId);
         success = _registry.TryLoad(artifactToolId!, out IArtifactTool? artifactTool);
-        Assert.That(success, Is.True);
-        Assert.That(artifactTool, Is.InstanceOf<ArtifactToolRegistryTestsDummyTool>());
-        Assert.That(artifactId, Is.EqualTo("1234"));
-        artifactTool?.Dispose();
+        Assert.True(success);
+        Assert.IsType<ArtifactToolRegistryTestsDummyTool>(artifactTool);
+        Assert.Equal("1234", artifactId);
+        artifactTool.Dispose();
     }
 
-    [Test]
+    [Fact]
     public void TryLoad_ValidToolId_Succeeds()
     {
         _registry.AddSelectable<ArtifactToolRegistryTestsDummyTool>();
         bool success = _registry.TryLoad(s_dummyToolId, out IArtifactTool? artifactTool);
-        Assert.That(success, Is.True);
-        Assert.That(artifactTool, Is.InstanceOf<ArtifactToolRegistryTestsDummyTool>());
-        artifactTool?.Dispose();
+        Assert.True(success);
+        Assert.IsType<ArtifactToolRegistryTestsDummyTool>(artifactTool);
+        artifactTool.Dispose();
     }
 
-    [Test]
+    [Fact]
     public void TryLoad_CustomToolId_Succeeds()
     {
         _registry.Add(new ArtifactToolSelectableRegistryEntry<ArtifactToolRegistryTestsDummyTool>(s_customToolId));
         bool success = _registry.TryLoad(s_customToolId, out IArtifactTool? artifactTool);
-        Assert.That(success, Is.True);
-        Assert.That(artifactTool, Is.InstanceOf<ArtifactToolRegistryTestsDummyTool>());
-        artifactTool?.Dispose();
+        Assert.True(success);
+        Assert.IsType<ArtifactToolRegistryTestsDummyTool>(artifactTool);
+        artifactTool.Dispose();
     }
 
-    [Test]
+    [Fact]
     public void TryLoad_InvalidToolId_Fails()
     {
         _registry.AddSelectable<ArtifactToolRegistryTestsDummyTool>();
         bool success = _registry.TryLoad(new ArtifactToolID("InvalidAssembly", "InvalidType"), out IArtifactTool? artifactTool);
-        Assert.That(success, Is.False);
-        Assert.That(artifactTool, Is.Null);
+        Assert.False(success);
+        Assert.Null(artifactTool);
     }
 
-    [Test]
+    [Fact]
     public void TryIdentify_ValidKey_Succeeds()
     {
         _registry.AddSelectable<ArtifactToolRegistryTestsDummyTool>();
         bool success = _registry.TryIdentify("ID_1234", out ArtifactToolID? artifactToolId, out string? artifactId);
-        Assert.That(success, Is.True);
-        Assert.That(artifactToolId, Is.EqualTo(s_dummyToolId));
-        Assert.That(artifactId, Is.EqualTo("1234"));
+        Assert.True(success);
+        Assert.Equal(s_dummyToolId, artifactToolId);
+        Assert.Equal("1234", artifactId);
     }
 
-    [Test]
+    [Fact]
     public void TryIdentify_CustomToolId_ValidKey_Succeeds()
     {
         _registry.Add(new ArtifactToolSelectableRegistryEntry<ArtifactToolRegistryTestsDummyTool>(s_customToolId));
         bool success = _registry.TryIdentify("ID_1234", out ArtifactToolID? artifactToolId, out string? artifactId);
-        Assert.That(success, Is.True);
-        Assert.That(artifactToolId, Is.EqualTo(s_customToolId));
-        Assert.That(artifactId, Is.EqualTo("1234"));
+        Assert.True(success);
+        Assert.Equal(s_customToolId, artifactToolId);
+        Assert.Equal("1234", artifactId);
     }
 
-    [Test]
+    [Fact]
     public void TryIdentify_InvalidKey_Fails()
     {
         _registry.AddSelectable<ArtifactToolRegistryTestsDummyTool>();
         bool success = _registry.TryIdentify("INVALID_1234", out ArtifactToolID? artifactToolId, out string? artifactId);
-        Assert.That(success, Is.False);
-        Assert.That(artifactToolId, Is.EqualTo(default(ArtifactToolID)));
-        Assert.That(artifactId, Is.Null);
+        Assert.False(success);
+        Assert.Null(artifactToolId);
+        Assert.Null(artifactId);
     }
 
-    [Test]
+    [Fact]
     public void TryIdentifyAndLoad_ValidKey_Succeeds()
     {
         _registry.AddSelectable<ArtifactToolRegistryTestsDummyTool>();
         bool success = _registry.TryIdentify("ID_1234", out ArtifactToolID? artifactToolId, out string? artifactId);
-        Assert.That(success, Is.True);
-        Assert.That(artifactToolId, Is.EqualTo(s_dummyToolId));
+        Assert.True(success);
+        Assert.Equal(s_dummyToolId, artifactToolId);
         success = _registry.TryLoad(artifactToolId!, out IArtifactTool? artifactTool);
-        Assert.That(success, Is.True);
-        Assert.That(artifactTool, Is.InstanceOf<ArtifactToolRegistryTestsDummyTool>());
-        Assert.That(artifactId, Is.EqualTo("1234"));
-        artifactTool?.Dispose();
+        Assert.True(success);
+        Assert.IsType<ArtifactToolRegistryTestsDummyTool>(artifactTool);
+        Assert.Equal("1234", artifactId);
+        artifactTool.Dispose();
     }
 
-    [Test]
+    [Fact]
     public void TryIdentifyAndLoad_CustomToolId_ValidKey_Succeeds()
     {
         _registry.Add(new ArtifactToolSelectableRegistryEntry<ArtifactToolRegistryTestsDummyTool>(s_customToolId));
         bool success = _registry.TryIdentify("ID_1234", out ArtifactToolID? artifactToolId, out string? artifactId);
-        Assert.That(success, Is.True);
-        Assert.That(artifactToolId, Is.EqualTo(s_customToolId));
+        Assert.True(success);
+        Assert.Equal(s_customToolId, artifactToolId);
         success = _registry.TryLoad(artifactToolId!, out IArtifactTool? artifactTool);
-        Assert.That(success, Is.True);
-        Assert.That(artifactTool, Is.InstanceOf<ArtifactToolRegistryTestsDummyTool>());
-        Assert.That(artifactId, Is.EqualTo("1234"));
-        artifactTool?.Dispose();
+        Assert.True(success);
+        Assert.IsType<ArtifactToolRegistryTestsDummyTool>(artifactTool);
+        Assert.Equal("1234", artifactId);
+        artifactTool.Dispose();
     }
 
-    [Test]
+    [Fact]
     public void TryIdentifyAndLoad_InvalidKey_Fails()
     {
         _registry.AddSelectable<ArtifactToolRegistryTestsDummyTool>();
         bool success = _registry.TryIdentify("INVALID_1234", out ArtifactToolID? artifactToolId, out string? artifactId);
-        Assert.That(success, Is.False);
-        Assert.That(artifactToolId, Is.EqualTo(default(ArtifactToolID)));
-        Assert.That(artifactId, Is.Null);
+        Assert.False(success);
+        Assert.Null(artifactToolId);
+        Assert.Null(artifactId);
     }
 }
 

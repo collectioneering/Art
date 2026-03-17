@@ -1,5 +1,3 @@
-using NUnit.Framework;
-
 namespace Art.Common.Tests;
 
 public class ArtifactToolArtifactDataTests
@@ -8,44 +6,46 @@ public class ArtifactToolArtifactDataTests
     private const string CustomGroup = "CustomGroup";
     private const string FallbackGroup = "FallbackGroup";
 
-    private CustomGroupArtifactTool _tool = null!;
+    private readonly CustomGroupArtifactTool _tool = new();
 
-    [SetUp]
-    public void SetUp()
-    {
-        _tool = new CustomGroupArtifactTool();
-    }
-
-    [Test]
+    [Fact]
     public async Task CreateData_CustomGroup_NoProfileGroup_CustomGroupApplied()
     {
         await _tool.InitializeAsync(profile: CreateProfile(null));
         var data = _tool.CreateData("id", group: CustomGroup);
-        Assert.That(data.Info.Key.Group, Is.EqualTo(CustomGroup).And.Not.EqualTo(ProfileGroup).And.Not.EqualTo(FallbackGroup));
+        Assert.Equal(CustomGroup, data.Info.Key.Group);
+        Assert.NotEqual(ProfileGroup, data.Info.Key.Group);
+        Assert.NotEqual(FallbackGroup, data.Info.Key.Group);
     }
 
-    [Test]
+    [Fact]
     public async Task CreateData_CustomGroup_ProfileGroup_ProfileGroupApplied()
     {
         await _tool.InitializeAsync(profile: CreateProfile(ProfileGroup));
         var data = _tool.CreateData("id", group: CustomGroup);
-        Assert.That(data.Info.Key.Group, Is.EqualTo(ProfileGroup).And.Not.EqualTo(CustomGroup).And.Not.EqualTo(FallbackGroup));
+        Assert.Equal(ProfileGroup, data.Info.Key.Group);
+        Assert.NotEqual(CustomGroup, data.Info.Key.Group);
+        Assert.NotEqual(FallbackGroup, data.Info.Key.Group);
     }
 
-    [Test]
+    [Fact]
     public async Task CreateData_NoCustomGroup_ProfileGroup_ProfileGroupApplied()
     {
         await _tool.InitializeAsync(profile: CreateProfile(ProfileGroup));
         var data = _tool.CreateData("id");
-        Assert.That(data.Info.Key.Group, Is.EqualTo(ProfileGroup).And.Not.EqualTo(CustomGroup).And.Not.EqualTo(FallbackGroup));
+        Assert.Equal(ProfileGroup, data.Info.Key.Group);
+        Assert.NotEqual(CustomGroup, data.Info.Key.Group);
+        Assert.NotEqual(FallbackGroup, data.Info.Key.Group);
     }
 
-    [Test]
+    [Fact]
     public async Task CreateData_NoCustomGroup_NoProfileGroup_FallbackGroupApplied()
     {
         await _tool.InitializeAsync(profile: CreateProfile(null));
         var data = _tool.CreateData("id");
-        Assert.That(data.Info.Key.Group, Is.EqualTo(FallbackGroup).And.Not.EqualTo(ProfileGroup).And.Not.EqualTo(CustomGroup));
+        Assert.Equal(FallbackGroup, data.Info.Key.Group);
+        Assert.NotEqual(CustomGroup, data.Info.Key.Group);
+        Assert.NotEqual(ProfileGroup, data.Info.Key.Group);
     }
 
     private ArtifactToolProfile CreateProfile(string? group)

@@ -1,5 +1,4 @@
 using System.Numerics;
-using NUnit.Framework;
 
 namespace Art.Common.Tests;
 
@@ -199,85 +198,74 @@ public class DataSizesBinaryTests
         ..UnsignedDoubleTestCases.Select(static v => v with { Value = -v.Value, ExpectedValue = -v.ExpectedValue }),
     ];
 
-    [Test]
-    public void GetBinarySize_Long_Correct([ValueSource(nameof(LongTestCases))] LongTestCase testCase)
+    public static readonly TheoryData<LongTestCase> TdLongTestCases = new(LongTestCases);
+    public static readonly TheoryData<ULongTestCase> TdULongTestCases = new(ULongTestCases);
+    public static readonly TheoryData<BigIntegerTestCase> TdBigIntegerTestCases = new(BigIntegerTestCases);
+    public static readonly TheoryData<DoubleTestCase> TdDoubleTestCases = new(DoubleTestCases);
+
+    [Theory]
+    [MemberData(nameof(TdLongTestCases))]
+    public void GetBinarySize_Long_Correct(LongTestCase testCase)
     {
         DataSizes.GetBinarySize(testCase.Value, out double value, out string unit, dataUnitFormat: DataUnitFormat.Short);
-        Assert.That(
-            new DatumSize(value, unit),
-            Has.Property(nameof(DatumSize.Unit)).EqualTo(testCase.ExpectedUnit)
-                .And.Property(nameof(DatumSize.Value)).EqualTo(testCase.ExpectedValue).Within(testCase.Tolerance),
-            $"{value} {unit} does not match test case {testCase}");
-        Assert.That(unit, Is.EqualTo(testCase.ExpectedUnit));
-        Assert.That(value, Is.EqualTo(testCase.ExpectedValue).Within(testCase.Tolerance));
-        Assert.That(value, Is.AtLeast(Math.Floor(testCase.ExpectedValue)));
+        Assert.Equal(testCase.ExpectedUnit, unit);
+        Assert.Equal(testCase.ExpectedValue, value, testCase.Tolerance);
+        Assert.True(value >= Math.Floor(testCase.ExpectedValue));
         if (testCase.RequireExclusiveOfCeiling)
         {
-            Assert.That(value, Is.LessThan(Math.Ceiling(testCase.ExpectedValue)));
+            Assert.True(value < Math.Ceiling(testCase.ExpectedValue));
         }
         else
         {
-            Assert.That(value, Is.AtMost(Math.Ceiling(testCase.ExpectedValue)));
+            Assert.True(value <= Math.Ceiling(testCase.ExpectedValue));
         }
     }
 
-    [Test]
-    public void GetBinarySize_ULong_Correct([ValueSource(nameof(ULongTestCases))] ULongTestCase testCase)
+    [Theory]
+    [MemberData(nameof(TdULongTestCases))]
+    public void GetBinarySize_ULong_Correct(ULongTestCase testCase)
     {
         DataSizes.GetBinarySize(testCase.Value, out double value, out string unit, dataUnitFormat: DataUnitFormat.Short);
-        Assert.That(
-            new DatumSize(value, unit),
-            Has.Property(nameof(DatumSize.Unit)).EqualTo(testCase.ExpectedUnit)
-                .And.Property(nameof(DatumSize.Value)).EqualTo(testCase.ExpectedValue).Within(testCase.Tolerance),
-            $"{value} {unit} does not match test case {testCase}");
-        Assert.That(unit, Is.EqualTo(testCase.ExpectedUnit));
-        Assert.That(value, Is.EqualTo(testCase.ExpectedValue).Within(testCase.Tolerance));
-        Assert.That(value, Is.AtLeast(Math.Floor(testCase.ExpectedValue)));
+        Assert.Equal(testCase.ExpectedUnit, unit);
+        Assert.Equal(testCase.ExpectedValue, value, testCase.Tolerance);
+        Assert.True(value >= Math.Floor(testCase.ExpectedValue));
         if (testCase.RequireExclusiveOfCeiling)
         {
-            Assert.That(value, Is.LessThan(Math.Ceiling(testCase.ExpectedValue)));
+            Assert.True(value < Math.Ceiling(testCase.ExpectedValue));
         }
         else
         {
-            Assert.That(value, Is.AtMost(Math.Ceiling(testCase.ExpectedValue)));
+            Assert.True(value <= Math.Ceiling(testCase.ExpectedValue));
         }
     }
 
-    [Test]
-    public void GetBinarySize_BigInteger_Correct([ValueSource(nameof(BigIntegerTestCases))] BigIntegerTestCase testCase)
+    [Theory]
+    [MemberData(nameof(TdBigIntegerTestCases))]
+    public void GetBinarySize_BigInteger_Correct(BigIntegerTestCase testCase)
     {
         DataSizes.GetBinarySize(testCase.Value, out BigInteger valueWhole, out double valueFraction, out string unit, dataUnitFormat: DataUnitFormat.Short);
-        string message = $"{DataSizes.FormatBigIntegerAndFraction(valueWhole, valueFraction)} {unit} does not match test case {testCase}";
-        Assert.That(valueFraction, Is.AtLeast(0).And.LessThan(1), message);
-        Assert.That(unit, Is.EqualTo(testCase.ExpectedUnit), message);
-        Assert.That(valueWhole, Is.EqualTo(testCase.ExpectedValueWhole), message);
-        Assert.That(valueFraction, Is.EqualTo(testCase.ExpectedValueFraction).Within(testCase.Tolerance), message);
+        Assert.True(valueFraction >= 0);
+        Assert.True(valueFraction < 1);
+        Assert.Equal(testCase.ExpectedUnit, unit);
+        Assert.Equal(testCase.ExpectedValueWhole, valueWhole);
+        Assert.Equal(testCase.ExpectedValueFraction, valueFraction, testCase.Tolerance);
     }
 
-    [Test]
-    public void GetBinarySize_Double_Correct([ValueSource(nameof(DoubleTestCases))] DoubleTestCase testCase)
+    [Theory]
+    [MemberData(nameof(TdDoubleTestCases))]
+    public void GetBinarySize_Double_Correct(DoubleTestCase testCase)
     {
         DataSizes.GetBinarySize(testCase.Value, out double value, out string unit, dataUnitFormat: DataUnitFormat.Short);
-        Assert.That(unit, Is.EqualTo(testCase.ExpectedUnit));
-        Assert.That(
-            new DatumSize(value, unit),
-            Has.Property(nameof(DatumSize.Unit)).EqualTo(testCase.ExpectedUnit)
-                .And.Property(nameof(DatumSize.Value)).EqualTo(testCase.ExpectedValue).Within(testCase.Tolerance),
-            $"{value} {unit} does not match test case {testCase}");
-        Assert.That(unit, Is.EqualTo(testCase.ExpectedUnit));
-        Assert.That(value, Is.EqualTo(testCase.ExpectedValue).Within(testCase.Tolerance));
-        Assert.That(value, Is.AtLeast(Math.Floor(testCase.ExpectedValue)));
+        Assert.Equal(testCase.ExpectedUnit, unit);
+        Assert.Equal(testCase.ExpectedValue, value, testCase.Tolerance);
+        Assert.True(value >= Math.Floor(testCase.ExpectedValue));
         if (testCase.RequireExclusiveOfCeiling)
         {
-            Assert.That(value, Is.LessThan(Math.Ceiling(testCase.ExpectedValue)));
+            Assert.True(value < Math.Ceiling(testCase.ExpectedValue));
         }
         else
         {
-            Assert.That(value, Is.AtMost(Math.Ceiling(testCase.ExpectedValue)));
+            Assert.True(value <= Math.Ceiling(testCase.ExpectedValue));
         }
     }
-
-    // ReSharper disable NotAccessedPositionalProperty.Local
-    private record DatumSize(double Value, string Unit);
-    // ReSharper restore NotAccessedPositionalProperty.Local
 }

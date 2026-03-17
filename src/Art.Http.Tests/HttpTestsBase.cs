@@ -1,37 +1,28 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
-using System.Threading.Tasks;
 using Art.Common;
-using NUnit.Framework;
 using RichardSzalay.MockHttp;
 
 namespace Art.Http.Tests;
 
-public class HttpTestsBase
+public class HttpTestsBase : IDisposable
 {
     protected class TestHttpArtifactTool : HttpArtifactTool
     {
     }
 
-    protected HttpArtifactTool Tool = null!;
-    protected MockHttpMessageHandler MockHandler = null!;
-    protected ArtifactData Data = null!;
+    protected HttpArtifactTool Tool;
+    protected MockHttpMessageHandler MockHandler;
+    protected ArtifactData Data;
 
-    [SetUp]
-    public async Task SetUpAsync()
+    public HttpTestsBase()
     {
         Tool = new TestHttpArtifactTool();
-        await Tool.InitializeAsync();
+        Tool.InitializeAsync().Wait();
         MockHandler = new MockHttpMessageHandler();
         Tool.HttpClient = MockHandler.ToHttpClient();
         Data = Tool.CreateData("default");
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        Tool.Dispose();
     }
 
     protected static void PreludeRandomContent(int length, out byte[] originalData, out MemoryStream source)
@@ -58,5 +49,20 @@ public class HttpTestsBase
         cs.Write(originalData);
         cs.FlushFinalBlock();
         encrypted.Position = 0;
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            Tool.Dispose();
+            MockHandler.Dispose();
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }

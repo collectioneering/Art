@@ -4,13 +4,12 @@ using Art.Common.Management;
 using Art.Common.Proxies;
 using Art.TestsBase;
 using Microsoft.Extensions.Time.Testing;
-using NUnit.Framework;
 
 namespace Art.Common.Tests;
 
 public class ArtifactToolDumpProxyTests
 {
-    [Test]
+    [Fact]
     public async Task FindOnlyTool_WithoutArtifactList_Throws()
     {
         var profile = new ArtifactToolProfile("tool", null, null);
@@ -28,10 +27,10 @@ public class ArtifactToolDumpProxyTests
             tool,
             new ArtifactToolDumpOptions(),
             null);
-        Assert.That(async () => await proxy.DumpAsync(), Throws.InstanceOf<NotSupportedException>());
+        await Assert.ThrowsAsync<NotSupportedException>(async () => await proxy.DumpAsync());
     }
 
-    [Test]
+    [Fact]
     public async Task FindOnlyTool_WithArtifactList_Success()
     {
         var options = new Dictionary<string, JsonElement> { { "artifactList", JsonSerializer.SerializeToElement(new[] { "1", "2", "3" }) } };
@@ -53,7 +52,12 @@ public class ArtifactToolDumpProxyTests
             new ArtifactToolDumpOptions(),
             null);
         await proxy.DumpAsync();
-        Assert.That((await arm.ListArtifactsAsync()).Select(v => int.Parse(v.Key.Id)), Is.EquivalentTo([1, 2, 3]));
+        Assert.Equal(
+            [1, 2, 3],
+            (await arm.ListArtifactsAsync())
+            .Select(v => int.Parse(v.Key.Id))
+            .OrderBy(static v => v)
+        );
     }
 
     private record CustomExportArtifactResourceInfo(
@@ -92,7 +96,7 @@ public class ArtifactToolDumpProxyTests
         }
     }
 
-    [Test]
+    [Fact]
     public async Task FindOnlyTool_RetrieveTimestamps_MatchesExpected()
     {
         var options = new Dictionary<string, JsonElement> { { "artifactList", JsonSerializer.SerializeToElement(new[] { "1", "2", "3" }) } };
@@ -126,21 +130,24 @@ public class ArtifactToolDumpProxyTests
             new ArtifactToolDumpOptions(),
             null);
         await proxy.DumpAsync();
-        Assert.That((await arm.ListArtifactsAsync())
-            .Select(v => (id: int.Parse(v.Key.Id), timestamp: v.RetrievalDate)),
-            Is.EquivalentTo([
+        Assert.Equal(
+            [
                 (id: 1, timestamp: dict[(1, null)]), //
                 (id: 2, timestamp: dict[(2, null)]), //
                 (id: 3, timestamp: dict[(3, null)]) //
-            ]));
+            ],
+            (await arm.ListArtifactsAsync())
+            .Select(v => (id: int.Parse(v.Key.Id), timestamp: v.RetrievalDate))
+            .OrderBy(static v => v.id)
+        );
         for (int i = 1; i <= 3; i++)
         {
             var res = (await arm.ListResourcesAsync(dict2[i]))[0];
-            Assert.That(res.Retrieved, Is.EqualTo(dict[(i, 0)]));
+            Assert.Equal(dict[(i, 0)], res.Retrieved);
         }
     }
 
-    [Test]
+    [Fact]
     public async Task DumpOnlyTool_WithoutArtifactList_Success()
     {
         var options = new Dictionary<string, JsonElement> { { "artifactList", JsonSerializer.SerializeToElement(new[] { "1", "2", "3" }) } };
@@ -160,10 +167,15 @@ public class ArtifactToolDumpProxyTests
             new ArtifactToolDumpOptions(),
             null);
         await proxy.DumpAsync();
-        Assert.That((await arm.ListArtifactsAsync()).Select(v => int.Parse(v.Key.Id)), Is.EquivalentTo([1, 2, 3]));
+        Assert.Equal(
+            [1, 2, 3],
+            (await arm.ListArtifactsAsync())
+            .Select(v => int.Parse(v.Key.Id))
+            .OrderBy(static v => v)
+        );
     }
 
-    [Test]
+    [Fact]
     public async Task DumpOnlyTool_WithArtifactList_DoesNotFilter()
     {
         var options = new Dictionary<string, JsonElement> { { "artifactList", JsonSerializer.SerializeToElement(new[] { "1", "2" }) } };
@@ -183,7 +195,10 @@ public class ArtifactToolDumpProxyTests
             new ArtifactToolDumpOptions(),
             null);
         await proxy.DumpAsync();
-        Assert.That((await arm.ListArtifactsAsync()).Select(v => int.Parse(v.Key.Id)), Is.EquivalentTo([1, 2, 3]));
+        Assert.Equal(
+            [1, 2, 3],
+            (await arm.ListArtifactsAsync()).Select(v => int.Parse(v.Key.Id)).OrderBy(static v => v)
+        );
     }
 
     // TODO prioritisation tests

@@ -1,5 +1,4 @@
 ﻿using System.Text.RegularExpressions;
-using NUnit.Framework;
 
 namespace Art.Common.Tests;
 
@@ -7,100 +6,94 @@ public class PluginTests
 {
     private static readonly ArtifactToolID s_dummyToolId = new("Art.Common.Tests", "Art.Common.Tests.PluginTestTool");
 
-    private Plugin _registry = null!;
+    private readonly Plugin _registry = new Plugin(typeof(PluginTestTool).Assembly);
 
-    [SetUp]
-    public void SetUp()
-    {
-        _registry = new Plugin(typeof(PluginTestTool).Assembly);
-    }
-
-    [Test]
+    [Fact]
     public void Generic_AllowsLoad()
     {
         bool success = _registry.TryLoad(s_dummyToolId, out IArtifactTool? artifactTool);
-        Assert.That(success, Is.True);
-        Assert.That(artifactTool, Is.InstanceOf<PluginTestTool>());
-        artifactTool?.Dispose();
+        Assert.True(success);
+        Assert.IsType<PluginTestTool>(artifactTool);
+        artifactTool.Dispose();
     }
 
-    [Test]
+    [Fact]
     public void Selectable_Generic_AllowsLoad()
     {
         bool success = _registry.TryLoad(s_dummyToolId, out IArtifactTool? artifactTool);
-        Assert.That(success, Is.True);
-        Assert.That(artifactTool, Is.InstanceOf<PluginTestTool>());
-        artifactTool?.Dispose();
+        Assert.True(success);
+        Assert.IsType<PluginTestTool>(artifactTool);
+        artifactTool.Dispose();
     }
 
-    [Test]
+    [Fact]
     public void Selectable_WithSelectableType_AllowsSelectionOfSelectable()
     {
         bool success = _registry.TryIdentify("PLUGINID_1234", out ArtifactToolID? artifactToolId, out string? artifactId);
-        Assert.That(success, Is.True);
-        Assert.That(artifactToolId, Is.EqualTo(s_dummyToolId));
+        Assert.True(success);
+        Assert.Equal(s_dummyToolId, artifactToolId);
         success = _registry.TryLoad(artifactToolId!, out IArtifactTool? artifactTool);
-        Assert.That(success, Is.True);
-        Assert.That(artifactTool, Is.InstanceOf<PluginTestTool>());
-        Assert.That(artifactId, Is.EqualTo("1234"));
-        artifactTool?.Dispose();
+        Assert.True(success);
+        Assert.IsType<PluginTestTool>(artifactTool);
+        Assert.Equal("1234", artifactId);
+        artifactTool.Dispose();
     }
 
-    [Test]
+    [Fact]
     public void TryLoad_ValidToolId_Succeeds()
     {
         bool success = _registry.TryLoad(s_dummyToolId, out IArtifactTool? artifactTool);
-        Assert.That(success, Is.True);
-        Assert.That(artifactTool, Is.InstanceOf<PluginTestTool>());
-        artifactTool?.Dispose();
+        Assert.True(success);
+        Assert.IsType<PluginTestTool>(artifactTool);
+        artifactTool.Dispose();
     }
 
-    [Test]
+    [Fact]
     public void TryLoad_InvalidToolId_Fails()
     {
         bool success = _registry.TryLoad(new ArtifactToolID("InvalidAssembly", "InvalidType"), out IArtifactTool? artifactTool);
-        Assert.That(success, Is.False);
-        Assert.That(artifactTool, Is.Null);
+        Assert.False(success);
+        Assert.Null(artifactTool);
     }
 
-    [Test]
+    [Fact]
     public void TryIdentify_ValidKey_Succeeds()
     {
         bool success = _registry.TryIdentify("PLUGINID_1234", out ArtifactToolID? artifactToolId, out string? artifactId);
-        Assert.That(success, Is.True);
-        Assert.That(artifactToolId, Is.EqualTo(s_dummyToolId));
-        Assert.That(artifactId, Is.EqualTo("1234"));
+        Assert.True(success);
+        Assert.Equal(s_dummyToolId, artifactToolId);
+        Assert.Equal("1234", artifactId);
     }
 
-    [Test]
+    [Fact]
     public void TryIdentify_InvalidKey_Fails()
     {
         bool success = _registry.TryIdentify("INVALID_1234", out ArtifactToolID? artifactToolId, out string? artifactId);
-        Assert.That(success, Is.False);
-        Assert.That(artifactToolId, Is.EqualTo(default(ArtifactToolID)));
-        Assert.That(artifactId, Is.Null);
+        Assert.False(success);
+        Assert.Null(artifactToolId);
+        Assert.Null(artifactId);
     }
 
-    [Test]
+    [Fact]
     public void TryIdentifyAndLoad_ValidKey_Succeeds()
     {
         bool success = _registry.TryIdentify("PLUGINID_1234", out ArtifactToolID? artifactToolId, out string? artifactId);
-        Assert.That(success, Is.True);
-        Assert.That(artifactToolId, Is.EqualTo(s_dummyToolId));
+        Assert.True(success);
+        Assert.Equal(s_dummyToolId, artifactToolId);
         success = _registry.TryLoad(artifactToolId!, out IArtifactTool? artifactTool);
-        Assert.That(success, Is.True);
-        Assert.That(artifactTool, Is.InstanceOf<PluginTestTool>());
-        Assert.That(artifactId, Is.EqualTo("1234"));
-        artifactTool?.Dispose();
+        Assert.True(success);
+        Assert.IsType<PluginTestTool>(artifactTool);
+        Assert.Equal("1234", artifactId);
+        artifactTool.Dispose();
     }
 
-    [Test]
+    [Fact]
     public void TryIdentifyAndLoad_InvalidKey_Fails()
     {
         bool success = _registry.TryIdentify("INVALID_1234", out ArtifactToolID? artifactToolId, out string? artifactId);
-        Assert.That(success, Is.False);
-        Assert.That(artifactToolId, Is.EqualTo(default(ArtifactToolID)));
-        Assert.That(artifactId, Is.Null);
+        Assert.False(success);
+        Assert.Null(artifactToolId);
+        Assert.Null(artifactId);
     }
 }
 

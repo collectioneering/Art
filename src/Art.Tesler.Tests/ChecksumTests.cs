@@ -24,7 +24,7 @@ public class ChecksumTests : CommandTestBase
         Command = new ArcCommand(toolLogHandlerProvider, artifactToolRegistryStore, toolPropertyProvider, dataProvider, registrationProvider, timeProvider, profileResolver);
     }
 
-    [Test]
+    [Fact]
     public void NoChecksumPassed_Success()
     {
         var store = GetEmptyStore();
@@ -35,12 +35,12 @@ public class ChecksumTests : CommandTestBase
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, dataProvider, registrationProvider, new FakeTimeProvider(), profileResolver);
         string[] line = [ProfileName];
-        Assert.That(InvokeCommand(Command, line, console), Is.EqualTo(0));
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(Error.ToString(), Is.Empty);
+        Assert.Equal(0, InvokeCommand(Command, line, console));
+        Assert.Empty(Out.ToString());
+        Assert.Empty(Error.ToString());
     }
 
-    [Test]
+    [Fact]
     public void KnownChecksumPassed_Success()
     {
         var store = GetEmptyStore();
@@ -51,12 +51,12 @@ public class ChecksumTests : CommandTestBase
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, dataProvider, registrationProvider, new FakeTimeProvider(), profileResolver);
         string[] line = [ProfileName, "--hash", "SHA256"];
-        Assert.That(InvokeCommand(Command, line, console), Is.EqualTo(0));
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(Error.ToString(), Is.Empty);
+        Assert.Equal(0, InvokeCommand(Command, line, console));
+        Assert.Empty(Out.ToString());
+        Assert.Empty(Error.ToString());
     }
 
-    [Test]
+    [Fact]
     public void BadChecksumPassed_Fails()
     {
         var store = GetEmptyStore();
@@ -67,8 +67,8 @@ public class ChecksumTests : CommandTestBase
         CreateOutputs(out var toolOutput, out var console);
         InitCommandDefault(toolOutput, store, toolPropertyProvider, dataProvider, registrationProvider, new FakeTimeProvider(), profileResolver);
         string[] line = [ProfileName, "--hash", "BAD_CHECKSUM"];
-        Assert.That(InvokeCommand(Command, line, console), Is.Not.EqualTo(0));
-        Assert.That(Out.ToString(), Is.Empty);
-        Assert.That(Error.ToString(), Is.Not.Empty);
+        Assert.NotEqual(0, InvokeCommand(Command, line, console));
+        Assert.Empty(Out.ToString());
+        Assert.NotEmpty(Error.ToString());
     }
 }
