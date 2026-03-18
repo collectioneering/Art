@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <PackageVersion>0.50.1</PackageVersion>
+    <InformationalVersion>$(PackageVersion)</InformationalVersion>
     <AssemblyVersion>1.0.0</AssemblyVersion>
   </PropertyGroup>
 
