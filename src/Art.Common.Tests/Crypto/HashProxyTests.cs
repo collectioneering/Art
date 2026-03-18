@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Security.Cryptography;
+using Art.Common.IO;
 
 namespace Art.Common.Tests.Crypto;
 
@@ -26,6 +27,7 @@ public class HashProxyTests
         MethodInfo method = hashType.GetMethod("Create", BindingFlags.Static | BindingFlags.Public, []) ?? throw new InvalidOperationException($"Missing Create for {hashType}");
         HashAlgorithm hashAlgorithm = method.Invoke(null, []) as HashAlgorithm ?? throw new InvalidOperationException("Missing hash algorithm from return");
         TestHashProxy_Internal(inputSize, hashAlgorithm);
+        TestHashProxy_Internal_CopyToSink(inputSize, hashAlgorithm);
     }
 
     private static void TestHashProxy_Internal(int inputSize, HashAlgorithm hashAlgorithm)
@@ -35,6 +37,18 @@ public class HashProxyTests
         byte[] expected = hashAlgorithm.ComputeHash(arr);
         HashProxyStream hps = new(new MemoryStream(arr), hashAlgorithm, false, true);
         hps.CopyTo(new MemoryStream());
+        byte[] actual = hps.GetHash();
+        Assert.Equal(expected, actual);
+    }
+
+    private static void TestHashProxy_Internal_CopyToSink(int inputSize, HashAlgorithm hashAlgorithm)
+    {
+        byte[] arr = new byte[inputSize];
+        Random.Shared.NextBytes(arr);
+        byte[] expected = hashAlgorithm.ComputeHash(arr);
+        using var ms = new MemoryStream(arr);
+        HashProxyStream hps = new(new SinkStream(), hashAlgorithm, false, true);
+        ms.CopyTo(hps);
         byte[] actual = hps.GetHash();
         Assert.Equal(expected, actual);
     }

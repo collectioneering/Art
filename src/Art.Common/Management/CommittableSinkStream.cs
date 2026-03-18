@@ -1,9 +1,7 @@
-using Art.Common.IO;
-
 namespace Art.Common.Management;
 
 /// <summary>
-/// Represents a wrapper around a <see cref="SinkStream"/>.
+/// Represents a committable stream intended to act as a sink.
 /// </summary>
 public class CommittableSinkStream : CommonCommittableStream, ISinkStream
 {

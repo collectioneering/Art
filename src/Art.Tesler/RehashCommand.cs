@@ -1,6 +1,7 @@
 ﻿using System.CommandLine;
 using System.Security.Cryptography;
 using Art.Common;
+using Art.Common.IO;
 
 namespace Art.Tesler;
 
@@ -82,7 +83,7 @@ internal class RehashCommand : CommandBase
             await using var stream = sourceStream.ConfigureAwait(false);
             await using HashProxyStream hpsOriginal = new(sourceStream, haOriginal, true, true);
             await using HashProxyStream hpsNew = new(hpsOriginal, haNew, true, true);
-            await using MemoryStream ms = new();
+            await using SinkStream ms = new();
             await hpsNew.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
             if (!rInf.Checksum.Value.AsSpan().SequenceEqual(hpsOriginal.GetHash()))
             {
