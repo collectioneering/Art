@@ -2,7 +2,6 @@
 
 internal static class HttpClientExtensions
 {
-#if NET5_0_OR_GREATER
     internal static async Task<HttpResponseMessage> SendAsync(this HttpClient httpClient, HttpRequestMessage httpRequestMessage, HttpCompletionOption defaultCompletionOption, HttpRequestConfig? httpRequestConfig, CancellationToken cancellationToken = default)
     {
         if (httpRequestConfig != null)
@@ -40,7 +39,6 @@ internal static class HttpClientExtensions
         }
         return await httpClient.SendAsync(httpRequestMessage, defaultCompletionOption, cancellationToken).ConfigureAwait(false);
     }
-#endif
 
     private static void ThrowForTimeout(TimeSpan timeSpan, CancellationToken cancellationToken)
     {

@@ -15,7 +15,7 @@ public class PlainLogHandler : IToolLogHandler
     public LogPreferences LogPreferences { get; set; }
 
     /// <summary>
-    /// Initializes an instance of <see cref="StyledLogHandler"/>.
+    /// Initializes an instance of <see cref="PlainLogHandler"/>.
     /// </summary>
     /// <param name="outWriter">Writer for normal output.</param>
     /// <param name="warnWriter">Writer for warning output.</param>
