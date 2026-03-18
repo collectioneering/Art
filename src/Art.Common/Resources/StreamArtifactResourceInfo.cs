@@ -3,7 +3,7 @@
 namespace Art.Common.Resources;
 
 /// <summary>
-/// Provides artifact information.
+/// Represents a resource based on a <see cref="Stream"/>.
 /// </summary>
 /// <param name="Resource">Resource.</param>
 /// <param name="Key">Resource key.</param>

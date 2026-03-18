@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -48,13 +49,47 @@ public class ToolsCommand : CommandBase
                     bool canList = desc.Type.IsAssignableTo(typeof(IArtifactListTool));
                     bool canDump = canList || desc.Type.IsAssignableTo(typeof(IArtifactDumpTool));
                     bool canSelect = desc.Type.IsAssignableTo(typeof(IArtifactToolSelector<string>));
-                    IEnumerable<string> capabilities = Enumerable.Empty<string>();
-                    if (canFind) capabilities = capabilities.Append("find");
-                    if (canList) capabilities = capabilities.Append("list");
-                    if (canDump) capabilities = capabilities.Append("arc");
-                    if (canSelect) capabilities = capabilities.Append("select");
-                    capabilities = capabilities.DefaultIfEmpty("none");
-                    return new StringBuilder("Capabilities: ").AppendJoin(", ", capabilities).ToString();
+                    List<string> capabilities = [];
+                    if (canFind)
+                    {
+                        capabilities.Add("find");
+                    }
+                    if (canList)
+                    {
+                        capabilities.Add("list");
+                    }
+                    if (canDump)
+                    {
+                        capabilities.Add("arc");
+                    }
+                    if (canSelect)
+                    {
+                        capabilities.Add("select");
+                    }
+                    if (capabilities.Count == 0)
+                    {
+                        capabilities.Add("none");
+                    }
+                    var stringBuilder = new StringBuilder("Capabilities: ").AppendJoin(", ", capabilities);
+                    stringBuilder.AppendLine().Append("Core: ").Append(desc.Type.GetCustomAttribute<CoreAttribute>() == null ? "true" : "false");
+                    if (desc.Type.GetCustomAttribute<ToolVersionAttribute>() is { } toolVersionAttribute)
+                    {
+                        stringBuilder.AppendLine().Append("ToolVersion: ").Append(toolVersionAttribute);
+                    }
+                    var assembly = desc.Type.Assembly;
+                    if (assembly.GetCustomAttribute<AssemblyCopyrightAttribute>() is { } assemblyCopyrightAttribute)
+                    {
+                        stringBuilder.AppendLine().Append("PluginCopyright: ").Append(assemblyCopyrightAttribute.Copyright);
+                    }
+                    if (AssemblyAttributeUtility.GetAssemblyVersion(assembly) is { } assemblyVersion)
+                    {
+                        stringBuilder.AppendLine().Append("PluginVersion: ").Append(assemblyVersion);
+                    }
+                    foreach (var pair in desc.Properties)
+                    {
+                        stringBuilder.AppendLine().Append(pair.Key).Append(": ").Append(pair.Value);
+                    }
+                    return stringBuilder.ToString();
                 }, ToolOutput);
             }
         }

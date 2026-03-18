@@ -5,4 +5,5 @@
 /// </summary>
 /// <param name="Type">Tool type.</param>
 /// <param name="Id">Tool ID.</param>
-public readonly record struct ArtifactToolDescription(Type Type, ArtifactToolID Id);
+/// <param name="Properties">Miscellaneous informational properties of the tool, where available.</param>
+public readonly record struct ArtifactToolDescription(Type Type, ArtifactToolID Id, IReadOnlyDictionary<string, string> Properties);

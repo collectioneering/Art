@@ -130,7 +130,9 @@ public class ArtifactToolRegistry : IArtifactToolSelectableRegistry<string>
     {
         foreach (var entry in _entries)
         {
-            yield return new ArtifactToolDescription(entry.Value.GetArtifactToolType(), entry.Key);
+            var properties = PluginMetadataUtility.CreatePropertyDictionary();
+            entry.Value.AddMetadataProperties(properties);
+            yield return new ArtifactToolDescription(entry.Value.GetArtifactToolType(), entry.Key, properties);
         }
     }
 

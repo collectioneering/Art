@@ -17,6 +17,14 @@ public abstract record ArtifactToolRegistryEntry(ArtifactToolID Id)
     /// </summary>
     /// <returns>Type for artifact tools.</returns>
     public abstract Type GetArtifactToolType();
+
+    /// <summary>
+    /// Adds metadata properties for this tool known to this instance.
+    /// </summary>
+    /// <param name="metadataProperties">Metadata properties.</param>
+    public virtual void AddMetadataProperties(IDictionary<string, string> metadataProperties)
+    {
+    }
 }
 
 /// <summary>

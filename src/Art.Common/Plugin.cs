@@ -100,8 +100,13 @@ public class Plugin : IArtifactToolSelectableRegistry<string>
     public IEnumerable<ArtifactToolDescription> GetToolDescriptions()
     {
         return BaseAssembly.GetExportedTypes()
-            .Where(t => t.IsAssignableTo(typeof(IArtifactTool)) && !t.IsAbstract && t.GetConstructor(Array.Empty<Type>()) != null)
-            .Select(v => new ArtifactToolDescription(v, ArtifactToolIDUtil.CreateToolID(v)));
+            .Where(static t => t.IsAssignableTo(typeof(IArtifactTool)) && !t.IsAbstract && t.GetConstructor([]) != null)
+            .Select(v =>
+            {
+                var properties = PluginMetadataUtility.CreatePropertyDictionary();
+                PluginMetadataUtility.AddLocalMetadata(v, BaseAssembly, properties);
+                return new ArtifactToolDescription(v, ArtifactToolIDUtil.CreateToolID(v), properties);
+            });
     }
 
     /// <inheritdoc />
