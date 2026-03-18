@@ -71,7 +71,7 @@ public class ToolsCommand : CommandBase
                         capabilities.Add("none");
                     }
                     var stringBuilder = new StringBuilder("Capabilities: ").AppendJoin(", ", capabilities);
-                    stringBuilder.AppendLine().Append("Core: ").Append(desc.Type.GetCustomAttribute<CoreAttribute>() == null ? "true" : "false");
+                    stringBuilder.AppendLine().Append("Core: ").Append(desc.Type.GetCustomAttribute<CoreAttribute>() != null ? "true" : "false");
                     if (desc.Type.GetCustomAttribute<ToolVersionAttribute>() is { } toolVersionAttribute)
                     {
                         stringBuilder.AppendLine().Append("ToolVersion: ").Append(toolVersionAttribute);
