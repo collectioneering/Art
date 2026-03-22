@@ -211,7 +211,8 @@ public partial class M3UDownloaderContextTopDownSaver : M3UDownloaderContextSave
         int idx = str.IndexOf('?');
         if (idx >= 0) str = str[..idx];
         Uri uri = new UriBuilder(new Uri(Context.MainUri, _nameTransform(str, number))) { Query = origUri.Query }.Uri;
-        Context.Tool.LogInformation($"[{Context.Name}] Top-downloading segment {uri.Segments[^1]}...");
+        string action = isTopDown ? "Top-downloading segment" : "Downloading missing segment";
+        Context.Tool.LogInformation($"[{Context.Name}] {action} {uri.Segments[^1]}...");
         try
         {
             // Don't assume MSN, and just accept failure (exception) when trying to decrypt with no IV

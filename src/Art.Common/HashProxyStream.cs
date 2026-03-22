@@ -62,7 +62,9 @@ public sealed class HashProxyStream : Stream
     private void FinishHash()
     {
         if (_hashComputed) return;
-        _hashAlgorithm.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+        // ensure TransformBlock is called at least once
+        _hashAlgorithm.TransformBlock([], 0, 0, null, 0);
+        _hashAlgorithm.TransformFinalBlock([], 0, 0);
         _hash = _hashAlgorithm.Hash ?? throw new InvalidOperationException("Hash function did not return hash");
         _hashComputed = true;
     }

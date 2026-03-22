@@ -22,6 +22,15 @@ public record ArtifactToolFindProxy
     {
         ArtifactTool = artifactTool ?? throw new ArgumentNullException(nameof(artifactTool));
         LogHandler = logHandler;
+        Validate(this);
+    }
+
+    private static void Validate(ArtifactToolFindProxy proxy)
+    {
+        if (proxy.ArtifactTool == null)
+        {
+            throw new InvalidOperationException(SharedStrings.ExcArtifactToolCannotBeNull);
+        }
     }
 
     #region API
@@ -34,7 +43,7 @@ public record ArtifactToolFindProxy
     /// <returns>Async-enumerable artifacts.</returns>
     public async Task<IArtifactData?> FindAsync(string id, CancellationToken cancellationToken = default)
     {
-        if (ArtifactTool == null) throw new InvalidOperationException("Artifact tool cannot be null");
+        Validate(this);
         IArtifactTool artifactTool = ArtifactTool;
         var existingLogHandler = artifactTool.LogHandler;
         try

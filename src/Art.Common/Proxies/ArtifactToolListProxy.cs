@@ -33,11 +33,22 @@ public record ArtifactToolListProxy
     {
         ArtifactTool = artifactTool ?? throw new ArgumentNullException(nameof(artifactTool));
         Options = options ?? throw new ArgumentNullException(nameof(options));
-        ArtifactToolListOptions.Validate(options, false);
         LogHandler = logHandler;
+        Validate(this, true);
     }
 
-    #region API
+    private static void Validate(ArtifactToolListProxy proxy, bool constructor)
+    {
+        if (proxy.ArtifactTool == null)
+        {
+            throw new InvalidOperationException(SharedStrings.ExcArtifactToolCannotBeNull);
+        }
+        if (proxy.Options == null)
+        {
+            throw new InvalidOperationException(SharedStrings.ExcOptionsCannotBeNull);
+        }
+        ArtifactToolListOptions.Validate(proxy.Options, constructor);
+    }
 
     /// <summary>
     /// Lists artifacts.
@@ -48,9 +59,7 @@ public record ArtifactToolListProxy
     /// <exception cref="NotSupportedException">Thrown when a tool does not natively and cannot be made to support listing.</exception>
     public async IAsyncEnumerable<IArtifactData> ListAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (ArtifactTool == null) throw new InvalidOperationException("Artifact tool cannot be null");
-        if (Options == null) throw new InvalidOperationException("Options cannot be null");
-        ArtifactToolListOptions.Validate(Options, false);
+        Validate(this, false);
         IArtifactTool artifactTool = ArtifactTool;
         if (artifactTool.Profile.Options.TryGetOption(OptArtifactList, out string[]? artifactList, SourceGenerationContext.s_context.StringArray) && artifactTool is IArtifactFindTool findTool)
         {
@@ -143,6 +152,4 @@ public record ArtifactToolListProxy
             artifactTool.LogHandler = existingLogHandler;
         }
     }
-
-    #endregion
 }

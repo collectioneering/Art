@@ -1,4 +1,4 @@
-﻿namespace Art.Common;
+﻿namespace Art.Common.Management;
 
 /// <summary>
 /// Represents a stream that will be committed upon disposal if <see cref="CommittableStream.ShouldCommit"/> is set.

@@ -31,7 +31,7 @@ public static class ArtCommonExtensions
 #if NET10_0_OR_GREATER
     [Obsolete("Use System.Linq.AsyncEnumerable.ToListAsync<T> from System.Linq.Async instead")]
 #endif
-    public static async Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> enumerable, CancellationToken cancellationToken = default)
+    public static async Task<List<T>> ConvertToListAsync<T>(this IAsyncEnumerable<T> enumerable, CancellationToken cancellationToken = default)
     {
         List<T> list = new();
         await foreach (T value in enumerable.WithCancellation(cancellationToken).ConfigureAwait(false))

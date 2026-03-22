@@ -28,9 +28,9 @@ public class ArtifactToolListProxyTests
         await Assert.ThrowsAsync<NotSupportedException>(async () =>
         {
 #if NET10_0_OR_GREATER
-            _ = await AsyncEnumerable.ToListAsync(proxy.ListAsync());
-#else
             _ = await proxy.ListAsync().ToListAsync();
+#else
+            _ = await proxy.ListAsync().ConvertToListAsync();
 #endif
         });
     }
@@ -56,9 +56,9 @@ public class ArtifactToolListProxyTests
             new ArtifactToolListOptions(),
             null);
 #if NET10_0_OR_GREATER
-        var results = await AsyncEnumerable.ToListAsync(proxy.ListAsync());
-#else
         var results = await proxy.ListAsync().ToListAsync();
+#else
+        var results = await proxy.ListAsync().ConvertToListAsync();
 #endif
         Assert.Equal(
             [1, 2, 3],
@@ -83,9 +83,9 @@ public class ArtifactToolListProxyTests
             new ArtifactToolListOptions(),
             null);
 #if NET10_0_OR_GREATER
-        var results = await AsyncEnumerable.ToListAsync(proxy.ListAsync());
-#else
         var results = await proxy.ListAsync().ToListAsync();
+#else
+        var results = await proxy.ListAsync().ConvertToListAsync();
 #endif
         Assert.Equal(
             [1, 2, 3],
@@ -111,9 +111,9 @@ public class ArtifactToolListProxyTests
             new ArtifactToolListOptions(),
             null);
 #if NET10_0_OR_GREATER
-        var results = await AsyncEnumerable.ToListAsync(proxy.ListAsync());
-#else
         var results = await proxy.ListAsync().ToListAsync();
+#else
+        var results = await proxy.ListAsync().ConvertToListAsync();
 #endif
         Assert.Equal(
             [1, 2, 3],
