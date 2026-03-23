@@ -1,4 +1,5 @@
-﻿using Art.Common;
+﻿using System.Runtime.CompilerServices;
+using Art.Common;
 
 namespace Art.TestsBase;
 
@@ -13,13 +14,18 @@ public class ProgrammableArtifactListTool : ArtifactTool, IArtifactListTool
         SynchronousListFunc = synchronousListFunc;
     }
 
-    public IAsyncEnumerable<IArtifactData> ListAsync(CancellationToken cancellationToken = default)
+    // ReSharper disable AsyncMethodWithoutAwait
+    public async IAsyncEnumerable<IArtifactData> ListAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    // ReSharper restore AsyncMethodWithoutAwait
     {
         if (SynchronousListFunc == null)
         {
             throw new InvalidOperationException();
         }
-        return SynchronousListFunc(this).ToAsyncEnumerable();
+        foreach (var value in SynchronousListFunc(this))
+        {
+            yield return value;
+        }
     }
 
     public static ArtifactToolRegistryEntry CreateRegistryEntry(SynchronousListDelegate synchronousListDelegate)

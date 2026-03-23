@@ -14,25 +14,22 @@
     <PackageVersion Include="Art.Http" Version="0.50.0" />
     <PackageVersion Include="Art.M3U" Version="0.50.0" />
     <PackageVersion Include="Art.Modular" Version="0.50.0" />
-    <PackageVersion Include="Art.Tesler" Version="0.50.0" />
     <!-- Package dependenices -->
     <PackageVersion Include="AngleSharp" Version="1.4.0" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.2" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.12" Condition="$(TargetFramework) == 'net8.0'" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2" Condition="$(TargetFramework) == 'net10.0'" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Proxies" Version="9.0.12" Condition="$(TargetFramework) == 'net8.0'" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Proxies" Version="10.0.2" Condition="$(TargetFramework) == 'net10.0'" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.12" Condition="$(TargetFramework) == 'net8.0'" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.2" Condition="$(TargetFramework) == 'net10.0'" />
-    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.2.0" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.5" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.14" Condition="$(TargetFramework) == 'net8.0'" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.5" Condition="$(TargetFramework) == 'net10.0'" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Proxies" Version="9.0.14" Condition="$(TargetFramework) == 'net8.0'" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Proxies" Version="10.0.5" Condition="$(TargetFramework) == 'net10.0'" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.14" Condition="$(TargetFramework) == 'net8.0'" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.5" Condition="$(TargetFramework) == 'net10.0'" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.269" />
-    <PackageVersion Include="System.Text.Json" Version="10.0.2" />
     <!-- Test dependenices -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
-    <PackageVersion Include="coverlet.collector" Version="8.0.0" />
-    <PackageVersion Include="RichardSzalay.MockHttp" Version="7.0.0" />
-    <PackageVersion Include="System.Linq.Async" Version="7.0.0" />
+    <PackageVersion Include="coverlet.collector" Version="8.0.1" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageVersion Include="RichardSzalay.MockHttp" Version="7.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.4.0" />
   </ItemGroup>
 </Project>
