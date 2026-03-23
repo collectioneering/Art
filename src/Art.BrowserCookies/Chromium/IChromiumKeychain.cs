@@ -10,7 +10,7 @@ public interface IChromiumKeychain : IDisposable
     /// </summary>
     /// <param name="domain">Domain cookie is associated with.</param>
     /// <param name="buffer">Buffer to decrypt.</param>
-    /// <param name="toolLogHandler">Tool log handler.</param>
+    /// <param name="logHandler">Tool log handler.</param>
     /// <returns>Decrypted content.</returns>
-    string Unlock(string domain, byte[] buffer, IToolLogHandler? toolLogHandler);
+    string Unlock(string domain, byte[] buffer, LogHandler? logHandler);
 }

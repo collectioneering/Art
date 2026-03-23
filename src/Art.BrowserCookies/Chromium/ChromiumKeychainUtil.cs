@@ -53,7 +53,7 @@ internal static class ChromiumKeychainUtil
     }
 
     [SupportedOSPlatform("windows5.1.2600")]
-    public static IChromiumKeychain GetWindowsKeychain(ChromiumVariant chromiumVariant, string userDataPath, IToolLogHandler? toolLogHandler = null)
+    public static IChromiumKeychain GetWindowsKeychain(ChromiumVariant chromiumVariant, string userDataPath, LogHandler? logHandler = null)
     {
         if (!OperatingSystem.IsWindows())
         {
@@ -61,11 +61,11 @@ internal static class ChromiumKeychainUtil
         }
         string file = Path.Join(userDataPath, "Local State");
         using var stream = File.OpenRead(file);
-        return GetWindowsKeychainInternal(chromiumVariant, JsonSerializer.Deserialize(stream, SourceGenerationContext.Default.ChromiumWindowsLocalState) ?? throw new InvalidDataException(), toolLogHandler);
+        return GetWindowsKeychainInternal(chromiumVariant, JsonSerializer.Deserialize(stream, SourceGenerationContext.Default.ChromiumWindowsLocalState) ?? throw new InvalidDataException(), logHandler);
     }
 
     [SupportedOSPlatform("windows5.1.2600")]
-    public static async Task<IChromiumKeychain> GetWindowsKeychainAsync(ChromiumVariant chromiumVariant, string userDataPath, IToolLogHandler? toolLogHandler = null, CancellationToken cancellationToken = default)
+    public static async Task<IChromiumKeychain> GetWindowsKeychainAsync(ChromiumVariant chromiumVariant, string userDataPath, LogHandler? logHandler = null, CancellationToken cancellationToken = default)
     {
         if (!OperatingSystem.IsWindows())
         {
@@ -73,11 +73,11 @@ internal static class ChromiumKeychainUtil
         }
         string file = Path.Join(userDataPath, "Local State");
         await using var stream = File.OpenRead(file);
-        return GetWindowsKeychainInternal(chromiumVariant, await JsonSerializer.DeserializeAsync(stream, SourceGenerationContext.Default.ChromiumWindowsLocalState, cancellationToken: cancellationToken).ConfigureAwait(false) ?? throw new InvalidDataException(), toolLogHandler);
+        return GetWindowsKeychainInternal(chromiumVariant, await JsonSerializer.DeserializeAsync(stream, SourceGenerationContext.Default.ChromiumWindowsLocalState, cancellationToken: cancellationToken).ConfigureAwait(false) ?? throw new InvalidDataException(), logHandler);
     }
 
     [SupportedOSPlatform("windows5.1.2600")]
-    private static ChromiumWindowsKeychain GetWindowsKeychainInternal(ChromiumVariant chromiumVariant, ChromiumWindowsLocalState state, IToolLogHandler? toolLogHandler)
+    private static ChromiumWindowsKeychain GetWindowsKeychainInternal(ChromiumVariant chromiumVariant, ChromiumWindowsLocalState state, LogHandler? logHandler)
     {
         if (!OperatingSystem.IsWindows())
         {
@@ -93,8 +93,7 @@ internal static class ChromiumKeychainUtil
         }
         byte[] data20Sub = data20[4..];
         data20.AsSpan().Clear();
-        ProtectedDataLite.LogHandler? protectedDataLogHandler = toolLogHandler != null ? (title, body) => toolLogHandler.Log(title, body, LogLevel.Information) : null;
-        byte[] res20 = ProtectedDataLite.Unprotect(ProtectedDataLite.Unprotect(data20Sub, null, ProtectedDataLite.Scope.System, protectedDataLogHandler), null, ProtectedDataLite.Scope.CurrentUser);
+        byte[] res20 = ProtectedDataLite.Unprotect(ProtectedDataLite.Unprotect(data20Sub, null, ProtectedDataLite.Scope.System, logHandler), null, ProtectedDataLite.Scope.CurrentUser);
         data20Sub.AsSpan().Clear();
         var keychain = new ChromiumWindowsKeychain(res10, res20, chromiumVariant);
         res10.AsSpan().Clear();

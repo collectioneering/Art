@@ -3,7 +3,7 @@
 /// <summary>
 /// Exception thrown when a browser profile was not found.
 /// </summary>
-public class BrowserProfileNotFoundException : ArtUserException
+public class BrowserProfileNotFoundException : BrowserLookupConfigException
 {
     /// <summary>
     /// Browser name.

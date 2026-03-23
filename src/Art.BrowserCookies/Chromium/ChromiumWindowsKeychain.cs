@@ -119,7 +119,7 @@ internal class ChromiumWindowsKeychain : IChromiumKeychain
         chaCha20Poly1305.Decrypt(nonce, source, tag, target);
     }
 
-    public string Unlock(string domain, byte[] buffer, IToolLogHandler? toolLogHandler)
+    public string Unlock(string domain, byte[] buffer, LogHandler? logHandler)
     {
         if (!OperatingSystem.IsWindows())
         {

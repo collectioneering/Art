@@ -62,11 +62,11 @@ public record ChromeCookieSource(string Profile = "Default") : ChromiumProfileCo
     }
 
     /// <inheritdoc />
-    protected override IChromiumKeychain GetKeychain(IToolLogHandler? toolLogHandler)
+    protected override IChromiumKeychain GetKeychain(LogHandler? logHandler)
     {
         if (OperatingSystem.IsWindowsVersionAtLeast(5, 1, 2600))
         {
-            return ChromiumKeychainUtil.GetWindowsKeychain(ChromiumVariant.Chrome, GetUserDataDirectory(), toolLogHandler);
+            return ChromiumKeychainUtil.GetWindowsKeychain(ChromiumVariant.Chrome, GetUserDataDirectory(), logHandler);
         }
         if (OperatingSystem.IsMacOS())
         {
@@ -80,11 +80,11 @@ public record ChromeCookieSource(string Profile = "Default") : ChromiumProfileCo
     }
 
     /// <inheritdoc />
-    protected override Task<IChromiumKeychain> GetKeychainAsync(IToolLogHandler? toolLogHandler, CancellationToken cancellationToken = default)
+    protected override Task<IChromiumKeychain> GetKeychainAsync(LogHandler? logHandler, CancellationToken cancellationToken = default)
     {
         if (OperatingSystem.IsWindowsVersionAtLeast(5, 1, 2600))
         {
-            return ChromiumKeychainUtil.GetWindowsKeychainAsync(ChromiumVariant.Chrome, GetUserDataDirectory(), toolLogHandler, cancellationToken);
+            return ChromiumKeychainUtil.GetWindowsKeychainAsync(ChromiumVariant.Chrome, GetUserDataDirectory(), logHandler, cancellationToken);
         }
         if (OperatingSystem.IsMacOS())
         {

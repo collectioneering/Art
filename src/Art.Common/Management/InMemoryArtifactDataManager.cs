@@ -38,11 +38,11 @@ public class InMemoryArtifactDataManager : ArtifactDataManager, INamespacedArtif
             _entries.Remove(key);
         }
         CommittableStream stream;
-        if (options is { } optionsActual)
+        if (options != null)
         {
-            long preallocationSize = optionsActual.PreallocationSize;
+            long preallocationSize = options.PreallocationSize;
             if (preallocationSize < 0 || preallocationSize > Array.MaxLength) throw new ArgumentException($"Invalid {nameof(OutputStreamOptions.PreallocationSize)} value", nameof(options));
-            stream = preallocationSize != 0 ? new CommittableMemoryStream((int)optionsActual.PreallocationSize) : new CommittableMemoryStream();
+            stream = preallocationSize != 0 ? new CommittableMemoryStream((int)options.PreallocationSize) : new CommittableMemoryStream();
         }
         else
             stream = new CommittableMemoryStream();
@@ -51,7 +51,7 @@ public class InMemoryArtifactDataManager : ArtifactDataManager, INamespacedArtif
         {
             _artifacts.Add(ak, list = new List<ArtifactResourceInfo>());
         }
-        GetOrCreateNamespacedArtifactDataManager(ak);
+        _ = GetOrCreateNamespacedArtifactDataManager(ak);
         list.Add(new ResultStreamArtifactResourceInfo(stream, key, null, null, null, null));
         _entries[key] = stream;
         return new ValueTask<CommittableStream>(stream);

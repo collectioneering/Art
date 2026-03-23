@@ -9,19 +9,19 @@ namespace Art.BrowserCookies.Chromium;
 public abstract record ChromiumCookieSource : CookieSource
 {
     /// <inheritdoc />
-    public override void LoadCookies(CookieContainer cookieContainer, CookieFilter domain, IToolLogHandler? toolLogHandler)
+    public override void LoadCookies(CookieContainer cookieContainer, CookieFilter domain, LogHandler? logHandler)
     {
-        LoadCookies(cookieContainer, [domain], toolLogHandler);
+        LoadCookies(cookieContainer, [domain], logHandler);
     }
 
     /// <inheritdoc />
-    public override Task LoadCookiesAsync(CookieContainer cookieContainer, CookieFilter domain, IToolLogHandler? toolLogHandler = null, CancellationToken cancellationToken = default)
+    public override Task LoadCookiesAsync(CookieContainer cookieContainer, CookieFilter domain, LogHandler? logHandler = null, CancellationToken cancellationToken = default)
     {
-        return LoadCookiesAsync(cookieContainer, [domain], toolLogHandler, cancellationToken);
+        return LoadCookiesAsync(cookieContainer, [domain], logHandler, cancellationToken);
     }
 
     /// <inheritdoc />
-    public override void LoadCookies(CookieContainer cookieContainer, IReadOnlyCollection<CookieFilter> domains, IToolLogHandler? toolLogHandler)
+    public override void LoadCookies(CookieContainer cookieContainer, IReadOnlyCollection<CookieFilter> domains, LogHandler? logHandler)
     {
         foreach (var domain in domains)
         {
@@ -70,7 +70,7 @@ public abstract record ChromiumCookieSource : CookieSource
                             byte[] buf = ReadBytes(reader.GetStream(2));
                             if (buf.Length != 0)
                             {
-                                value = (keychain ??= GetKeychain(toolLogHandler)).Unlock(cookieDomain, buf, toolLogHandler);
+                                value = (keychain ??= GetKeychain(logHandler)).Unlock(cookieDomain, buf, logHandler);
                             }
                             else
                             {
@@ -103,7 +103,7 @@ public abstract record ChromiumCookieSource : CookieSource
     }
 
     /// <inheritdoc />
-    public override async Task LoadCookiesAsync(CookieContainer cookieContainer, IReadOnlyCollection<CookieFilter> domains, IToolLogHandler? toolLogHandler = null, CancellationToken cancellationToken = default)
+    public override async Task LoadCookiesAsync(CookieContainer cookieContainer, IReadOnlyCollection<CookieFilter> domains, LogHandler? logHandler = null, CancellationToken cancellationToken = default)
     {
         foreach (var domain in domains)
         {
@@ -152,7 +152,7 @@ public abstract record ChromiumCookieSource : CookieSource
                             byte[] buf = ReadBytes(reader.GetStream(2));
                             if (buf.Length != 0)
                             {
-                                value = (keychain ??= await GetKeychainAsync(toolLogHandler, cancellationToken).ConfigureAwait(false)).Unlock(cookieDomain, buf, toolLogHandler);
+                                value = (keychain ??= await GetKeychainAsync(logHandler, cancellationToken).ConfigureAwait(false)).Unlock(cookieDomain, buf, logHandler);
                             }
                             else
                             {
@@ -206,17 +206,17 @@ public abstract record ChromiumCookieSource : CookieSource
     /// <summary>
     /// Synchronously gets a keychain accessor corresponding to this browser for the current user.
     /// </summary>
-    /// <param name="toolLogHandler">Tool log handler.</param>
+    /// <param name="logHandler">Tool log handler.</param>
     /// <returns>Keychain.</returns>
-    protected abstract IChromiumKeychain GetKeychain(IToolLogHandler? toolLogHandler);
+    protected abstract IChromiumKeychain GetKeychain(LogHandler? logHandler);
 
     /// <summary>
     /// Gets a keychain accessor corresponding to this browser for the current user.
     /// </summary>
-    /// <param name="toolLogHandler">Tool log handler.</param>
+    /// <param name="logHandler">Tool log handler.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task returning a keychain.</returns>
-    protected abstract Task<IChromiumKeychain> GetKeychainAsync(IToolLogHandler? toolLogHandler, CancellationToken cancellationToken = default);
+    protected abstract Task<IChromiumKeychain> GetKeychainAsync(LogHandler? logHandler, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the primary user data directory.

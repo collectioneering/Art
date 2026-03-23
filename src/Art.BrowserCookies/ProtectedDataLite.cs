@@ -10,7 +10,6 @@ namespace Art.BrowserCookies;
 
 internal static class ProtectedDataLite
 {
-    public delegate void LogHandler(string? title, string? body);
 
     public enum Scope
     {

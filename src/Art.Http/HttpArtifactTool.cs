@@ -173,7 +173,7 @@ public abstract partial class HttpArtifactTool : ArtifactTool
     {
         if (TryPrepareCookiesFromOption(optKeyBrowserName, optKeyBrowserDomain, optKeyBrowserDomains, optKeyProfile, out List<CookieFilter>? mappedDomains, out string? browserName, out string? profile))
         {
-            CookieSource.LoadCookies(cookies, mappedDomains, browserName, profile, LogHandler);
+            CookieSource.LoadCookies(cookies, mappedDomains, browserName, profile, LogHandler != null ? LogHandler.LogInformation : null);
         }
         return false;
     }
@@ -192,7 +192,16 @@ public abstract partial class HttpArtifactTool : ArtifactTool
     {
         if (TryPrepareCookiesFromOption(optKeyBrowserName, optKeyBrowserDomain, optKeyBrowserDomains, optKeyProfile, out List<CookieFilter>? mappedDomains, out string? browserName, out string? profile))
         {
-            await CookieSource.LoadCookiesAsync(cookies, mappedDomains, browserName, profile, LogHandler, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await CookieSource.LoadCookiesAsync(
+                cookies,
+                mappedDomains,
+                browserName,
+                profile,
+                LogHandler != null
+                    ? LogHandler.LogInformation
+                    : null,
+                cancellationToken: cancellationToken
+            ).ConfigureAwait(false);
         }
         return false;
     }

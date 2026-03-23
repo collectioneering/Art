@@ -42,42 +42,42 @@ public abstract record CookieSource
     /// </summary>
     /// <param name="cookieContainer">Container to populate.</param>
     /// <param name="domain">Target domain.</param>
-    /// <param name="toolLogHandler">Tool log handler.</param>
+    /// <param name="logHandler">Tool log handler.</param>
     /// <returns>Task.</returns>
     /// <exception cref="ArgumentException">Thrown for invalid domain specification.</exception>
-    public abstract void LoadCookies(CookieContainer cookieContainer, CookieFilter domain, IToolLogHandler? toolLogHandler);
+    public abstract void LoadCookies(CookieContainer cookieContainer, CookieFilter domain, LogHandler? logHandler);
 
     /// <summary>
     /// Loads cookies for a domain into the specified <see cref="CookieContainer"/>.
     /// </summary>
     /// <param name="cookieContainer">Container to populate.</param>
     /// <param name="domain">Target domain.</param>
-    /// <param name="toolLogHandler">Tool log handler.</param>
+    /// <param name="logHandler">Tool log handler.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="ArgumentException">Thrown for invalid domain specification.</exception>
-    public abstract Task LoadCookiesAsync(CookieContainer cookieContainer, CookieFilter domain, IToolLogHandler? toolLogHandler = null, CancellationToken cancellationToken = default);
+    public abstract Task LoadCookiesAsync(CookieContainer cookieContainer, CookieFilter domain, LogHandler? logHandler = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Synchronously loads cookies for a domain into the specified <see cref="CookieContainer"/>.
     /// </summary>
     /// <param name="cookieContainer">Container to populate.</param>
     /// <param name="domains">Target domains.</param>
-    /// <param name="toolLogHandler">Tool log handler.</param>
+    /// <param name="logHandler">Tool log handler.</param>
     /// <returns>Task.</returns>
     /// <exception cref="ArgumentException">Thrown for invalid domain specification.</exception>
-    public abstract void LoadCookies(CookieContainer cookieContainer, IReadOnlyCollection<CookieFilter> domains, IToolLogHandler? toolLogHandler);
+    public abstract void LoadCookies(CookieContainer cookieContainer, IReadOnlyCollection<CookieFilter> domains, LogHandler? logHandler);
 
     /// <summary>
     /// Loads cookies for a domain into the specified <see cref="CookieContainer"/>.
     /// </summary>
     /// <param name="cookieContainer">Container to populate.</param>
     /// <param name="domains">Target domains.</param>
-    /// <param name="toolLogHandler">Tool log handler.</param>
+    /// <param name="logHandler">Tool log handler.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="ArgumentException">Thrown for invalid domain specification.</exception>
-    public abstract Task LoadCookiesAsync(CookieContainer cookieContainer, IReadOnlyCollection<CookieFilter> domains, IToolLogHandler? toolLogHandler = null, CancellationToken cancellationToken = default);
+    public abstract Task LoadCookiesAsync(CookieContainer cookieContainer, IReadOnlyCollection<CookieFilter> domains, LogHandler? logHandler = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets supported browser names.
@@ -117,19 +117,19 @@ public abstract record CookieSource
     /// <param name="domain">Target domain.</param>
     /// <param name="browserName">Browser name.</param>
     /// <param name="profile">Optional browser profile name.</param>
-    /// <param name="toolLogHandler">Tool log handler.</param>
+    /// <param name="logHandler">Tool log handler.</param>
     /// <returns>Task.</returns>
     /// <exception cref="ArgumentException">Thrown for invalid domain specification.</exception>
     /// <exception cref="BrowserNotFoundException">Thrown for unknown browser name.</exception>
     /// <exception cref="BrowserProfileNotFoundException">Thrown for unknown browser profile name.</exception>
-    public static void LoadCookies(CookieContainer cookieContainer, CookieFilter domain, string browserName, string? profile = null, IToolLogHandler? toolLogHandler = null)
+    public static void LoadCookies(CookieContainer cookieContainer, CookieFilter domain, string browserName, string? profile = null, LogHandler? logHandler = null)
     {
         if (!TryGetBrowserFromName(browserName, out var cookieSource, profile))
         {
             throw new BrowserNotFoundException(browserName);
         }
         cookieSource = cookieSource.Resolve();
-        cookieSource.LoadCookies(cookieContainer, domain, toolLogHandler);
+        cookieSource.LoadCookies(cookieContainer, domain, logHandler);
     }
 
     /// <summary>
@@ -139,20 +139,20 @@ public abstract record CookieSource
     /// <param name="domain">Target domain.</param>
     /// <param name="browserName">Browser name.</param>
     /// <param name="profile">Optional browser profile name.</param>
-    /// <param name="toolLogHandler">Tool log handler.</param>
+    /// <param name="logHandler">Tool log handler.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="ArgumentException">Thrown for invalid domain specification.</exception>
     /// <exception cref="BrowserNotFoundException">Thrown for unknown browser name.</exception>
     /// <exception cref="BrowserProfileNotFoundException">Thrown for unknown browser profile name.</exception>
-    public static Task LoadCookiesAsync(CookieContainer cookieContainer, CookieFilter domain, string browserName, string? profile = null, IToolLogHandler? toolLogHandler = null, CancellationToken cancellationToken = default)
+    public static Task LoadCookiesAsync(CookieContainer cookieContainer, CookieFilter domain, string browserName, string? profile = null, LogHandler? logHandler = null, CancellationToken cancellationToken = default)
     {
         if (!TryGetBrowserFromName(browserName, out var cookieSource, profile))
         {
             throw new BrowserNotFoundException(browserName);
         }
         cookieSource = cookieSource.Resolve();
-        return cookieSource.LoadCookiesAsync(cookieContainer, domain, toolLogHandler, cancellationToken);
+        return cookieSource.LoadCookiesAsync(cookieContainer, domain, logHandler, cancellationToken);
     }
 
     /// <summary>
@@ -162,18 +162,18 @@ public abstract record CookieSource
     /// <param name="domains">Target domains.</param>
     /// <param name="browserName">Browser name.</param>
     /// <param name="profile">Optional browser profile name.</param>
-    /// <param name="toolLogHandler">Tool log handler.</param>
+    /// <param name="logHandler">Tool log handler.</param>
     /// <exception cref="ArgumentException">Thrown for invalid domain specification.</exception>
     /// <exception cref="BrowserNotFoundException">Thrown for unknown browser name.</exception>
     /// <exception cref="BrowserProfileNotFoundException">Thrown for unknown browser profile name.</exception>
-    public static void LoadCookies(CookieContainer cookieContainer, IReadOnlyCollection<CookieFilter> domains, string browserName, string? profile = null, IToolLogHandler? toolLogHandler = null)
+    public static void LoadCookies(CookieContainer cookieContainer, IReadOnlyCollection<CookieFilter> domains, string browserName, string? profile = null, LogHandler? logHandler = null)
     {
         if (!TryGetBrowserFromName(browserName, out var cookieSource, profile))
         {
             throw new BrowserNotFoundException(browserName);
         }
         cookieSource = cookieSource.Resolve();
-        cookieSource.LoadCookies(cookieContainer, domains, toolLogHandler);
+        cookieSource.LoadCookies(cookieContainer, domains, logHandler);
     }
 
     /// <summary>
@@ -183,19 +183,19 @@ public abstract record CookieSource
     /// <param name="domains">Target domains.</param>
     /// <param name="browserName">Browser name.</param>
     /// <param name="profile">Optional browser profile name.</param>
-    /// <param name="toolLogHandler">Tool log handler.</param>
+    /// <param name="logHandler">Tool log handler.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     /// <exception cref="ArgumentException">Thrown for invalid domain specification.</exception>
     /// <exception cref="BrowserNotFoundException">Thrown for unknown browser name.</exception>
     /// <exception cref="BrowserProfileNotFoundException">Thrown for unknown browser profile name.</exception>
-    public static Task LoadCookiesAsync(CookieContainer cookieContainer, IReadOnlyCollection<CookieFilter> domains, string browserName, string? profile = null, IToolLogHandler? toolLogHandler = null, CancellationToken cancellationToken = default)
+    public static Task LoadCookiesAsync(CookieContainer cookieContainer, IReadOnlyCollection<CookieFilter> domains, string browserName, string? profile = null, LogHandler? logHandler = null, CancellationToken cancellationToken = default)
     {
         if (!TryGetBrowserFromName(browserName, out var cookieSource, profile))
         {
             throw new BrowserNotFoundException(browserName);
         }
         cookieSource = cookieSource.Resolve();
-        return cookieSource.LoadCookiesAsync(cookieContainer, domains, toolLogHandler, cancellationToken);
+        return cookieSource.LoadCookiesAsync(cookieContainer, domains, logHandler, cancellationToken);
     }
 }
