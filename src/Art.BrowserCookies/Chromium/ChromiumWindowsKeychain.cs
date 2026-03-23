@@ -1,10 +1,12 @@
 ﻿using System.Buffers.Binary;
 using System.Diagnostics;
+using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace Art.BrowserCookies.Chromium;
 
+[SupportedOSPlatform("windows5.1.2600")]
 internal class ChromiumWindowsKeychain : IChromiumKeychain
 {
     // https://chromium.googlesource.com/chromium/src/+/refs/heads/main/components/os_crypt/os_crypt_win.cc
@@ -72,7 +74,7 @@ internal class ChromiumWindowsKeychain : IChromiumKeychain
                         }
                     case 3:
                         {
-                            byte[] xKey = ChromiumKeychainUtil.ExecuteWCUnlockB("b", main[1..][..32].ToArray(), null);
+                            byte[] xKey = ProtectedDataLite.DecryptBufferWithKey(main[1..][..32].ToArray(), "Google Chromekey1", null);
                             if (xKey.Length != 32)
                             {
                                 throw new IOException("Failed to decrypt");
@@ -144,7 +146,7 @@ internal class ChromiumWindowsKeychain : IChromiumKeychain
         }
 
         // fallback
-        return Encoding.UTF8.GetString(ProtectedData.Unprotect(buffer, null, DataProtectionScope.CurrentUser));
+        return Encoding.UTF8.GetString(ProtectedDataLite.Unprotect(buffer, null, ProtectedDataLite.Scope.CurrentUser));
     }
 
     public void Dispose()

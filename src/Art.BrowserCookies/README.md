@@ -25,7 +25,7 @@ v20 cookies on Windows Chromium browsers go through
 [the System account](https://learn.microsoft.com/en-us/windows/security/identity-protection/access-control/local-accounts#system)
 for encryption, and decryption requires a process to run under that account for the right DPAPI context.
 A helper Windows PowerShell (not PowerShell Core) script is embedded in this library which includes
-the [Invoke-CommandAs](https://github.com/mkellerman/Invoke-CommandAs) library and a small job which will
+the [Invoke-CommandAs](https://github.com/mkellerman/Invoke-CommandAs) library (with some removal to avoid the 32 KiB command line limit) and a small job which will
 ultimately execute a decryption via the System account. Getting the job scheduled requires elevation to administrator, so the
 PowerShell process that runs the helper script is elevated which will trigger a UAC prompt if those are enabled.
 

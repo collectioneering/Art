@@ -64,7 +64,7 @@ public record ChromeCookieSource(string Profile = "Default") : ChromiumProfileCo
     /// <inheritdoc />
     protected override IChromiumKeychain GetKeychain(IToolLogHandler? toolLogHandler)
     {
-        if (OperatingSystem.IsWindows())
+        if (OperatingSystem.IsWindowsVersionAtLeast(5, 1, 2600))
         {
             return ChromiumKeychainUtil.GetWindowsKeychain(ChromiumVariant.Chrome, GetUserDataDirectory(), toolLogHandler);
         }
@@ -82,7 +82,7 @@ public record ChromeCookieSource(string Profile = "Default") : ChromiumProfileCo
     /// <inheritdoc />
     protected override Task<IChromiumKeychain> GetKeychainAsync(IToolLogHandler? toolLogHandler, CancellationToken cancellationToken = default)
     {
-        if (OperatingSystem.IsWindows())
+        if (OperatingSystem.IsWindowsVersionAtLeast(5, 1, 2600))
         {
             return ChromiumKeychainUtil.GetWindowsKeychainAsync(ChromiumVariant.Chrome, GetUserDataDirectory(), toolLogHandler, cancellationToken);
         }

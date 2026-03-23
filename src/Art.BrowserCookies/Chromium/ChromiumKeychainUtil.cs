@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -51,6 +52,7 @@ internal static class ChromiumKeychainUtil
         }
     }
 
+    [SupportedOSPlatform("windows5.1.2600")]
     public static IChromiumKeychain GetWindowsKeychain(ChromiumVariant chromiumVariant, string userDataPath, IToolLogHandler? toolLogHandler = null)
     {
         if (!OperatingSystem.IsWindows())
@@ -62,6 +64,7 @@ internal static class ChromiumKeychainUtil
         return GetWindowsKeychainInternal(chromiumVariant, JsonSerializer.Deserialize(stream, SourceGenerationContext.Default.ChromiumWindowsLocalState) ?? throw new InvalidDataException(), toolLogHandler);
     }
 
+    [SupportedOSPlatform("windows5.1.2600")]
     public static async Task<IChromiumKeychain> GetWindowsKeychainAsync(ChromiumVariant chromiumVariant, string userDataPath, IToolLogHandler? toolLogHandler = null, CancellationToken cancellationToken = default)
     {
         if (!OperatingSystem.IsWindows())
@@ -73,6 +76,7 @@ internal static class ChromiumKeychainUtil
         return GetWindowsKeychainInternal(chromiumVariant, await JsonSerializer.DeserializeAsync(stream, SourceGenerationContext.Default.ChromiumWindowsLocalState, cancellationToken: cancellationToken).ConfigureAwait(false) ?? throw new InvalidDataException(), toolLogHandler);
     }
 
+    [SupportedOSPlatform("windows5.1.2600")]
     private static ChromiumWindowsKeychain GetWindowsKeychainInternal(ChromiumVariant chromiumVariant, ChromiumWindowsLocalState state, IToolLogHandler? toolLogHandler)
     {
         if (!OperatingSystem.IsWindows())
@@ -80,7 +84,7 @@ internal static class ChromiumKeychainUtil
             throw new PlatformNotSupportedException();
         }
         byte[] data10 = Convert.FromBase64String(state.OsCrypt.EncryptedKey)[5..];
-        byte[] res10 = ProtectedData.Unprotect(data10, null, DataProtectionScope.CurrentUser);
+        byte[] res10 = ProtectedDataLite.Unprotect(data10, null, ProtectedDataLite.Scope.CurrentUser);
         data10.AsSpan().Clear();
         byte[] data20 = Convert.FromBase64String(state.OsCrypt.AppBoundEncryptedKey);
         if (!data20.AsSpan().StartsWith("APPB"u8))
@@ -89,65 +93,12 @@ internal static class ChromiumKeychainUtil
         }
         byte[] data20Sub = data20[4..];
         data20.AsSpan().Clear();
-        byte[] res20 = ProtectedData.Unprotect(ExecuteWCUnlockB("a", data20Sub, toolLogHandler), null, DataProtectionScope.CurrentUser);
+        ProtectedDataLite.LogHandler? protectedDataLogHandler = toolLogHandler != null ? (title, body) => toolLogHandler.Log(title, body, LogLevel.Information) : null;
+        byte[] res20 = ProtectedDataLite.Unprotect(ProtectedDataLite.Unprotect(data20Sub, null, ProtectedDataLite.Scope.System, protectedDataLogHandler), null, ProtectedDataLite.Scope.CurrentUser);
         data20Sub.AsSpan().Clear();
         var keychain = new ChromiumWindowsKeychain(res10, res20, chromiumVariant);
         res10.AsSpan().Clear();
         res20.AsSpan().Clear();
         return keychain;
-    }
-
-    internal static byte[] ExecuteWCUnlockB(string variant, byte[] input, IToolLogHandler? toolLogHandler)
-    {
-        string tmpIn = Path.GetTempFileName();
-        try
-        {
-            string tmpOut = Path.GetTempFileName();
-            try
-            {
-                File.WriteAllBytes(tmpIn, input);
-                ProcessStartInfo psi = new() { FileName = "powershell", Verb = "runas", UseShellExecute = true };
-                psi.ArgumentList.Add("-Command");
-                psi.ArgumentList.Add(s_wcunlockB);
-                psi.ArgumentList.Add(variant);
-                psi.ArgumentList.Add(tmpIn);
-                psi.ArgumentList.Add(tmpOut);
-                toolLogHandler?.Log("Need Elevation", "Elevation is needed to decrypt keys. A UAC prompt may appear.", LogLevel.Information);
-                var process = Process.Start(psi);
-                toolLogHandler?.Log("Running cookie decryption helper...", null, LogLevel.Information);
-                process?.WaitForExit();
-                return File.ReadAllBytes(tmpOut);
-            }
-            finally
-            {
-                File.Delete(tmpOut);
-            }
-        }
-        finally
-        {
-            File.Delete(tmpIn);
-        }
-    }
-
-    private static string s_wcunlockB => s_wcunlockBValue ??= Encoding.UTF8.GetString(LoadResource("wcunlockB"));
-    private static string? s_wcunlockBValue;
-
-    private static byte[] LoadResource(string name)
-    {
-        using Stream s = typeof(ChromiumKeychainUtil).Assembly.GetManifestResourceStream(name) ?? throw new IOException($"Failed to load manifest resource [{name}]");
-        if (s.CanSeek)
-        {
-            long l = s.Length;
-            if (l > int.MaxValue)
-            {
-                throw new InvalidOperationException($"Manifest resource [{name}] has length {l} which exceeds supported length");
-            }
-            byte[] result = new byte[l];
-            s.ReadExactly(result);
-            return result;
-        }
-        var ms = new MemoryStream();
-        s.CopyTo(ms);
-        return ms.ToArray();
     }
 }
