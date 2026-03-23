@@ -33,7 +33,7 @@ public class BrowserProfileNotFoundException : BrowserLookupConfigException
         var sb = new StringBuilder($"Profile \"{Profile}\" for the browser \"{BrowserName}\" was not found.");
         if (potentialProfiles.Count > 0)
         {
-            sb.Append(" Potential profiles: ").AppendJoin(", ", potentialProfiles);
+            sb.Append(" Potential profiles: ").AppendJoin(", ", potentialProfiles.Select(static v => $"[{v}]"));
         }
         _message = sb.ToString();
     }
