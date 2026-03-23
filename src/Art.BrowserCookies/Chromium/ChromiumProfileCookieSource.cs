@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Collections.Frozen;
+using System.Text.Json;
 
 namespace Art.BrowserCookies.Chromium;
 
@@ -15,13 +16,13 @@ public abstract record ChromiumProfileCookieSource(string Profile = "Default") :
         {
             if (!File.Exists(path))
             {
-                throw new BrowserProfileNotFoundException(Name, Profile);
+                throw new BrowserProfileNotFoundException(Name, Profile, GetPotentialProfileNames().ToFrozenSet());
             }
             return this;
         }
         catch
         {
-            foreach (string profileDirectory in Directory.EnumerateDirectories(GetUserDataDirectory(), "*Profile*"))
+            foreach (string profileDirectory in Directory.EnumerateDirectories(GetUserDataDirectory()))
             {
                 string newProfile = Path.GetFileName(profileDirectory);
                 string preferences = GetPath(UserDataKind.Preferences, newProfile);
@@ -37,6 +38,31 @@ public abstract record ChromiumProfileCookieSource(string Profile = "Default") :
             }
             throw;
         }
+    }
+
+    private List<string> GetPotentialProfileNames()
+    {
+        List<string> potentialProfileNames = [];
+        foreach (string profileDirectory in Directory.EnumerateDirectories(GetUserDataDirectory()))
+        {
+            string newProfile = Path.GetFileName(profileDirectory);
+            string preferences = GetPath(UserDataKind.Preferences, newProfile);
+            if (File.Exists(preferences))
+            {
+                try
+                {
+                    using var fs = File.OpenRead(preferences);
+                    string name = (JsonSerializer.Deserialize(fs, SourceGenerationContext.Default.ChromiumPreferences) ?? throw new InvalidDataException()).Profile.Name;
+                    potentialProfileNames.Add(newProfile);
+                    potentialProfileNames.Add(name);
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
+        }
+        return potentialProfileNames;
     }
 
     /// <summary>
