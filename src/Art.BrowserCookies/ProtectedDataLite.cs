@@ -124,9 +124,9 @@ internal static class ProtectedDataLite
                     psi.ArgumentList.Add("-Command");
                     psi.ArgumentList.Add(s_wcunlockB);
                     psi.ArgumentList.Add("Invoke-UnprotectSystem");
-                    psi.ArgumentList.Add(tmpIn);
-                    psi.ArgumentList.Add(tmpEntropy);
-                    psi.ArgumentList.Add(tmpOut);
+                    psi.ArgumentList.Add($"'{tmpIn}'");
+                    psi.ArgumentList.Add($"'{tmpEntropy}'");
+                    psi.ArgumentList.Add($"'{tmpOut}'");
                     logHandler?.Invoke("Need Elevation", "Elevation is needed to decrypt keys. A UAC prompt may appear.");
                     var process = Process.Start(psi);
                     logHandler?.Invoke("Running cookie decryption helper...", null);
@@ -169,9 +169,9 @@ internal static class ProtectedDataLite
                     psi.ArgumentList.Add("-Command");
                     psi.ArgumentList.Add(s_wcunlockB);
                     psi.ArgumentList.Add("Invoke-DecryptBufferWithKey");
-                    psi.ArgumentList.Add(tmpIn);
-                    psi.ArgumentList.Add(keyName);
-                    psi.ArgumentList.Add(tmpOut);
+                    psi.ArgumentList.Add($"'{tmpIn}'");
+                    psi.ArgumentList.Add($"'{keyName}'");
+                    psi.ArgumentList.Add($"'{tmpOut}'");
                     logHandler?.Invoke("Need Elevation", "Elevation is needed to decrypt keys. A UAC prompt may appear.");
                     var process = Process.Start(psi);
                     logHandler?.Invoke("Running cookie decryption helper...", null);

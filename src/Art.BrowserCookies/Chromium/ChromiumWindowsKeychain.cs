@@ -77,7 +77,7 @@ internal class ChromiumWindowsKeychain : IChromiumKeychain
                             byte[] xKey = ProtectedDataLite.DecryptBufferWithKey(main[1..][..32].ToArray(), "Google Chromekey1", null);
                             if (xKey.Length != 32)
                             {
-                                throw new IOException("Failed to decrypt");
+                                throw new IOException($"Failed to decrypt: expected length 32, got {xKey.Length}");
                             }
                             for (int i = 0; i < xKey.Length; i++)
                             {

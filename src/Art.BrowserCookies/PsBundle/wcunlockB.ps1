@@ -22,12 +22,12 @@ function Invoke-DecryptBufferWithKey {
     )
     $Script = {
         Add-Type -AssemblyName System.Security
-        $Kn = "$($args[2])"
+        $Kn = "$($args[1])"
         $Msksp = [Security.Cryptography.CngProvider]::MicrosoftSoftwareKeyStorageProvider
-        $Key = [Security.Cryptography.CngKey]::Open($Kn, $Msksp, 0)
         if (-Not [Security.Cryptography.CngKey]::Exists($Kn, $Msksp)) {
             exit
         }
+        $Key = [Security.Cryptography.CngKey]::Open($Kn, $Msksp, 0)
         $SourceData = Get-Content -Path "$($args[0])" -Encoding Byte -Raw
         switch ($Key.Algorithm.Algorithm) {
             "AES" {
