@@ -55,7 +55,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="wcunlockB.txt" LogicalName="wcunlockB" />
+    <EmbeddedResource Include="PsBundle/Invoke-CommandAs.ps1" LogicalName="Invoke-CommandAs_ps1" />
+    <EmbeddedResource Include="PsBundle/Invoke-ScheduledTask.ps1" LogicalName="Invoke-ScheduledTask_ps1" />
+    <EmbeddedResource Include="PsBundle/wcunlockB.ps1" LogicalName="wcunlockB_ps1" />
   </ItemGroup>
 
   <ItemGroup>

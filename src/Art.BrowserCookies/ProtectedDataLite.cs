@@ -10,7 +10,6 @@ namespace Art.BrowserCookies;
 
 internal static class ProtectedDataLite
 {
-
     public enum Scope
     {
         CurrentUser = 0x0,
@@ -92,7 +91,7 @@ internal static class ProtectedDataLite
         }
     }
 
-    private static string s_wcunlockB => s_wcunlockBValue ??= Encoding.UTF8.GetString(LoadResource("wcunlockB"));
+    private static string s_wcunlockB => s_wcunlockBValue ??= BuildScriptBundle();
     private static string? s_wcunlockBValue;
 
     [SupportedOSPlatform("windows5.1.2600")]
@@ -124,7 +123,7 @@ internal static class ProtectedDataLite
                     ProcessStartInfo psi = new() { FileName = "powershell", Verb = "runas", UseShellExecute = true };
                     psi.ArgumentList.Add("-Command");
                     psi.ArgumentList.Add(s_wcunlockB);
-                    psi.ArgumentList.Add("UnprotectSystem");
+                    psi.ArgumentList.Add("Invoke-UnprotectSystem");
                     psi.ArgumentList.Add(tmpIn);
                     psi.ArgumentList.Add(tmpEntropy);
                     psi.ArgumentList.Add(tmpOut);
@@ -169,7 +168,7 @@ internal static class ProtectedDataLite
                     ProcessStartInfo psi = new() { FileName = "powershell", Verb = "runas", UseShellExecute = true };
                     psi.ArgumentList.Add("-Command");
                     psi.ArgumentList.Add(s_wcunlockB);
-                    psi.ArgumentList.Add("DecryptBufferWithKey");
+                    psi.ArgumentList.Add("Invoke-DecryptBufferWithKey");
                     psi.ArgumentList.Add(tmpIn);
                     psi.ArgumentList.Add(keyName);
                     psi.ArgumentList.Add(tmpOut);
@@ -188,6 +187,18 @@ internal static class ProtectedDataLite
         {
             File.Delete(tmpIn);
         }
+    }
+
+    private static string BuildScriptBundle()
+    {
+        var sb = new StringBuilder();
+        PsScriptUtil.AppendSimplifiedPsScript(sb, Encoding.UTF8.GetString(LoadResource("Invoke-CommandAs_ps1")));
+        sb.AppendLine();
+        PsScriptUtil.AppendSimplifiedPsScript(sb, Encoding.UTF8.GetString(LoadResource("Invoke-ScheduledTask_ps1")));
+        sb.AppendLine();
+        PsScriptUtil.AppendSimplifiedPsScript(sb, Encoding.UTF8.GetString(LoadResource("wcunlockB_ps1")));
+        sb.AppendLine();
+        return sb.ToString();
     }
 
     private static byte[] LoadResource(string name)
