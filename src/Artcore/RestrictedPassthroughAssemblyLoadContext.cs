@@ -25,7 +25,8 @@ public class RestrictedPassthroughAssemblyLoadContext : AssemblyLoadContext
     /// <param name="basePath">Base path.</param>
     /// <param name="assembly">Assembly simple name.</param>
     /// <param name="sharedAssemblies">Shared assembly simple names that must be resolved by fallback contexts.</param>
-    public RestrictedPassthroughAssemblyLoadContext(string basePath, string assembly, ImmutableHashSet<string> sharedAssemblies)
+    /// <param name="isCollectible">If true, enable usage of <see cref="AssemblyLoadContext.Unload"/>.</param>
+    public RestrictedPassthroughAssemblyLoadContext(string basePath, string assembly, ImmutableHashSet<string> sharedAssemblies, bool isCollectible = false) : base(isCollectible)
     {
         BasePath = basePath;
         _resolver = new AssemblyDependencyResolver(Path.Combine(basePath, assembly + ".dll"));

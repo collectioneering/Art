@@ -40,7 +40,12 @@ public class DiskManifestModuleLoader : IModuleLoader<ALCModule>
             throw new ArgumentException("Cannot load this module manifest, it is of an invalid type.");
         }
         string baseDir = manifest.Content.Path != null ? Path.Combine(manifest.BasePath, manifest.Content.Path) : manifest.BasePath;
-        var ctx = new RestrictedPassthroughAssemblyLoadContext(baseDir, manifest.Content.Assembly, _moduleLoadConfiguration.PassthroughAssemblies);
+        var ctx = new RestrictedPassthroughAssemblyLoadContext(
+            baseDir,
+            manifest.Content.Assembly,
+            _moduleLoadConfiguration.PassthroughAssemblies,
+            _moduleLoadConfiguration.IsCollectible
+        );
         return new ALCModule(ctx.LoadFromAssemblyName(new AssemblyName(manifest.Content.Assembly)), ctx);
     }
 }
