@@ -20,7 +20,7 @@ public class EFArtifactRegistrationManager<TContext> : IArtifactRegistrationMana
     /// <param name="factory">Context factory.</param>
     public EFArtifactRegistrationManager(ArtifactContextFactoryBase<TContext> factory)
     {
-        Context = factory.CreateDbContext(Array.Empty<string>());
+        Context = factory.CreateDbContext([]);
     }
 
     /// <inheritdoc />

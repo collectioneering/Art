@@ -74,7 +74,10 @@ public class DiskManifestModuleLookup : IModuleLookup<ModuleManifest>
     /// <inheritdoc />
     public IEnumerable<ModuleManifest> LoadTypedModuleLocations()
     {
-        if (!Directory.Exists(_moduleDirectory)) return Array.Empty<ModuleManifest>();
+        if (!Directory.Exists(_moduleDirectory))
+        {
+            return [];
+        }
         foreach (string subDirectory in EnumerateModuleDirectories(_moduleDirectory))
         {
             LoadManifestsAtTarget(subDirectory, null);

@@ -49,7 +49,7 @@ public class DiskArtifactRegistrationManager : IArtifactRegistrationManager
     {
         EnsureNotDisposed();
         string dir = GetArtifactInfoDir();
-        List<ArtifactInfo> results = new();
+        List<ArtifactInfo> results = [];
         if (!Directory.Exists(dir)) return results;
         foreach (string toolDir in Directory.EnumerateDirectories(dir))
         foreach (string groupDir in Directory.EnumerateDirectories(toolDir))
@@ -64,7 +64,7 @@ public class DiskArtifactRegistrationManager : IArtifactRegistrationManager
     {
         EnsureNotDisposed();
         string dir = GetArtifactInfoDir();
-        List<ArtifactInfo> results = new();
+        List<ArtifactInfo> results = [];
         if (!Directory.Exists(dir)) return results;
         foreach (string toolDir in Directory.EnumerateDirectories(dir))
         foreach (string groupDir in Directory.EnumerateDirectories(toolDir))
@@ -79,7 +79,7 @@ public class DiskArtifactRegistrationManager : IArtifactRegistrationManager
     {
         EnsureNotDisposed();
         string toolDir = GetArtifactInfoDir(tool);
-        List<ArtifactInfo> results = new();
+        List<ArtifactInfo> results = [];
         if (!Directory.Exists(toolDir)) return results;
         foreach (string groupDir in Directory.EnumerateDirectories(toolDir))
         foreach (string file in Directory.EnumerateFiles(groupDir).Where(v => v.EndsWith(ArtifactFileNameEnd)))
@@ -93,7 +93,7 @@ public class DiskArtifactRegistrationManager : IArtifactRegistrationManager
     {
         EnsureNotDisposed();
         string groupDir = GetArtifactInfoDir(tool, group);
-        List<ArtifactInfo> results = new();
+        List<ArtifactInfo> results = [];
         if (!Directory.Exists(groupDir)) return results;
         foreach (string file in Directory.EnumerateFiles(groupDir).Where(v => v.EndsWith(ArtifactFileNameEnd)))
             if (await LoadFromFileAsync(file, SourceGenerationContext.s_context.ArtifactInfo, cancellationToken).ConfigureAwait(false) is { } v)
@@ -116,7 +116,7 @@ public class DiskArtifactRegistrationManager : IArtifactRegistrationManager
     {
         EnsureNotDisposed();
         string dir = GetResourceInfoDir(key);
-        List<ArtifactResourceInfo> results = new();
+        List<ArtifactResourceInfo> results = [];
         Queue<string> dQueue = new();
         dQueue.Enqueue(dir);
         while (dQueue.TryDequeue(out string? dd))

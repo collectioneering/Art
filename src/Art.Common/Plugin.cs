@@ -130,7 +130,7 @@ public class Plugin : IArtifactToolSelectableRegistry<string>
     {
         if (_selectableRegistryEntries == null)
         {
-            _selectableRegistryEntries = new List<ArtifactToolSelectableRegistryEntry>();
+            _selectableRegistryEntries = [];
             object[] paramArr = new object[1];
             foreach (var x in BaseAssembly.GetExportedTypes()
                          .Where(t => t.IsAssignableTo(typeof(IArtifactTool)) && !t.IsAbstract && t.GetConstructor(Array.Empty<Type>()) != null))

@@ -16,13 +16,13 @@ public class M3UFile
     /// </summary>
     public M3UEncryptionInfo? EncryptionInfo { get; set; }
 
-    private readonly List<StreamInfo> _streams = new();
-    private readonly List<AlternateStreamInfo> _alternateStreams = new();
+    private readonly List<StreamInfo> _streams = [];
+    private readonly List<AlternateStreamInfo> _alternateStreams = [];
 
     /// <summary>
     /// Data lines.
     /// </summary>
-    public List<string> DataLines { get; set; } = new();
+    public List<string> DataLines { get; set; } = [];
 
     /// <summary>
     /// M3U version.

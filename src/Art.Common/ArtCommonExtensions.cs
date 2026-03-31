@@ -33,9 +33,11 @@ public static class ArtCommonExtensions
 #endif
     public static async Task<List<T>> ConvertToListAsync<T>(this IAsyncEnumerable<T> enumerable, CancellationToken cancellationToken = default)
     {
-        List<T> list = new();
+        List<T> list = [];
         await foreach (T value in enumerable.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
             list.Add(value);
+        }
         return list;
     }
 

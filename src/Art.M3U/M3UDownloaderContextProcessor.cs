@@ -146,7 +146,7 @@ public abstract class M3UDownloaderContextProcessor
         {
             ConsecutiveFailCounter = 0;
             TotalFailCounter = 0;
-            HashSet<string> hs = new();
+            HashSet<string> hs = [];
             Stopwatch sw = new();
             sw.Start();
             TimeSpan remainingTimeout = timeout;

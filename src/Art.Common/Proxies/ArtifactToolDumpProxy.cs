@@ -134,7 +134,7 @@ public record ArtifactToolDumpProxy
         IAsyncEnumerable<IArtifactData> enumerable,
         CancellationToken cancellationToken = default)
     {
-        List<Task> tasks = new();
+        List<Task> tasks = [];
         // CancellationToken is already used for the origin method call in DumpAsListAsync
         // ReSharper disable UseCancellationTokenForIAsyncEnumerable
         await foreach (IArtifactData data in enumerable.ConfigureAwait(false))

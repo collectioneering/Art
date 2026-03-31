@@ -114,7 +114,7 @@ public record ArtifactToolListProxy
                     artifactTool.DataManager = adm;
                     artifactTool.RegistrationManager = arm;
                     await dumpTool.DumpAsync(cancellationToken).ConfigureAwait(false);
-                    HashSet<ArtifactKey> known = new();
+                    HashSet<ArtifactKey> known = [];
                     foreach ((ArtifactKey ak, List<ArtifactResourceInfo> resources) in adm.Artifacts)
                     {
                         if (await artifactTool.RegistrationManager.TryGetArtifactAsync(ak, cancellationToken).ConfigureAwait(false) is not { } info)

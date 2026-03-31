@@ -393,7 +393,7 @@ public static class ArtifactDumping
                     break;
                 case EagerFlags.ResourceObtain:
                     {
-                        List<Task> tasks = new();
+                        List<Task> tasks = [];
                         foreach (ArtifactResourceInfo resource in artifactData.Values)
                         {
                             ArtifactResourceInfoWithState aris = await artifactTool.DetermineUpdatedResourceAsync(resource, resourceUpdate, cancellationToken).ConfigureAwait(false);

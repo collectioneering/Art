@@ -77,7 +77,7 @@ public class AggregateArtifactToolRegistry : IArtifactToolSelectableRegistry<str
     /// </remarks>
     public IEnumerable<ArtifactToolDescription> GetToolDescriptions()
     {
-        HashSet<ArtifactToolID> known = new();
+        HashSet<ArtifactToolID> known = [];
         foreach (var registry in _artifactToolRegistries)
         {
             foreach (var description in registry.GetToolDescriptions())

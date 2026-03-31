@@ -49,7 +49,7 @@ public class InMemoryArtifactDataManager : ArtifactDataManager, INamespacedArtif
         ArtifactKey ak = key.Artifact;
         if (!_artifacts.TryGetValue(ak, out List<ArtifactResourceInfo>? list))
         {
-            _artifacts.Add(ak, list = new List<ArtifactResourceInfo>());
+            _artifacts.Add(ak, list = []);
         }
         _ = GetOrCreateNamespacedArtifactDataManager(ak);
         list.Add(new ResultStreamArtifactResourceInfo(stream, key, null, null, null, null));
