@@ -31,6 +31,17 @@ public static class ArtifactToolIDUtil
         return $"{assemblyName}::{typeName}";
     }
 
+    /// <summary>
+    /// Creates a tool string for the specified assembly and type names.
+    /// </summary>
+    /// <param name="assemblyName">Assembly name.</param>
+    /// <param name="typeName">Type name.</param>
+    /// <returns>Tool string.</returns>
+    public static string CreateToolString(string assemblyName, string typeName)
+    {
+        return $"{assemblyName}::{typeName}";
+    }
+
     private static (string assemblyName, string typeName) GetAssemblyAndTypeNames(Type type)
     {
         return (
