@@ -53,7 +53,7 @@ public static class M3UReader
     /// <exception cref="InvalidDataException">Thrown for incorrect M3U structure.</exception>
     public static M3UFile Parse(string data)
     {
-        if (data == null) throw new ArgumentNullException(nameof(data));
+        ArgumentNullException.ThrowIfNull(data);
         using StringReader reader = new(data);
         return Parse(reader);
     }

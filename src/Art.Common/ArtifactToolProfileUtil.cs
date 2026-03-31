@@ -18,7 +18,7 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="InvalidDataException">Thrown if null value encountered.</exception>
     public static ArtifactToolProfile[] DeserializeProfilesFromFile(string path)
     {
-        if (path == null) throw new ArgumentNullException(nameof(path));
+        ArgumentNullException.ThrowIfNull(path);
         return DeserializeProfilesFromFileInternal(path, SourceGenerationContext.s_context, out _);
     }
 
@@ -32,8 +32,8 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="InvalidDataException">Thrown if null value encountered.</exception>
     public static ArtifactToolProfile[] DeserializeProfilesFromFile(string path, JsonSerializerOptions options)
     {
-        if (path == null) throw new ArgumentNullException(nameof(path));
-        if (options == null) throw new ArgumentNullException(nameof(options));
+        ArgumentNullException.ThrowIfNull(path);
+        ArgumentNullException.ThrowIfNull(options);
         return DeserializeProfilesFromFileInternal(path, new SourceGenerationContext(options), out _);
     }
 
@@ -47,7 +47,7 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="InvalidDataException">Thrown if null value encountered.</exception>
     public static ArtifactToolProfile[] DeserializeProfilesFromFile(string path, out bool isSingleObject)
     {
-        if (path == null) throw new ArgumentNullException(nameof(path));
+        ArgumentNullException.ThrowIfNull(path);
         return DeserializeProfilesFromFileInternal(path, SourceGenerationContext.s_context, out isSingleObject);
     }
 
@@ -62,8 +62,8 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="InvalidDataException">Thrown if null value encountered.</exception>
     public static ArtifactToolProfile[] DeserializeProfilesFromFile(string path, JsonSerializerOptions options, out bool isSingleObject)
     {
-        if (path == null) throw new ArgumentNullException(nameof(path));
-        if (options == null) throw new ArgumentNullException(nameof(options));
+        ArgumentNullException.ThrowIfNull(path);
+        ArgumentNullException.ThrowIfNull(options);
         return DeserializeProfilesFromFileInternal(path, new SourceGenerationContext(options), out isSingleObject);
     }
 
@@ -84,7 +84,7 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="InvalidDataException">Thrown if null value encountered.</exception>
     public static void SerializeProfilesToFile(string path, params ArtifactToolProfile[] profiles)
     {
-        if (profiles == null) throw new ArgumentNullException(nameof(profiles));
+        ArgumentNullException.ThrowIfNull(profiles);
         SerializeProfilesToFileInternal(path, SourceGenerationContext.s_context, profiles);
     }
 
@@ -98,8 +98,8 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="InvalidDataException">Thrown if null value encountered.</exception>
     public static void SerializeProfilesToFile(string path, JsonSerializerOptions options, params ArtifactToolProfile[] profiles)
     {
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        if (profiles == null) throw new ArgumentNullException(nameof(profiles));
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(profiles);
         SerializeProfilesToFileInternal(path, new SourceGenerationContext(options), profiles);
     }
 
@@ -112,7 +112,7 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="InvalidDataException">Thrown if null value encountered.</exception>
     public static void SerializeProfilesToFile(string path, IReadOnlyList<ArtifactToolProfile> profiles)
     {
-        if (profiles == null) throw new ArgumentNullException(nameof(profiles));
+        ArgumentNullException.ThrowIfNull(profiles);
         SerializeProfilesToFileInternal(path, SourceGenerationContext.s_context, profiles);
     }
 
@@ -126,8 +126,8 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="InvalidDataException">Thrown if null value encountered.</exception>
     public static void SerializeProfilesToFile(string path, JsonSerializerOptions options, IReadOnlyList<ArtifactToolProfile> profiles)
     {
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        if (profiles == null) throw new ArgumentNullException(nameof(profiles));
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(profiles);
         SerializeProfilesToFileInternal(path, new SourceGenerationContext(options), profiles);
     }
 
@@ -140,7 +140,7 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="InvalidDataException">Thrown if null value encountered.</exception>
     public static void SerializeProfileToFile(string path, ArtifactToolProfile profile)
     {
-        if (profile == null) throw new ArgumentNullException(nameof(profile));
+        ArgumentNullException.ThrowIfNull(profile);
         SerializeProfileToFileInternal(path, SourceGenerationContext.s_context, profile);
     }
 
@@ -154,8 +154,8 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="InvalidDataException">Thrown if null value encountered.</exception>
     public static void SerializeProfileToFile(string path, JsonSerializerOptions options, ArtifactToolProfile profile)
     {
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        if (profile == null) throw new ArgumentNullException(nameof(profile));
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(profile);
         SerializeProfileToFileInternal(path, new SourceGenerationContext(options), profile);
     }
 
@@ -191,7 +191,7 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="InvalidDataException">Thrown if null value encountered.</exception>
     public static ArtifactToolProfile[] DeserializeProfiles(Stream utf8Stream)
     {
-        if (utf8Stream == null) throw new ArgumentNullException(nameof(utf8Stream));
+        ArgumentNullException.ThrowIfNull(utf8Stream);
         return DeserializeProfilesInternal(utf8Stream, SourceGenerationContext.s_context, out _);
     }
 
@@ -205,8 +205,8 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="InvalidDataException">Thrown if null value encountered.</exception>
     public static ArtifactToolProfile[] DeserializeProfiles(Stream utf8Stream, JsonSerializerOptions options)
     {
-        if (utf8Stream == null) throw new ArgumentNullException(nameof(utf8Stream));
-        if (options == null) throw new ArgumentNullException(nameof(options));
+        ArgumentNullException.ThrowIfNull(utf8Stream);
+        ArgumentNullException.ThrowIfNull(options);
         return DeserializeProfilesInternal(utf8Stream, new SourceGenerationContext(options), out _);
     }
 
@@ -219,7 +219,7 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="InvalidDataException">Thrown if null value encountered.</exception>
     public static ArtifactToolProfile[] DeserializeProfiles(Stream utf8Stream, out bool isSingleObject)
     {
-        if (utf8Stream == null) throw new ArgumentNullException(nameof(utf8Stream));
+        ArgumentNullException.ThrowIfNull(utf8Stream);
         return DeserializeProfilesInternal(utf8Stream, SourceGenerationContext.s_context, out isSingleObject);
     }
 
@@ -234,8 +234,8 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="InvalidDataException">Thrown if null value encountered.</exception>
     public static ArtifactToolProfile[] DeserializeProfiles(Stream utf8Stream, JsonSerializerOptions options, out bool isSingleObject)
     {
-        if (utf8Stream == null) throw new ArgumentNullException(nameof(utf8Stream));
-        if (options == null) throw new ArgumentNullException(nameof(options));
+        ArgumentNullException.ThrowIfNull(utf8Stream);
+        ArgumentNullException.ThrowIfNull(options);
         return DeserializeProfilesInternal(utf8Stream, new SourceGenerationContext(options), out isSingleObject);
     }
 
@@ -248,8 +248,8 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="InvalidDataException">Thrown if null value encountered.</exception>
     public static void SerializeProfiles(Stream utf8Stream, params ArtifactToolProfile[] profiles)
     {
-        if (utf8Stream == null) throw new ArgumentNullException(nameof(utf8Stream));
-        if (profiles == null) throw new ArgumentNullException(nameof(profiles));
+        ArgumentNullException.ThrowIfNull(utf8Stream);
+        ArgumentNullException.ThrowIfNull(profiles);
         SerializeProfilesInternal(utf8Stream, SourceGenerationContext.s_context, profiles);
     }
 
@@ -263,9 +263,9 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="InvalidDataException">Thrown if null value encountered.</exception>
     public static void SerializeProfiles(Stream utf8Stream, JsonSerializerOptions options, params ArtifactToolProfile[] profiles)
     {
-        if (utf8Stream == null) throw new ArgumentNullException(nameof(utf8Stream));
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        if (profiles == null) throw new ArgumentNullException(nameof(profiles));
+        ArgumentNullException.ThrowIfNull(utf8Stream);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(profiles);
         SerializeProfilesInternal(utf8Stream, new SourceGenerationContext(options), profiles);
     }
 
@@ -278,8 +278,8 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="InvalidDataException">Thrown if null value encountered.</exception>
     public static void SerializeProfiles(Stream utf8Stream, IReadOnlyList<ArtifactToolProfile> profiles)
     {
-        if (utf8Stream == null) throw new ArgumentNullException(nameof(utf8Stream));
-        if (profiles == null) throw new ArgumentNullException(nameof(profiles));
+        ArgumentNullException.ThrowIfNull(utf8Stream);
+        ArgumentNullException.ThrowIfNull(profiles);
         SerializeProfilesInternal(utf8Stream, SourceGenerationContext.s_context, profiles);
     }
 
@@ -293,9 +293,9 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="InvalidDataException">Thrown if null value encountered.</exception>
     public static void SerializeProfiles(Stream utf8Stream, JsonSerializerOptions options, IReadOnlyList<ArtifactToolProfile> profiles)
     {
-        if (utf8Stream == null) throw new ArgumentNullException(nameof(utf8Stream));
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        if (profiles == null) throw new ArgumentNullException(nameof(profiles));
+        ArgumentNullException.ThrowIfNull(utf8Stream);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(profiles);
         SerializeProfilesInternal(utf8Stream, new SourceGenerationContext(options), profiles);
     }
 
@@ -332,7 +332,7 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="InvalidDataException">Thrown if null value encountered.</exception>
     public static ArtifactToolProfile[] DeserializeProfiles(JsonElement element, JsonSerializerOptions options)
     {
-        if (options == null) throw new ArgumentNullException(nameof(options));
+        ArgumentNullException.ThrowIfNull(options);
         return DeserializeProfilesInternal(element, new SourceGenerationContext(options), out _);
     }
 
@@ -359,7 +359,7 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="InvalidDataException">Thrown if null value encountered.</exception>
     public static ArtifactToolProfile[] DeserializeProfiles(JsonElement element, JsonSerializerOptions options, out bool isSingleObject)
     {
-        if (options == null) throw new ArgumentNullException(nameof(options));
+        ArgumentNullException.ThrowIfNull(options);
         return DeserializeProfilesInternal(element, new SourceGenerationContext(options), out isSingleObject);
     }
 
@@ -393,7 +393,7 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="profiles"/> is null.</exception>
     public static JsonElement SerializeProfiles(params ArtifactToolProfile[] profiles)
     {
-        if (profiles == null) throw new ArgumentNullException(nameof(profiles));
+        ArgumentNullException.ThrowIfNull(profiles);
         return SerializeProfilesInternal(SourceGenerationContext.s_context, profiles);
     }
 
@@ -406,8 +406,8 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="options"/> or <paramref name="profiles"/> are null.</exception>
     public static JsonElement SerializeProfiles(JsonSerializerOptions options, params ArtifactToolProfile[] profiles)
     {
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        if (profiles == null) throw new ArgumentNullException(nameof(profiles));
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(profiles);
         return SerializeProfilesInternal(new SourceGenerationContext(options), profiles);
     }
 
@@ -419,7 +419,7 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="profiles"/> is null.</exception>
     public static JsonElement SerializeProfiles(IReadOnlyList<ArtifactToolProfile> profiles)
     {
-        if (profiles == null) throw new ArgumentNullException(nameof(profiles));
+        ArgumentNullException.ThrowIfNull(profiles);
         return SerializeProfilesInternal(SourceGenerationContext.s_context, profiles);
     }
 
@@ -432,8 +432,8 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="options"/> or <paramref name="profiles"/> are null.</exception>
     public static JsonElement SerializeProfiles(JsonSerializerOptions options, IReadOnlyList<ArtifactToolProfile> profiles)
     {
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        if (profiles == null) throw new ArgumentNullException(nameof(profiles));
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(profiles);
         return SerializeProfilesInternal(new SourceGenerationContext(options), profiles);
     }
 
@@ -525,7 +525,7 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="ArgumentException">Thrown if duplicate keys are encountered using the specified comparer.</exception>
     public static ArtifactToolProfile WithOptionsComparer(this ArtifactToolProfile artifactToolProfile, StringComparer comparer)
     {
-        if (comparer == null) throw new ArgumentNullException(nameof(comparer));
+        ArgumentNullException.ThrowIfNull(comparer);
         return artifactToolProfile.Options == null ? artifactToolProfile : artifactToolProfile with { Options = new Dictionary<string, JsonElement>(artifactToolProfile.Options, comparer) };
     }
 
@@ -539,7 +539,7 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="ArgumentException">Thrown if duplicate keys are encountered using the specified comparer.</exception>
     public static Dictionary<string, JsonElement> GetOptionsWithOptionsComparer(this ArtifactToolProfile artifactToolProfile, StringComparer comparer)
     {
-        if (comparer == null) throw new ArgumentNullException(nameof(comparer));
+        ArgumentNullException.ThrowIfNull(comparer);
         return artifactToolProfile.Options == null ? new Dictionary<string, JsonElement>() : new Dictionary<string, JsonElement>(artifactToolProfile.Options, comparer);
     }
 }

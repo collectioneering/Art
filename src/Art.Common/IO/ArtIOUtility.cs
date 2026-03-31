@@ -59,7 +59,7 @@ public static class ArtIOUtility
     /// <exception cref="IOException">Thrown if failed to create sibling path with specified attempts.</exception>
     public static string CreateRandomPath(string baseDirectory, string extension, int attempts = 10)
     {
-        if (baseDirectory == null) throw new ArgumentNullException(nameof(baseDirectory));
+        ArgumentNullException.ThrowIfNull(baseDirectory);
         if (attempts <= 0) throw new ArgumentException("Invalid max number of attempts", nameof(attempts));
         for (int i = 0; i < attempts; i++)
         {

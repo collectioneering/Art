@@ -121,7 +121,7 @@ public static class ArtifactToolIDUtil
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="tool"/> is null.</exception>
     public static bool TryParseID(string tool, [NotNullWhen(true)] out ArtifactToolID? artifactToolId)
     {
-        if (tool == null) throw new ArgumentNullException(nameof(tool));
+        ArgumentNullException.ThrowIfNull(tool);
         if (s_toolRegex.Match(tool) is not { Success: true } match)
         {
             artifactToolId = null;
@@ -140,9 +140,11 @@ public static class ArtifactToolIDUtil
     /// <exception cref="ArgumentException">Thrown for an invalid <paramref name="tool"/> value.</exception>
     public static ArtifactToolID ParseID(string tool)
     {
-        if (tool == null) throw new ArgumentNullException(nameof(tool));
+        ArgumentNullException.ThrowIfNull(tool);
         if (s_toolRegex.Match(tool) is not { Success: true } match)
+        {
             throw new ArgumentException("Tool string is in invalid format, must be \"<assembly>::<toolType>\"", nameof(tool));
+        }
         return new ArtifactToolID(match.Groups[1].Value, match.Groups[2].Value);
     }
 }

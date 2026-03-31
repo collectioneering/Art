@@ -25,7 +25,7 @@ public record ArtifactToolListOptions(
     /// <exception cref="InvalidOperationException">Exception thrown for invalid configuration anywhere except constructor.</exception>
     public static void Validate(ArtifactToolListOptions options, bool constructor)
     {
-        if (options == null) throw new ArgumentNullException(nameof(options));
+        ArgumentNullException.ThrowIfNull(options);
         switch (options.SkipMode)
         {
             case ArtifactSkipMode.None:
