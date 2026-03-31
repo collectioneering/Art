@@ -70,7 +70,8 @@ public class ArtifactInfoModel
     /// <param name="value">Model.</param>
     /// <returns>Record.</returns>
     public static implicit operator ArtifactInfoModel(ArtifactInfo value)
-        => new()
+    {
+        return new ArtifactInfoModel
         {
             Tool = value.Key.Tool,
             Group = value.Key.Group,
@@ -81,4 +82,5 @@ public class ArtifactInfoModel
             RetrievalDate = value.RetrievalDate,
             Full = value.Full
         };
+    }
 }

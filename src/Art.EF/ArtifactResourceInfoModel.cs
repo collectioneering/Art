@@ -89,8 +89,9 @@ public class ArtifactResourceInfoModel
     /// </summary>
     /// <param name="value">Record.</param>
     /// <returns>Model.</returns>
-    public static implicit operator ArtifactResourceInfoModel(ArtifactResourceInfo value) =>
-        new()
+    public static implicit operator ArtifactResourceInfoModel(ArtifactResourceInfo value)
+    {
+        return new ArtifactResourceInfoModel
         {
             ArtifactTool = value.Key.Artifact.Tool,
             ArtifactGroup = value.Key.Artifact.Group,
@@ -104,4 +105,5 @@ public class ArtifactResourceInfoModel
             ChecksumId = value.Checksum?.Id,
             ChecksumValue = value.Checksum?.Value
         };
+    }
 }

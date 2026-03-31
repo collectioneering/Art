@@ -158,30 +158,30 @@ internal static class ProtectedDataLite
         string tmpIn = Path.GetTempFileName();
         try
         {
-                string tmpOut = Path.GetTempFileName();
-                try
+            string tmpOut = Path.GetTempFileName();
+            try
+            {
+                using (var fs = File.Create(tmpIn))
                 {
-                    using (var fs = File.Create(tmpIn))
-                    {
-                        fs.Write(input);
-                    }
-                    ProcessStartInfo psi = new() { FileName = "powershell", Verb = "runas", UseShellExecute = true };
-                    psi.ArgumentList.Add("-Command");
-                    psi.ArgumentList.Add(s_wcunlockB);
-                    psi.ArgumentList.Add("Invoke-DecryptBufferWithKey");
-                    psi.ArgumentList.Add($"'{tmpIn}'");
-                    psi.ArgumentList.Add($"'{keyName}'");
-                    psi.ArgumentList.Add($"'{tmpOut}'");
-                    logHandler?.Invoke("Need Elevation", "Elevation is needed to decrypt keys. A UAC prompt may appear.");
-                    var process = Process.Start(psi);
-                    logHandler?.Invoke("Running cookie decryption helper...", null);
-                    process?.WaitForExit();
-                    return File.ReadAllBytes(tmpOut);
+                    fs.Write(input);
                 }
-                finally
-                {
-                    File.Delete(tmpOut);
-                }
+                ProcessStartInfo psi = new() { FileName = "powershell", Verb = "runas", UseShellExecute = true };
+                psi.ArgumentList.Add("-Command");
+                psi.ArgumentList.Add(s_wcunlockB);
+                psi.ArgumentList.Add("Invoke-DecryptBufferWithKey");
+                psi.ArgumentList.Add($"'{tmpIn}'");
+                psi.ArgumentList.Add($"'{keyName}'");
+                psi.ArgumentList.Add($"'{tmpOut}'");
+                logHandler?.Invoke("Need Elevation", "Elevation is needed to decrypt keys. A UAC prompt may appear.");
+                var process = Process.Start(psi);
+                logHandler?.Invoke("Running cookie decryption helper...", null);
+                process?.WaitForExit();
+                return File.ReadAllBytes(tmpOut);
+            }
+            finally
+            {
+                File.Delete(tmpOut);
+            }
         }
         finally
         {

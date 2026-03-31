@@ -44,19 +44,19 @@ public abstract record ChromiumCookieSource : CookieSource
                     if (includeSubdomains)
                     {
                         command.CommandText = """
-                        SELECT name, "value", encrypted_value, path, expires_utc, is_secure, host_key
-                        FROM cookies
-                        WHERE host_key = $hostKey OR host_key LIKE $dotHostKey
-                        """;
+                                              SELECT name, "value", encrypted_value, path, expires_utc, is_secure, host_key
+                                              FROM cookies
+                                              WHERE host_key = $hostKey OR host_key LIKE $dotHostKey
+                                              """;
                         command.Parameters.AddWithValue("$dotHostKey", "%." + domain);
                     }
                     else
                     {
                         command.CommandText = """
-                        SELECT name, "value", encrypted_value, path, expires_utc, is_secure, host_key
-                        FROM cookies
-                        WHERE host_key = $hostKey OR host_key = $dotHostKey
-                        """;
+                                              SELECT name, "value", encrypted_value, path, expires_utc, is_secure, host_key
+                                              FROM cookies
+                                              WHERE host_key = $hostKey OR host_key = $dotHostKey
+                                              """;
                         command.Parameters.AddWithValue("$dotHostKey", "." + domain);
                     }
                     command.Parameters.AddWithValue("$hostKey", domain);
@@ -126,19 +126,19 @@ public abstract record ChromiumCookieSource : CookieSource
                     if (includeSubdomains)
                     {
                         command.CommandText = """
-                        SELECT name, "value", encrypted_value, path, expires_utc, is_secure, host_key
-                        FROM cookies
-                        WHERE host_key = $hostKey OR host_key LIKE $dotHostKey
-                        """;
+                                              SELECT name, "value", encrypted_value, path, expires_utc, is_secure, host_key
+                                              FROM cookies
+                                              WHERE host_key = $hostKey OR host_key LIKE $dotHostKey
+                                              """;
                         command.Parameters.AddWithValue("$dotHostKey", "%." + domain);
                     }
                     else
                     {
                         command.CommandText = """
-                        SELECT name, "value", encrypted_value, path, expires_utc, is_secure, host_key
-                        FROM cookies
-                        WHERE host_key = $hostKey OR host_key = $dotHostKey
-                        """;
+                                              SELECT name, "value", encrypted_value, path, expires_utc, is_secure, host_key
+                                              FROM cookies
+                                              WHERE host_key = $hostKey OR host_key = $dotHostKey
+                                              """;
                         command.Parameters.AddWithValue("$dotHostKey", "." + domain);
                     }
                     command.Parameters.AddWithValue("$hostKey", domain);
@@ -161,7 +161,7 @@ public abstract record ChromiumCookieSource : CookieSource
                         }
                         long expiry = reader.GetInt64(4);
                         DateTime expires = expiry == 0 ? DateTime.MinValue : expiryBase.AddMicroseconds(expiry);
-                        cookieContainer.Add(new Cookie
+                        Cookie cookie = new()
                         {
                             Expires = expires,
                             Secure = reader.GetBoolean(5),
@@ -169,7 +169,8 @@ public abstract record ChromiumCookieSource : CookieSource
                             Value = EscapeValue(value),
                             Path = reader.GetString(3),
                             Domain = reader.GetString(6)
-                        });
+                        };
+                        cookieContainer.Add(cookie);
                     }
                 }
             }
