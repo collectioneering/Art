@@ -156,6 +156,8 @@ public class ArtifactToolTests
         Assert.Null(tool.Profile.Options);
         Assert.NotNull(tool.Config.DataManager);
         Assert.NotNull(tool.Config.RegistrationManager);
+        Assert.NotSame(adm, tool.Config.DataManager);
+        Assert.NotSame(arm, tool.Config.RegistrationManager);
     }
 
     [Fact]
