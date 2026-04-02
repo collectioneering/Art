@@ -5,6 +5,10 @@ namespace Art.EF.Sqlite;
 public class SqliteArtifactContext : ArtifactContext
 {
     private bool _disposed;
+    internal bool UsingInMemory;
+    internal bool SqliteIsReadOnly;
+
+    public override bool IsReadOnly => SqliteIsReadOnly;
 
     public SqliteArtifactContext(DbContextOptions<ArtifactContext> options) : base(options)
     {

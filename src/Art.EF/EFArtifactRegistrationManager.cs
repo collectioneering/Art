@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 
 namespace Art.EF;
 
@@ -67,6 +68,7 @@ public class EFArtifactRegistrationManager<TContext> : IArtifactRegistrationMana
     public ValueTask AddArtifactAsync(ArtifactInfo artifactInfo, CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();
+        ThrowIfReadOnly();
         return Context.AddArtifactAsync(artifactInfo, cancellationToken);
     }
 
@@ -81,6 +83,7 @@ public class EFArtifactRegistrationManager<TContext> : IArtifactRegistrationMana
     public ValueTask AddResourceAsync(ArtifactResourceInfo artifactResourceInfo, CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();
+        ThrowIfReadOnly();
         return Context.AddResourceAsync(artifactResourceInfo, cancellationToken);
     }
 
@@ -102,6 +105,7 @@ public class EFArtifactRegistrationManager<TContext> : IArtifactRegistrationMana
     public ValueTask RemoveArtifactAsync(ArtifactKey key, CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();
+        ThrowIfReadOnly();
         return Context.RemoveArtifactAsync(key, cancellationToken);
     }
 
@@ -109,6 +113,7 @@ public class EFArtifactRegistrationManager<TContext> : IArtifactRegistrationMana
     public ValueTask RemoveResourceAsync(ArtifactResourceKey key, CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();
+        ThrowIfReadOnly();
         return Context.RemoveResourceAsync(key, cancellationToken);
     }
 
@@ -120,7 +125,16 @@ public class EFArtifactRegistrationManager<TContext> : IArtifactRegistrationMana
     public Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();
+        ThrowIfReadOnly();
         return Context.SaveChangesAsync(cancellationToken);
+    }
+
+    private void ThrowIfReadOnly([CallerMemberName] string? callerMemberName = null)
+    {
+        if (Context.IsReadOnly)
+        {
+            throw new InvalidOperationException($"Cannot call {callerMemberName ?? "this member"} because the database context is read-only");
+        }
     }
 
     /// <inheritdoc />

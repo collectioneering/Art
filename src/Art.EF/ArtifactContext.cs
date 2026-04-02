@@ -19,6 +19,11 @@ public class ArtifactContext : DbContext
     private bool _disposed;
 
     /// <summary>
+    /// True if this instance is configured to be read-only.
+    /// </summary>
+    public virtual bool IsReadOnly => false;
+
+    /// <summary>
     /// Artifact info.
     /// </summary>
     protected DbSet<ArtifactInfoModel> ArtifactInfoModels { get; set; } = null!;
