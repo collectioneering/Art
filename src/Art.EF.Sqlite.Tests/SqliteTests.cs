@@ -3,11 +3,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Art.Common.IO;
+using Art.EF.Sqlite.Tests.Migrations1;
+using Art.EF.Sqlite.Tests.Migrations2;
 using Microsoft.Data.Sqlite;
 
 namespace Art.EF.Sqlite.Tests;
 
-public class SqliteTests
+public class SqliteTests : SqliteTestsBase
 {
     [Fact]
     public async Task TestSqliteDatabaseFile()
@@ -15,7 +17,8 @@ public class SqliteTests
         string tempFile = ArtIOUtility.CreateRandomPath(Path.GetTempPath(), ".db");
         try
         {
-            using SqliteArtifactRegistrationManager r = new(tempFile);
+            var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: true, IsReadOnly: false, DisablePendingMigrationsCheck: false);
+            using SqliteArtifactRegistrationManager r = new(tempFile, config);
             Assert.False(r.Context.UsingInMemory);
             await TestSqliteDatabase(r);
         }
@@ -31,7 +34,8 @@ public class SqliteTests
     {
         try
         {
-            await using SqliteArtifactRegistrationManager r = new(false, isReadonly: false);
+            var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: true, IsReadOnly: false, DisablePendingMigrationsCheck: false);
+            await using SqliteArtifactRegistrationManager r = new(false, config);
             Assert.True(r.Context.UsingInMemory);
             await TestSqliteDatabase(r);
         }
@@ -46,7 +50,8 @@ public class SqliteTests
     {
         try
         {
-            await using SqliteArtifactRegistrationManager r = new(true);
+            var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: false, IsReadOnly: false, DisablePendingMigrationsCheck: false);
+            await using SqliteArtifactRegistrationManager r = new(true, config);
             Assert.True(r.Context.UsingInMemory);
             await TestSqliteDatabase(r);
         }
@@ -64,7 +69,8 @@ public class SqliteTests
         {
             try
             {
-                using SqliteArtifactRegistrationManager r = new(tempFile, isReadonly: false);
+                var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: true, IsReadOnly: false, DisablePendingMigrationsCheck: false);
+                using SqliteArtifactRegistrationManager r = new(tempFile, config);
                 Assert.False(r.Context.UsingInMemory);
                 await PrepareSqliteDatabaseForReadOnly(r);
             }
@@ -75,7 +81,8 @@ public class SqliteTests
 
             try
             {
-                using SqliteArtifactRegistrationManager r = new(tempFile, isReadonly: true);
+                var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: false, IsReadOnly: true, DisablePendingMigrationsCheck: false);
+                using SqliteArtifactRegistrationManager r = new(tempFile, config);
                 Assert.False(r.Context.UsingInMemory);
                 await TestSqliteDatabaseReadOnly(r, testEmpty: false);
             }
@@ -96,7 +103,8 @@ public class SqliteTests
     {
         try
         {
-            await using SqliteArtifactRegistrationManager r = new(false, isReadonly: true);
+            var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: false, IsReadOnly: true, DisablePendingMigrationsCheck: false);
+            await using SqliteArtifactRegistrationManager r = new(false, config);
             Assert.True(r.Context.UsingInMemory);
             await TestSqliteDatabaseReadOnly(r, testEmpty: true);
         }
@@ -111,7 +119,8 @@ public class SqliteTests
     {
         try
         {
-            await using SqliteArtifactRegistrationManager r = new(true, isReadonly: true);
+            var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: false, IsReadOnly: true, DisablePendingMigrationsCheck: false);
+            await using SqliteArtifactRegistrationManager r = new(true, config);
             Assert.True(r.Context.UsingInMemory);
             await TestSqliteDatabaseReadOnly(r, testEmpty: true);
         }
@@ -133,7 +142,8 @@ public class SqliteTests
             // create base (large) set
             try
             {
-                using SqliteArtifactRegistrationManager r = new(tempFile);
+                var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: true, IsReadOnly: false, DisablePendingMigrationsCheck: false);
+                using SqliteArtifactRegistrationManager r = new(tempFile, config);
                 Assert.False(r.Context.UsingInMemory);
                 for (int i = 0; i < n; i++)
                 {
@@ -147,7 +157,8 @@ public class SqliteTests
             // remove large number of entries
             try
             {
-                using SqliteArtifactRegistrationManager r = new(tempFile);
+                var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: true, IsReadOnly: false, DisablePendingMigrationsCheck: false);
+                using SqliteArtifactRegistrationManager r = new(tempFile, config);
                 Assert.False(r.Context.UsingInMemory);
                 foreach (var artifactInfo in (await r.ListArtifactsAsync()).ToList().Take(n - n / denominator))
                 {
@@ -161,7 +172,8 @@ public class SqliteTests
             // get stable file size
             try
             {
-                using SqliteArtifactRegistrationManager r = new(tempFile);
+                var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: true, IsReadOnly: false, DisablePendingMigrationsCheck: false);
+                using SqliteArtifactRegistrationManager r = new(tempFile, config);
                 Assert.False(r.Context.UsingInMemory);
             }
             finally
@@ -172,7 +184,8 @@ public class SqliteTests
             // cleanup and measure
             try
             {
-                using SqliteArtifactRegistrationManager r = new(tempFile);
+                var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: true, IsReadOnly: false, DisablePendingMigrationsCheck: false);
+                using SqliteArtifactRegistrationManager r = new(tempFile, config);
                 Assert.False(r.Context.UsingInMemory);
                 await r.CleanupDatabaseAsync();
             }
@@ -187,157 +200,6 @@ public class SqliteTests
         {
             SqliteConnection.ClearAllPools();
             File.Delete(tempFile);
-        }
-    }
-
-    private static async Task TestSqliteDatabase(SqliteArtifactRegistrationManager r)
-    {
-        // 1
-        ArtifactKey k1 = new("abec", "group1", "kraft1");
-        ArtifactInfo i1 = new(k1, "name here", DateTimeOffset.FromUnixTimeSeconds(1636785227L));
-        ArtifactResourceKey i1_k1 = new(k1, "file1");
-        ArtifactResourceInfo i1_r1 = new(i1_k1, Updated: DateTimeOffset.Now, Version: "v0");
-        ArtifactResourceKey i1_k2 = new(k1, "file2", "somepath");
-        ArtifactResourceInfo i1_r2 = new(i1_k2);
-        // 2
-        ArtifactKey k2 = new("abec", "group1", "kraft2");
-        ArtifactInfo i2 = new(k2, "some name here", DateTimeOffset.FromUnixTimeSeconds(1636785227L));
-        ArtifactResourceKey i2_k1 = new(k2, "file1");
-        ArtifactResourceInfo i2_r1 = new(i2_k1, Updated: DateTimeOffset.Now, Version: "v0");
-        ArtifactResourceKey i2_k2 = new(k2, "file2", "somepath");
-        ArtifactResourceInfo i2_r2 = new(i2_k2);
-        ArtifactResourceKey i2_k3 = new(k2, "DUM");
-        ArtifactResourceInfo i2_r3 = new(i2_k3);
-
-        await r.AddArtifactAsync(i1);
-
-        await r.AddResourceAsync(i1_r1);
-        await r.AddResourceAsync(i1_r2);
-
-        await r.AddArtifactAsync(i1); // dupe
-
-        await r.AddArtifactAsync(i2);
-
-        await r.AddResourceAsync(i2_r1);
-        await r.AddResourceAsync(i2_r2);
-        await r.AddResourceAsync(i2_r3);
-
-        await r.RemoveArtifactAsync(k1);
-        await r.RemoveResourceAsync(i2_k3);
-
-        Assert.Null(await r.TryGetArtifactAsync(k1));
-        Assert.Null(await r.TryGetResourceAsync(i1_k1));
-        Assert.Null(await r.TryGetResourceAsync(i1_k2));
-        Assert.Equal(i2, await r.TryGetArtifactAsync(k2));
-        Assert.Equal(i2_r1, await r.TryGetResourceAsync(i2_k1));
-        Assert.Equal(i2_r2, await r.TryGetResourceAsync(i2_k2));
-        Assert.Null(await r.TryGetResourceAsync(i2_k3));
-        Assert.Single(await r.ListArtifactsAsync("abec"));
-        Assert.Single(await r.ListArtifactsAsync("abec", "group1"));
-        Assert.Empty(await r.ListArtifactsAsync("abec2", "group1"));
-        Assert.Equal(2, (await r.ListResourcesAsync(k2)).Count);
-        Assert.Empty(await r.ListResourcesAsync(k1));
-    }
-
-
-    private static async Task PrepareSqliteDatabaseForReadOnly(SqliteArtifactRegistrationManager r)
-    {
-        // 1
-        ArtifactKey k1 = new("abec", "group1", "kraft1");
-        ArtifactInfo i1 = new(k1, "name here", DateTimeOffset.FromUnixTimeSeconds(1636785227L));
-        ArtifactResourceKey i1_k1 = new(k1, "file1");
-        ArtifactResourceInfo i1_r1 = new(i1_k1, Updated: DateTimeOffset.FromUnixTimeSeconds(1636785227L), Version: "v0");
-        ArtifactResourceKey i1_k2 = new(k1, "file2", "somepath");
-        ArtifactResourceInfo i1_r2 = new(i1_k2);
-        // 2
-        ArtifactKey k2 = new("abec", "group1", "kraft2");
-        ArtifactInfo i2 = new(k2, "some name here", DateTimeOffset.FromUnixTimeSeconds(1636785227L));
-        ArtifactResourceKey i2_k1 = new(k2, "file1");
-        ArtifactResourceInfo i2_r1 = new(i2_k1, Updated: DateTimeOffset.FromUnixTimeSeconds(1636785227L), Version: "v0");
-        ArtifactResourceKey i2_k2 = new(k2, "file2", "somepath");
-        ArtifactResourceInfo i2_r2 = new(i2_k2);
-        ArtifactResourceKey i2_k3 = new(k2, "DUM");
-        ArtifactResourceInfo i2_r3 = new(i2_k3);
-
-        await r.AddArtifactAsync(i1);
-
-        await r.AddResourceAsync(i1_r1);
-        await r.AddResourceAsync(i1_r2);
-
-        await r.AddArtifactAsync(i1); // dupe
-
-        await r.AddArtifactAsync(i2);
-
-        await r.AddResourceAsync(i2_r1);
-        await r.AddResourceAsync(i2_r2);
-        await r.AddResourceAsync(i2_r3);
-
-        await r.RemoveArtifactAsync(k1);
-        await r.RemoveResourceAsync(i2_k3);
-
-        Assert.Null(await r.TryGetArtifactAsync(k1));
-        Assert.Null(await r.TryGetResourceAsync(i1_k1));
-        Assert.Null(await r.TryGetResourceAsync(i1_k2));
-        Assert.Equal(i2, await r.TryGetArtifactAsync(k2));
-        Assert.Equal(i2_r1, await r.TryGetResourceAsync(i2_k1));
-        Assert.Equal(i2_r2, await r.TryGetResourceAsync(i2_k2));
-        Assert.Null(await r.TryGetResourceAsync(i2_k3));
-        Assert.Single(await r.ListArtifactsAsync("abec"));
-        Assert.Single(await r.ListArtifactsAsync("abec", "group1"));
-        Assert.Empty(await r.ListArtifactsAsync("abec2", "group1"));
-        Assert.Equal(2, (await r.ListResourcesAsync(k2)).Count);
-        Assert.Empty(await r.ListResourcesAsync(k1));
-    }
-
-    private static async Task TestSqliteDatabaseReadOnly(SqliteArtifactRegistrationManager r, bool testEmpty)
-    {
-        // 1
-        ArtifactKey k1 = new("abec", "group1", "kraft1");
-        ArtifactInfo i1 = new(k1, "name here", DateTimeOffset.FromUnixTimeSeconds(1636785227L));
-        ArtifactResourceKey i1_k1 = new(k1, "file1");
-        ArtifactResourceKey i1_k2 = new(k1, "file2", "somepath");
-        // 2
-        ArtifactKey k2 = new("abec", "group1", "kraft2");
-        ArtifactInfo i2 = new(k2, "some name here", DateTimeOffset.FromUnixTimeSeconds(1636785227L));
-        ArtifactResourceKey i2_k1 = new(k2, "file1");
-        ArtifactResourceInfo i2_r1 = new(i2_k1, Updated: DateTimeOffset.FromUnixTimeSeconds(1636785227L), Version: "v0");
-        ArtifactResourceKey i2_k2 = new(k2, "file2", "somepath");
-        ArtifactResourceInfo i2_r2 = new(i2_k2);
-        ArtifactResourceKey i2_k3 = new(k2, "DUM");
-
-        if (!testEmpty)
-        {
-            Assert.Null(await r.TryGetArtifactAsync(k1));
-            Assert.Null(await r.TryGetResourceAsync(i1_k1));
-            Assert.Null(await r.TryGetResourceAsync(i1_k2));
-            Assert.Equal(i2, await r.TryGetArtifactAsync(k2));
-            Assert.Equal(i2_r1, await r.TryGetResourceAsync(i2_k1));
-            Assert.Equal(i2_r2, await r.TryGetResourceAsync(i2_k2));
-            Assert.Null(await r.TryGetResourceAsync(i2_k3));
-            Assert.Single(await r.ListArtifactsAsync("abec"));
-            Assert.Single(await r.ListArtifactsAsync("abec", "group1"));
-            Assert.Empty(await r.ListArtifactsAsync("abec2", "group1"));
-            Assert.Equal(2, (await r.ListResourcesAsync(k2)).Count);
-            Assert.Empty(await r.ListResourcesAsync(k1));
-        }
-
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await r.AddArtifactAsync(i1));
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await r.RemoveArtifactAsync(k2));
-
-        if (!testEmpty)
-        {
-            Assert.Null(await r.TryGetArtifactAsync(k1));
-            Assert.Null(await r.TryGetResourceAsync(i1_k1));
-            Assert.Null(await r.TryGetResourceAsync(i1_k2));
-            Assert.Equal(i2, await r.TryGetArtifactAsync(k2));
-            Assert.Equal(i2_r1, await r.TryGetResourceAsync(i2_k1));
-            Assert.Equal(i2_r2, await r.TryGetResourceAsync(i2_k2));
-            Assert.Null(await r.TryGetResourceAsync(i2_k3));
-            Assert.Single(await r.ListArtifactsAsync("abec"));
-            Assert.Single(await r.ListArtifactsAsync("abec", "group1"));
-            Assert.Empty(await r.ListArtifactsAsync("abec2", "group1"));
-            Assert.Equal(2, (await r.ListResourcesAsync(k2)).Count);
-            Assert.Empty(await r.ListResourcesAsync(k1));
         }
     }
 }

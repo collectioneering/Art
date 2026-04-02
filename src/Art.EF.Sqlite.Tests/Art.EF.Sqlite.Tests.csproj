@@ -10,6 +10,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Art.Common\Art.Common.csproj" />
     <ProjectReference Include="..\Art.EF.Sqlite\Art.EF.Sqlite.csproj" />
+    <ProjectReference Include="..\Art.EF.Sqlite.Tests.Migrations1\Art.EF.Sqlite.Tests.Migrations1.csproj" />
+    <ProjectReference Include="..\Art.EF.Sqlite.Tests.Migrations2\Art.EF.Sqlite.Tests.Migrations2.csproj" />
   </ItemGroup>
 
   <ItemGroup>
