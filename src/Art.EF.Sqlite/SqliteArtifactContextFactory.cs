@@ -50,7 +50,7 @@ public class SqliteArtifactContextFactory : ArtifactContextFactoryBase<SqliteArt
 
     internal bool UsingInMemory;
 
-    private static string CreateMemoryPrivate() => $"file:{Guid.NewGuid():N}?mode=memory&cache=shared";
+    private static string CreateMemoryPrivate() => $"{Guid.NewGuid():N}";
 
     /// <summary>
     /// Environment variable for path to sqlite storage file.
@@ -71,13 +71,27 @@ public class SqliteArtifactContextFactory : ArtifactContextFactoryBase<SqliteArt
     public override SqliteArtifactContext CreateDbContext(string[] args)
     {
         string? file = StorageFile ?? (_requireInMemory ? null : Environment.GetEnvironmentVariable(EnvStorageFile));
+        var queryStringParts = new List<string>();
         if (file == null)
         {
             UsingInMemory = true;
             file = CreateMemoryPrivate();
+            queryStringParts.Add("mode=memory");
+            queryStringParts.Add("cache=shared");
+        }
+        if (_isReadonly)
+        {
+            queryStringParts.Add("immutable=1");
+            queryStringParts.Add("mode=ro");
         }
         var sb = new StringBuilder("DataSource=");
+        sb.Append("file:");
         sb.Append(file);
+        if (queryStringParts.Count > 0)
+        {
+            sb.Append('?');
+            sb.AppendJoin("&", queryStringParts);
+        }
         sb.Append(';');
         if (_isReadonly)
         {
