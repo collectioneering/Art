@@ -1,7 +1,4 @@
-﻿using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
-
-namespace Art.EF.Sqlite.Tests.TestSupport;
+﻿namespace Art.EF.Sqlite.Tests.TestSupport;
 
 public class TestSqliteArtifactRegistrationManager : SqliteArtifactRegistrationManager
 {
