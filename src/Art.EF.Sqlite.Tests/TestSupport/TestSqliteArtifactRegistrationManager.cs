@@ -28,7 +28,10 @@ public class TestSqliteArtifactRegistrationManager : SqliteArtifactRegistrationM
 
     protected override void Dispose(bool disposing)
     {
-        ClearPoolForSqliteConnection(Context);
+        if (disposing)
+        {
+            ClearPoolForSqliteConnection(Context);
+        }
         base.Dispose(disposing);
     }
 }
