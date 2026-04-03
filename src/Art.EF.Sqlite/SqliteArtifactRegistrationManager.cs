@@ -62,7 +62,22 @@ public class SqliteArtifactRegistrationManager : EFArtifactRegistrationManager<S
                         if (pendingMigrations.Count > 0)
                         {
                             string pendingMigrationsStr = new StringBuilder().AppendJoin(", ", pendingMigrations).ToString();
-                            throw new EFPendingMigrationsPresentException(pendingMigrations, $"This instance is configured to not apply migrations on startup, but there are pending migrations that have not been applied: {pendingMigrationsStr}");
+                            string sqliteFile;
+                            try
+                            {
+                                var sqliteConn = (SqliteConnection)Context.Database.GetDbConnection();
+                                sqliteConn.Open();
+                                sqliteFile = sqliteConn.DataSource;
+                            }
+                            catch
+                            {
+                                sqliteFile = "<<unknown>>";
+                            }
+                            throw new EFPendingMigrationsPresentException(pendingMigrations,
+                                config.IsReadOnly
+                                    ? $"The database file {sqliteFile} for this instance is mounted as read-only, but there are pending migrations that have not been applied: {pendingMigrationsStr}"
+                                    : $"This instance for database file {sqliteFile} is configured to not apply migrations on startup, but there are pending migrations that have not been applied: {pendingMigrationsStr}"
+                            );
                         }
                     }
                 }
