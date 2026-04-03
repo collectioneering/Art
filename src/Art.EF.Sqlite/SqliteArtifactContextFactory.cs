@@ -23,14 +23,14 @@ public class SqliteArtifactContextFactory : ArtifactContextFactoryBase<SqliteArt
     /// <summary>
     /// Creates a new instance of <see cref="SqliteArtifactContextFactory"/> with in-memory Sqlite backing.
     /// </summary>
-    /// <param name="inMemory">If true, use in-memory otherwise allow fallback to environment variable.</param>
+    /// <param name="requireInMemory">If true, require using in-memory database, otherwise allow fallback to environment variable.</param>
     /// <param name="isReadonly">If true, writes to the database are disabled.</param>
     /// <remarks>
-    /// Sqlite file backing if environment variable (by default, art_ef_sqlite_backing_file) is set and <paramref name="inMemory"/> is false, otherwise in-memory Sqlite backing
+    /// Sqlite file backing if environment variable (by default, art_ef_sqlite_backing_file) is set and <paramref name="requireInMemory"/> is false, otherwise in-memory Sqlite backing
     /// </remarks>
-    public SqliteArtifactContextFactory(bool inMemory, bool isReadonly = false)
+    public SqliteArtifactContextFactory(bool requireInMemory, bool isReadonly = false)
     {
-        _inMemory = inMemory;
+        _requireInMemory = requireInMemory;
         _isReadonly = isReadonly;
     }
 
@@ -45,12 +45,12 @@ public class SqliteArtifactContextFactory : ArtifactContextFactoryBase<SqliteArt
         _isReadonly = isReadonly;
     }
 
-    private readonly bool _inMemory;
+    internal readonly bool _requireInMemory;
     internal readonly bool _isReadonly;
 
     internal bool UsingInMemory;
 
-    private const string Memory = "file::memory:?cache=shared";
+    private static string CreateMemoryPrivate() => $"file:{Guid.NewGuid():N}?mode=memory&cache=shared";
 
     /// <summary>
     /// Environment variable for path to sqlite storage file.
@@ -70,11 +70,11 @@ public class SqliteArtifactContextFactory : ArtifactContextFactoryBase<SqliteArt
     /// <inheritdoc />
     public override SqliteArtifactContext CreateDbContext(string[] args)
     {
-        string? file = StorageFile ?? (_inMemory ? null : Environment.GetEnvironmentVariable(EnvStorageFile));
+        string? file = StorageFile ?? (_requireInMemory ? null : Environment.GetEnvironmentVariable(EnvStorageFile));
         if (file == null)
         {
             UsingInMemory = true;
-            file = Memory;
+            file = CreateMemoryPrivate();
         }
         var sb = new StringBuilder("DataSource=");
         sb.Append(file);

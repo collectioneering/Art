@@ -1,5 +1,7 @@
 ﻿using System.Text;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Art.EF.Sqlite;
 
@@ -10,29 +12,49 @@ public class SqliteArtifactRegistrationManager : EFArtifactRegistrationManager<S
 {
     internal SqliteArtifactRegistrationManager(
         SqliteArtifactContextFactory factory,
-        SqliteArtifactRegistrationManagerConfig config) : base(factory)
+        SqliteArtifactRegistrationManagerConfig config
+    )
+        : base(factory)
     {
-        if (config.IsReadOnly && config.ApplyMigrationsOnStartup)
+        try
         {
-            throw new ArgumentException($"Cannot combine {nameof(SqliteArtifactRegistrationManagerConfig.IsReadOnly)} and {nameof(SqliteArtifactRegistrationManagerConfig.ApplyMigrationsOnStartup)} on config");
-        }
-        if (config.IsReadOnly != factory._isReadonly)
-        {
-            throw new ArgumentException("Mismatch between readonly values of config and factory");
-        }
-        if (factory.UsingInMemory)
-        {
-            if (!factory._isReadonly)
+            if (config.IsReadOnly && config.ApplyMigrationsOnStartup)
             {
-                Context.Database.EnsureDeleted();
-                Context.Database.EnsureCreated();
+                throw new ArgumentException($"Cannot combine {nameof(SqliteArtifactRegistrationManagerConfig.IsReadOnly)} and {nameof(SqliteArtifactRegistrationManagerConfig.ApplyMigrationsOnStartup)} on config");
             }
-        }
-        else
-        {
-            if (config.ApplyMigrationsOnStartup)
+            if (config.IsReadOnly != factory._isReadonly)
             {
-                if (factory._isReadonly)
+                throw new ArgumentException("Mismatch between readonly values of config and factory");
+            }
+            if (factory.UsingInMemory)
+            {
+                if (!factory._isReadonly)
+                {
+                    EnsureCleanInMemoryReadWriteSetup(Context.Database);
+                }
+            }
+            else
+            {
+                if (config.ApplyMigrationsOnStartup)
+                {
+                    if (factory._isReadonly)
+                    {
+                        if (!config.DisablePendingMigrationsCheck)
+                        {
+                            var pendingMigrations = Context.Database.GetPendingMigrations().ToList();
+                            if (pendingMigrations.Count > 0)
+                            {
+                                string pendingMigrationsStr = new StringBuilder().AppendJoin(", ", pendingMigrations).ToString();
+                                throw new EFPendingMigrationsPresentException(pendingMigrations, $"There are pending migrations that cannot be applied to a read-only database: {pendingMigrationsStr}");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Context.Database.Migrate();
+                    }
+                }
+                else
                 {
                     if (!config.DisablePendingMigrationsCheck)
                     {
@@ -40,27 +62,34 @@ public class SqliteArtifactRegistrationManager : EFArtifactRegistrationManager<S
                         if (pendingMigrations.Count > 0)
                         {
                             string pendingMigrationsStr = new StringBuilder().AppendJoin(", ", pendingMigrations).ToString();
-                            throw new EFPendingMigrationsPresentException(pendingMigrations, $"There are pending migrations that cannot be applied to a read-only database: {pendingMigrationsStr}");
+                            throw new EFPendingMigrationsPresentException(pendingMigrations, $"This instance is configured to not apply migrations on startup, but there are pending migrations that have not been applied: {pendingMigrationsStr}");
                         }
                     }
                 }
-                else
-                {
-                    Context.Database.Migrate();
-                }
             }
-            else
-            {
-                if (!config.DisablePendingMigrationsCheck)
-                {
-                    var pendingMigrations = Context.Database.GetPendingMigrations().ToList();
-                    if (pendingMigrations.Count > 0)
-                    {
-                        string pendingMigrationsStr = new StringBuilder().AppendJoin(", ", pendingMigrations).ToString();
-                        throw new EFPendingMigrationsPresentException(pendingMigrations, $"This instance is configured to not apply migrations on startup, but there are pending migrations that have not been applied: {pendingMigrationsStr}");
-                    }
-                }
-            }
+        }
+        catch
+        {
+            ClearPoolForSqliteConnection(Context);
+            throw;
+        }
+    }
+
+    private static void EnsureCleanInMemoryReadWriteSetup(DatabaseFacade dbFacade)
+    {
+        dbFacade.EnsureDeleted();
+        dbFacade.EnsureCreated();
+    }
+
+    /// <summary>
+    /// Clears Sqlite pool if applicable.
+    /// </summary>
+    protected static void ClearPoolForSqliteConnection(SqliteArtifactContext context)
+    {
+        if (context is { Database: var databaseFacade }
+            && databaseFacade.GetDbConnection() is SqliteConnection sqliteConnection)
+        {
+            SqliteConnection.ClearPool(sqliteConnection);
         }
     }
 
@@ -78,15 +107,16 @@ public class SqliteArtifactRegistrationManager : EFArtifactRegistrationManager<S
     /// <summary>
     /// Creates a new instance of <see cref="SqliteArtifactRegistrationManager"/> with in-memory Sqlite backing.
     /// </summary>
-    /// <param name="inMemory">If true, use in-memory otherwise allow fallback to environment variable.</param>
+    /// <param name="requireInMemory">If true, require using in-memory database, otherwise allow fallback to environment variable.</param>
     /// <param name="config">Configuration to use.</param>
     /// <remarks>
-    /// Sqlite file backing if environment variable art_ef_sqlite_backing_file is set and <paramref name="inMemory"/> is false, otherwise in-memory Sqlite backing
+    /// Sqlite file backing if environment variable art_ef_sqlite_backing_file is set and <paramref name="requireInMemory"/> is false, otherwise in-memory Sqlite backing
     /// </remarks>
     public SqliteArtifactRegistrationManager(
-        bool inMemory,
-        SqliteArtifactRegistrationManagerConfig config)
-        : this(new SqliteArtifactContextFactory(inMemory, config.IsReadOnly), config)
+        bool requireInMemory,
+        SqliteArtifactRegistrationManagerConfig config
+    )
+        : this(new SqliteArtifactContextFactory(requireInMemory, config.IsReadOnly), config)
     {
     }
 

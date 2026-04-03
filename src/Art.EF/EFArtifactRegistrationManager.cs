@@ -137,28 +137,64 @@ public class EFArtifactRegistrationManager<TContext> : IArtifactRegistrationMana
         }
     }
 
+    private void EnsureNotDisposed()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+    }
+
+
     /// <inheritdoc />
     public void Dispose()
     {
-        if (_disposed) return;
-        _disposed = true;
-        Context.Dispose();
-        Context = null!;
+        Dispose(true);
         GC.SuppressFinalize(this);
     }
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        if (_disposed) return;
-        _disposed = true;
-        await Context.DisposeAsync().ConfigureAwait(false);
-        Context = null!;
+        await DisposeAsyncCore().ConfigureAwait(false);
         GC.SuppressFinalize(this);
     }
 
-    private void EnsureNotDisposed()
+    /// <summary>
+    /// Disposes resources held by this instance.
+    /// </summary>
+    /// <param name="disposing">True if disposing, false if running through finalizer.</param>
+    protected virtual void Dispose(bool disposing)
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (_disposed) return;
+        _disposed = true;
+        var context = Context;
+        if (ReferenceEquals(context, null))
+        {
+            return;
+        }
+        context.Dispose();
+        Context = null!;
+    }
+
+    /// <summary>
+    /// Disposes resources held by this instance.
+    /// </summary>
+    protected virtual async ValueTask DisposeAsyncCore()
+    {
+        if (_disposed) return;
+        _disposed = true;
+        var context = Context;
+        if (ReferenceEquals(context, null))
+        {
+            return;
+        }
+        await context.DisposeAsync().ConfigureAwait(false);
+        Context = null!;
+    }
+
+    /// <summary>
+    /// Cleans up instance data when finalizing.
+    /// </summary>
+    ~EFArtifactRegistrationManager()
+    {
+        Dispose(false);
     }
 }

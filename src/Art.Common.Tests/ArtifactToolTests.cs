@@ -11,57 +11,59 @@ public class ArtifactToolTests
     [Fact]
     public async Task ToolDisposed_DoesNotDisposeConfiguredManagers()
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactFindTool>();
         var adm = new InMemoryArtifactDataManager();
         var arm = new InMemoryArtifactRegistrationManager();
         var fakeKey = new ArtifactResourceKey(new ArtifactKey("X", "Y", "Z"), "W");
-        _ = await adm.ExistsAsync(fakeKey);
-        _ = await arm.TryGetResourceAsync(fakeKey);
+        _ = await adm.ExistsAsync(fakeKey, testCancellationToken);
+        _ = await arm.TryGetResourceAsync(fakeKey, testCancellationToken);
         var tool = new ArtifactTool();
         var profile = new ArtifactToolProfile(toolString, null, null);
         var config = new ArtifactToolConfig(arm, adm, new FakeTimeProvider(), true, true);
-        await tool.InitializeAsync(config: config, profile: profile);
+        await tool.InitializeAsync(config: config, profile: profile, testCancellationToken);
         Assert.Same(adm, tool.Config.DataManager);
         Assert.Same(arm, tool.Config.RegistrationManager);
-        _ = await adm.ExistsAsync(fakeKey);
-        _ = await arm.TryGetResourceAsync(fakeKey);
+        _ = await adm.ExistsAsync(fakeKey, testCancellationToken);
+        _ = await arm.TryGetResourceAsync(fakeKey, testCancellationToken);
         tool.Dispose();
-        _ = await adm.ExistsAsync(fakeKey);
-        _ = await arm.TryGetResourceAsync(fakeKey);
-        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await tool.InitializeAsync());
+        _ = await adm.ExistsAsync(fakeKey, testCancellationToken);
+        _ = await arm.TryGetResourceAsync(fakeKey, testCancellationToken);
+        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await tool.InitializeAsync(cancellationToken: testCancellationToken));
         arm.Dispose();
         adm.Dispose();
-        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await adm.ExistsAsync(fakeKey));
-        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await arm.TryGetResourceAsync(fakeKey));
+        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await adm.ExistsAsync(fakeKey, testCancellationToken));
+        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await arm.TryGetResourceAsync(fakeKey, testCancellationToken));
     }
 
     [Fact]
     public async Task ToolReinitialized_DoesNotDisposeConfiguredManagers()
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactFindTool>();
         var adm = new InMemoryArtifactDataManager();
         var arm = new InMemoryArtifactRegistrationManager();
         var fakeKey = new ArtifactResourceKey(new ArtifactKey("X", "Y", "Z"), "W");
-        _ = await adm.ExistsAsync(fakeKey);
-        _ = await arm.TryGetResourceAsync(fakeKey);
+        _ = await adm.ExistsAsync(fakeKey, testCancellationToken);
+        _ = await arm.TryGetResourceAsync(fakeKey, testCancellationToken);
         var tool = new ArtifactTool();
         var profile = new ArtifactToolProfile(toolString, null, null);
         var config = new ArtifactToolConfig(arm, adm, new FakeTimeProvider(), true, true);
-        await tool.InitializeAsync(config: config, profile: profile);
+        await tool.InitializeAsync(config: config, profile: profile, testCancellationToken);
         Assert.Same(adm, tool.Config.DataManager);
         Assert.Same(arm, tool.Config.RegistrationManager);
-        _ = await adm.ExistsAsync(fakeKey);
-        _ = await arm.TryGetResourceAsync(fakeKey);
-        await tool.InitializeAsync(profile: profile);
+        _ = await adm.ExistsAsync(fakeKey, testCancellationToken);
+        _ = await arm.TryGetResourceAsync(fakeKey, testCancellationToken);
+        await tool.InitializeAsync(profile: profile, cancellationToken: testCancellationToken);
         Assert.NotSame(adm, tool.Config.DataManager);
         Assert.NotSame(arm, tool.Config.RegistrationManager);
-        _ = await adm.ExistsAsync(fakeKey);
-        _ = await arm.TryGetResourceAsync(fakeKey);
+        _ = await adm.ExistsAsync(fakeKey, testCancellationToken);
+        _ = await arm.TryGetResourceAsync(fakeKey, testCancellationToken);
         arm.Dispose();
         adm.Dispose();
-        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await adm.ExistsAsync(fakeKey));
-        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await arm.TryGetResourceAsync(fakeKey));
-        await tool.InitializeAsync();
+        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await adm.ExistsAsync(fakeKey, testCancellationToken));
+        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await arm.TryGetResourceAsync(fakeKey, testCancellationToken));
+        await tool.InitializeAsync(cancellationToken: testCancellationToken);
         tool.Dispose();
     }
 
@@ -78,52 +80,57 @@ public class ArtifactToolTests
     [Fact]
     public async Task NoGroupInProfile_NoCustom_ResolvesFallback()
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         const string customFallback = "custom_fallback";
         using var tool = new DummyGroupResolveArtifactTool(customFallback);
         var profile = new ArtifactToolProfile("tool", null, null);
-        await tool.InitializeAsync(profile: profile);
+        await tool.InitializeAsync(profile: profile, cancellationToken: testCancellationToken);
         Assert.Equal(customFallback, tool.ResolveGroup());
     }
 
     [Fact]
     public async Task NoGroupInProfile_Custom_ResolvesCustom()
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         const string customFallback = "custom_fallback";
         const string custom = "custom";
         using var tool = new DummyGroupResolveArtifactTool(customFallback);
         var profile = new ArtifactToolProfile("tool", null, null);
-        await tool.InitializeAsync(profile: profile);
+        await tool.InitializeAsync(profile: profile, cancellationToken: testCancellationToken);
         Assert.Equal(custom, tool.ResolveGroup(custom));
     }
 
     [Fact]
     public async Task GroupInProfile_NoCustom_ResolvesProfile()
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         const string profileGroup = "profile_group";
         const string customFallback = "custom_fallback";
         using var tool = new DummyGroupResolveArtifactTool(customFallback);
         var profile = new ArtifactToolProfile("tool", profileGroup, null);
-        await tool.InitializeAsync(profile: profile);
+        await tool.InitializeAsync(profile: profile, cancellationToken: testCancellationToken);
         Assert.Equal(profileGroup, tool.ResolveGroup());
     }
 
     [Fact]
     public async Task GroupInProfile_Custom_ResolvesProfile()
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         const string profileGroup = "profile_group";
         const string customFallback = "custom_fallback";
         const string custom = "custom";
         using var tool = new DummyGroupResolveArtifactTool(customFallback);
         var profile = new ArtifactToolProfile("tool", profileGroup, null);
-        await tool.InitializeAsync(profile: profile);
+        await tool.InitializeAsync(profile: profile, cancellationToken: testCancellationToken);
         Assert.Equal(profileGroup, tool.ResolveGroup(custom));
     }
 
     [Fact]
     public async Task DefaultInit_UsesDefaults()
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         using var tool = new ProgrammableArtifactFindTool((_, _) => null);
-        await tool.InitializeAsync();
+        await tool.InitializeAsync(cancellationToken: testCancellationToken);
         Assert.Equal(ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactFindTool>(), tool.Profile.Tool);
         Assert.Null(tool.Profile.Group);
         Assert.Null(tool.Profile.Options);
@@ -134,6 +141,7 @@ public class ArtifactToolTests
     [Fact]
     public async Task SecondInit_ResetsDefaults()
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         const string toolString = "TOOL_1";
         const string group = "GROUP_1";
         using var tool = new ProgrammableArtifactFindTool((_, _) => null);
@@ -142,7 +150,7 @@ public class ArtifactToolTests
         var adm = new InMemoryArtifactDataManager();
         var arm = new InMemoryArtifactRegistrationManager();
         var config = new ArtifactToolConfig(arm, adm, new FakeTimeProvider(), true, true);
-        await tool.InitializeAsync(config: config, profile: profile);
+        await tool.InitializeAsync(config: config, profile: profile, cancellationToken: testCancellationToken);
         Assert.Equal(toolString, tool.Profile.Tool);
         Assert.Equal(group, tool.Profile.Group);
         Assert.NotNull(tool.Profile.Options);
@@ -150,7 +158,7 @@ public class ArtifactToolTests
         Assert.Equal(1, tool.Profile.Options["OPT"].GetInt32());
         Assert.Same(adm, tool.Config.DataManager);
         Assert.Same(arm, tool.Config.RegistrationManager);
-        await tool.InitializeAsync();
+        await tool.InitializeAsync(cancellationToken: testCancellationToken);
         Assert.Equal(ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactFindTool>(), tool.Profile.Tool);
         Assert.Null(tool.Profile.Group);
         Assert.Null(tool.Profile.Options);
@@ -163,6 +171,7 @@ public class ArtifactToolTests
     [Fact]
     public async Task RepeatInit_ValuesUpdated()
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         using var tool = new ProgrammableArtifactFindTool((_, _) => null);
         for (int i = 0; i < 2; i++)
         {
@@ -173,7 +182,7 @@ public class ArtifactToolTests
             var adm = new InMemoryArtifactDataManager();
             var arm = new InMemoryArtifactRegistrationManager();
             var config = new ArtifactToolConfig(arm, adm, new FakeTimeProvider(), true, true);
-            await tool.InitializeAsync(config: config, profile: profile);
+            await tool.InitializeAsync(config: config, profile: profile, cancellationToken: testCancellationToken);
             Assert.Equal(toolString, tool.Profile.Tool);
             Assert.Equal(group, tool.Profile.Group);
             Assert.NotNull(tool.Profile.Options);
@@ -182,7 +191,7 @@ public class ArtifactToolTests
             Assert.Same(adm, tool.Config.DataManager);
             Assert.Same(arm, tool.Config.RegistrationManager);
         }
-        await tool.InitializeAsync();
+        await tool.InitializeAsync(cancellationToken: testCancellationToken);
         Assert.Equal(ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactFindTool>(), tool.Profile.Tool);
         Assert.Null(tool.Profile.Group);
         Assert.Null(tool.Profile.Options);
@@ -193,6 +202,7 @@ public class ArtifactToolTests
     [Fact]
     public async Task RepeatQueriesAfterOneInit_CompletesSuccessfully()
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         const string group = "GROUP_1";
         const string search = "ID_1";
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactFindTool>();
@@ -207,10 +217,10 @@ public class ArtifactToolTests
             return null;
         });
         var profile = new ArtifactToolProfile(toolString, group, null);
-        await tool.InitializeAsync(profile: profile);
+        await tool.InitializeAsync(profile: profile, cancellationToken: testCancellationToken);
         for (int i = 0; i < 2; i++)
         {
-            var data = await tool.FindAsync(search);
+            var data = await tool.FindAsync(search, testCancellationToken);
             Assert.NotNull(data);
             var key = data.Info.Key;
             Assert.Equal(search, key.Id);
@@ -227,6 +237,7 @@ public class ArtifactToolTests
     [Fact]
     public async Task RepeatInitPerQuery_CompletesSuccessfully()
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         const string group = "GROUP_1";
         const string search = "ID_1";
         string toolString = ArtifactToolIDUtil.CreateToolString<ProgrammableArtifactFindTool>();
@@ -243,8 +254,8 @@ public class ArtifactToolTests
         var profile = new ArtifactToolProfile(toolString, group, null);
         for (int i = 0; i < 2; i++)
         {
-            await tool.InitializeAsync(profile: profile);
-            var data = await tool.FindAsync(search);
+            await tool.InitializeAsync(profile: profile, cancellationToken: testCancellationToken);
+            var data = await tool.FindAsync(search, testCancellationToken);
             Assert.NotNull(data);
             var key = data.Info.Key;
             Assert.Equal(search, key.Id);

@@ -1,7 +1,5 @@
 using System.Diagnostics;
 using System.Runtime.Versioning;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 
 namespace Art.BrowserCookies.Chromium;

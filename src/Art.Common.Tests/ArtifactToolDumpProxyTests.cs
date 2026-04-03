@@ -12,6 +12,7 @@ public class ArtifactToolDumpProxyTests
     [Fact]
     public async Task FindOnlyTool_WithoutArtifactList_Throws()
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         var profile = new ArtifactToolProfile("tool", null, null);
         var tool = new ProgrammableArtifactFindTool((v, k) =>
         {
@@ -22,17 +23,18 @@ public class ArtifactToolDumpProxyTests
             }
             return null;
         });
-        await tool.InitializeAsync(profile: profile);
+        await tool.InitializeAsync(profile: profile, cancellationToken: testCancellationToken);
         var proxy = new ArtifactToolDumpProxy(
             tool,
             new ArtifactToolDumpOptions(),
             null);
-        await Assert.ThrowsAsync<NotSupportedException>(async () => await proxy.DumpAsync());
+        await Assert.ThrowsAsync<NotSupportedException>(async () => await proxy.DumpAsync(testCancellationToken));
     }
 
     [Fact]
     public async Task FindOnlyTool_WithArtifactList_Success()
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         var options = new Dictionary<string, JsonElement> { { "artifactList", JsonSerializer.SerializeToElement(new[] { "1", "2", "3" }) } };
         var profile = new ArtifactToolProfile("tool", null, options);
         var arm = new InMemoryArtifactRegistrationManager();
@@ -46,15 +48,15 @@ public class ArtifactToolDumpProxyTests
             }
             return null;
         });
-        await tool.InitializeAsync(config: config, profile: profile);
+        await tool.InitializeAsync(config: config, profile: profile, cancellationToken: testCancellationToken);
         var proxy = new ArtifactToolDumpProxy(
             tool,
             new ArtifactToolDumpOptions(),
             null);
-        await proxy.DumpAsync();
+        await proxy.DumpAsync(testCancellationToken);
         Assert.Equal(
             [1, 2, 3],
-            (await arm.ListArtifactsAsync())
+            (await arm.ListArtifactsAsync(testCancellationToken))
             .Select(v => int.Parse(v.Key.Id))
             .OrderBy(static v => v)
         );
@@ -99,6 +101,7 @@ public class ArtifactToolDumpProxyTests
     [Fact]
     public async Task FindOnlyTool_RetrieveTimestamps_MatchesExpected()
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         var options = new Dictionary<string, JsonElement> { { "artifactList", JsonSerializer.SerializeToElement(new[] { "1", "2", "3" }) } };
         var profile = new ArtifactToolProfile("tool", null, options);
         var arm = new InMemoryArtifactRegistrationManager();
@@ -124,25 +127,25 @@ public class ArtifactToolDumpProxyTests
             }
             return null;
         });
-        await tool.InitializeAsync(config: config, profile: profile);
+        await tool.InitializeAsync(config: config, profile: profile, testCancellationToken);
         var proxy = new ArtifactToolDumpProxy(
             tool,
             new ArtifactToolDumpOptions(),
             null);
-        await proxy.DumpAsync();
+        await proxy.DumpAsync(testCancellationToken);
         Assert.Equal(
             [
                 (id: 1, timestamp: dict[(1, null)]), //
                 (id: 2, timestamp: dict[(2, null)]), //
                 (id: 3, timestamp: dict[(3, null)]) //
             ],
-            (await arm.ListArtifactsAsync())
+            (await arm.ListArtifactsAsync(testCancellationToken))
             .Select(v => (id: int.Parse(v.Key.Id), timestamp: v.RetrievalDate))
             .OrderBy(static v => v.id)
         );
         for (int i = 1; i <= 3; i++)
         {
-            var res = (await arm.ListResourcesAsync(dict2[i]))[0];
+            var res = (await arm.ListResourcesAsync(dict2[i], testCancellationToken))[0];
             Assert.Equal(dict[(i, 0)], res.Retrieved);
         }
     }
@@ -150,6 +153,7 @@ public class ArtifactToolDumpProxyTests
     [Fact]
     public async Task DumpOnlyTool_WithoutArtifactList_Success()
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         var options = new Dictionary<string, JsonElement> { { "artifactList", JsonSerializer.SerializeToElement(new[] { "1", "2", "3" }) } };
         var profile = new ArtifactToolProfile("tool", null, options);
         var arm = new InMemoryArtifactRegistrationManager();
@@ -158,18 +162,18 @@ public class ArtifactToolDumpProxyTests
         {
             for (int i = 1; i <= 3; i++)
             {
-                await v.DumpArtifactAsync(v.CreateData($"{i}"));
+                await v.DumpArtifactAsync(v.CreateData($"{i}"), cancellationToken: testCancellationToken);
             }
         });
-        await tool.InitializeAsync(config: config, profile: profile);
+        await tool.InitializeAsync(config: config, profile: profile, cancellationToken: testCancellationToken);
         var proxy = new ArtifactToolDumpProxy(
             tool,
             new ArtifactToolDumpOptions(),
             null);
-        await proxy.DumpAsync();
+        await proxy.DumpAsync(testCancellationToken);
         Assert.Equal(
             [1, 2, 3],
-            (await arm.ListArtifactsAsync())
+            (await arm.ListArtifactsAsync(testCancellationToken))
             .Select(v => int.Parse(v.Key.Id))
             .OrderBy(static v => v)
         );
@@ -178,6 +182,7 @@ public class ArtifactToolDumpProxyTests
     [Fact]
     public async Task DumpOnlyTool_WithArtifactList_DoesNotFilter()
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         var options = new Dictionary<string, JsonElement> { { "artifactList", JsonSerializer.SerializeToElement(new[] { "1", "2" }) } };
         var profile = new ArtifactToolProfile("tool", null, options);
         var arm = new InMemoryArtifactRegistrationManager();
@@ -189,15 +194,15 @@ public class ArtifactToolDumpProxyTests
                 await v.DumpArtifactAsync(v.CreateData($"{i}"));
             }
         });
-        await tool.InitializeAsync(config: config, profile: profile);
+        await tool.InitializeAsync(config: config, profile: profile, cancellationToken: testCancellationToken);
         var proxy = new ArtifactToolDumpProxy(
             tool,
             new ArtifactToolDumpOptions(),
             null);
-        await proxy.DumpAsync();
+        await proxy.DumpAsync(testCancellationToken);
         Assert.Equal(
             [1, 2, 3],
-            (await arm.ListArtifactsAsync()).Select(v => int.Parse(v.Key.Id)).OrderBy(static v => v)
+            (await arm.ListArtifactsAsync(testCancellationToken)).Select(v => int.Parse(v.Key.Id)).OrderBy(static v => v)
         );
     }
 

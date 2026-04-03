@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Art.EF.Sqlite.Tests;
+namespace Art.EF.Sqlite.Tests.TestSupport;
 
 /// <summary>
 /// Factory for sqlite-backed context for artifact registration.
@@ -24,12 +24,16 @@ public class TestSqliteArtifactContextFactory : SqliteArtifactContextFactory
     /// Creates a new instance of <see cref="TestSqliteArtifactContextFactory"/> with in-memory Sqlite backing.
     /// </summary>
     /// <param name="migrationsAssembly">Migrations assembly.</param>
-    /// <param name="inMemory">If true, use in-memory otherwise allow fallback to environment variable.</param>
+    /// <param name="requireInMemory">If true, require using in-memory database, otherwise allow fallback to environment variable.</param>
     /// <param name="isReadonly">If true, writes to the database are disabled.</param>
     /// <remarks>
-    /// Sqlite file backing if environment variable (by default, art_ef_sqlite_backing_file) is set and <paramref name="inMemory"/> is false, otherwise in-memory Sqlite backing
+    /// Sqlite file backing if environment variable (by default, art_ef_sqlite_backing_file) is set and <paramref name="requireInMemory"/> is false, otherwise in-memory Sqlite backing
     /// </remarks>
-    public TestSqliteArtifactContextFactory(Assembly migrationsAssembly, bool inMemory, bool isReadonly = false) : base(inMemory, isReadonly)
+    public TestSqliteArtifactContextFactory(
+        Assembly migrationsAssembly,
+        bool requireInMemory,
+        bool isReadonly = false)
+        : base(requireInMemory, isReadonly)
     {
         _migrationsAssembly = migrationsAssembly;
     }

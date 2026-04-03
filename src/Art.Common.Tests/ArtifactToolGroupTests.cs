@@ -11,7 +11,8 @@ public class ArtifactToolArtifactDataTests
     [Fact]
     public async Task CreateData_CustomGroup_NoProfileGroup_CustomGroupApplied()
     {
-        await _tool.InitializeAsync(profile: CreateProfile(null));
+        var testCancellationToken = TestContext.Current.CancellationToken;
+        await _tool.InitializeAsync(profile: CreateProfile(null), cancellationToken: testCancellationToken);
         var data = _tool.CreateData("id", group: CustomGroup);
         Assert.Equal(CustomGroup, data.Info.Key.Group);
         Assert.NotEqual(ProfileGroup, data.Info.Key.Group);
@@ -21,7 +22,8 @@ public class ArtifactToolArtifactDataTests
     [Fact]
     public async Task CreateData_CustomGroup_ProfileGroup_ProfileGroupApplied()
     {
-        await _tool.InitializeAsync(profile: CreateProfile(ProfileGroup));
+        var testCancellationToken = TestContext.Current.CancellationToken;
+        await _tool.InitializeAsync(profile: CreateProfile(ProfileGroup), cancellationToken: testCancellationToken);
         var data = _tool.CreateData("id", group: CustomGroup);
         Assert.Equal(ProfileGroup, data.Info.Key.Group);
         Assert.NotEqual(CustomGroup, data.Info.Key.Group);
@@ -31,7 +33,8 @@ public class ArtifactToolArtifactDataTests
     [Fact]
     public async Task CreateData_NoCustomGroup_ProfileGroup_ProfileGroupApplied()
     {
-        await _tool.InitializeAsync(profile: CreateProfile(ProfileGroup));
+        var testCancellationToken = TestContext.Current.CancellationToken;
+        await _tool.InitializeAsync(profile: CreateProfile(ProfileGroup), cancellationToken: testCancellationToken);
         var data = _tool.CreateData("id");
         Assert.Equal(ProfileGroup, data.Info.Key.Group);
         Assert.NotEqual(CustomGroup, data.Info.Key.Group);
@@ -41,7 +44,8 @@ public class ArtifactToolArtifactDataTests
     [Fact]
     public async Task CreateData_NoCustomGroup_NoProfileGroup_FallbackGroupApplied()
     {
-        await _tool.InitializeAsync(profile: CreateProfile(null));
+        var testCancellationToken = TestContext.Current.CancellationToken;
+        await _tool.InitializeAsync(profile: CreateProfile(null), cancellationToken: testCancellationToken);
         var data = _tool.CreateData("id");
         Assert.Equal(FallbackGroup, data.Info.Key.Group);
         Assert.NotEqual(CustomGroup, data.Info.Key.Group);

@@ -16,38 +16,42 @@ public class UriArtifactResourceInfoTests : HttpTestsBase
     [Fact]
     public async Task WithMetadataAsync_Nonexistent_Throws()
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         MockHandler.When("http://localhost/harmony.bin").Respond(HttpStatusCode.NotFound);
         var ari = Data.Uri("http://localhost/harmony.bin", "file");
-        var artHttpResponseMessageException = await Assert.ThrowsAsync<ArtHttpResponseMessageException>(() => ari.Info.WithMetadataAsync().AsTask());
+        var artHttpResponseMessageException = await Assert.ThrowsAsync<ArtHttpResponseMessageException>(() => ari.Info.WithMetadataAsync(testCancellationToken).AsTask());
         Assert.Equal(HttpStatusCode.NotFound, artHttpResponseMessageException.StatusCode);
     }
 
     [Fact]
     public async Task ExportStreamAsync_Nonexistent_Throws()
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         MockHandler.When("http://localhost/wintercontingency.bin").Respond(HttpStatusCode.NotFound);
         var inf = Data.Uri("http://localhost/wintercontingency.bin", "file").Info;
-        var artHttpResponseMessageException = await Assert.ThrowsAsync<ArtHttpResponseMessageException>(() => inf.ExportStreamAsync(Stream.Null).AsTask());
+        var artHttpResponseMessageException = await Assert.ThrowsAsync<ArtHttpResponseMessageException>(() => inf.ExportStreamAsync(Stream.Null, cancellationToken: testCancellationToken).AsTask());
         Assert.Equal(HttpStatusCode.NotFound, artHttpResponseMessageException.StatusCode);
     }
 
     [Fact]
     public async Task WithMetadataAsync_Json_IsJson()
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         MockHandler.When("http://localhost/harmony.json").Respond("application/json", @"null");
         var ari = Data.Uri("http://localhost/harmony.json", "file");
-        var met = await ari.Info.WithMetadataAsync();
+        var met = await ari.Info.WithMetadataAsync(testCancellationToken);
         Assert.Equal("application/json", met.ContentType);
     }
 
     [Fact]
     public async Task ExportStreamAsync_Data_Matches()
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         PreludeRandomContent(30495, out byte[] originalData, out MemoryStream source);
         MockHandler.When("http://localhost/wintercontingency.bin").Respond("application/octet-bytes", source);
         var inf = Data.Uri("http://localhost/wintercontingency.bin", "file").Info;
         MemoryStream read = new();
-        await inf.ExportStreamAsync(read);
+        await inf.ExportStreamAsync(read, cancellationToken: testCancellationToken);
         byte[] actual = read.ToArray();
         Assert.Equal(originalData.Length, actual.Length);
         Assert.True(actual.AsSpan().SequenceEqual(originalData));
@@ -56,12 +60,13 @@ public class UriArtifactResourceInfoTests : HttpTestsBase
     [Fact]
     public async Task ExportStreamAsync_Aes256Encryption_Matches()
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         PreludeRandomEncryptedContent(Aes.Create, CipherMode.CBC, PaddingMode.PKCS7, 30495, 256, 128, out byte[] originalData, out byte[] key, out byte[] iv, out MemoryStream encrypted);
         MockHandler.When("http://localhost/wintercontingency.bin").Respond("application/octet-bytes", encrypted);
         var inf = Data.Uri("http://localhost/wintercontingency.bin", "file")
             .WithEncryption(CryptoAlgorithm.Aes, key, encIv: iv, mode: CipherMode.CBC, paddingMode: PaddingMode.PKCS7).Info;
         MemoryStream decrypted = new();
-        await inf.ExportStreamAsync(decrypted);
+        await inf.ExportStreamAsync(decrypted, cancellationToken: testCancellationToken);
         byte[] newDec = decrypted.ToArray();
         Assert.Equal(originalData.Length, newDec.Length);
         Assert.True(newDec.AsSpan().SequenceEqual(originalData));
@@ -70,13 +75,14 @@ public class UriArtifactResourceInfoTests : HttpTestsBase
     [Fact]
     public async Task ExportStreamAsync_Aes256EncryptionWithManualPadding_Matches()
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         PreludeRandomEncryptedContent(Aes.Create, CipherMode.CBC, PaddingMode.PKCS7, 30495, 256, 128, out byte[] originalData, out byte[] key, out byte[] iv, out MemoryStream encrypted);
         MockHandler.When("http://localhost/wintercontingency.bin").Respond("application/octet-bytes", encrypted);
         var inf = Data.Uri("http://localhost/wintercontingency.bin", "file")
             .WithEncryption(CryptoAlgorithm.Aes, key, encIv: iv, mode: CipherMode.CBC, paddingMode: PaddingMode.None)
             .WithPadding(ArtPaddingMode.Pkcs7).Info;
         MemoryStream decrypted = new();
-        await inf.ExportStreamAsync(decrypted);
+        await inf.ExportStreamAsync(decrypted, cancellationToken: testCancellationToken);
         byte[] newDec = decrypted.ToArray();
         Assert.Equal(originalData.Length, newDec.Length);
         Assert.True(newDec.AsSpan().SequenceEqual(originalData));

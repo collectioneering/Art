@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Art.Common\Art.Common.csproj" />
     <ProjectReference Include="..\Art.EF.Sqlite\Art.EF.Sqlite.csproj" />
+    <ProjectReference Include="..\Art.EF.TestsBase\Art.EF.TestsBase.csproj" />
     <ProjectReference Include="..\Art.EF.Sqlite.Tests.Migrations1\Art.EF.Sqlite.Tests.Migrations1.csproj" />
     <ProjectReference Include="..\Art.EF.Sqlite.Tests.Migrations2\Art.EF.Sqlite.Tests.Migrations2.csproj" />
   </ItemGroup>
@@ -17,7 +18,7 @@
   <ItemGroup>
     <PackageReference Include="coverlet.collector" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.v3" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
 

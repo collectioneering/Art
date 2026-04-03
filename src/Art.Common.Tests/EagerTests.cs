@@ -9,6 +9,7 @@ public class EagerTests
     [InlineData(true)]
     public async Task UnlimitedEager_CompletesFully(bool syncCounter)
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         SharedValue sharedValue = new() { Value = 5 };
         var v = (syncCounter ? CounterSync(5, 5) : CounterAsync(5, 5, TimeSpan.FromMilliseconds(30)))
             .EagerTestAsync(invokeTarget: v =>
@@ -19,7 +20,7 @@ public class EagerTests
                     sharedValue.Value = Math.Max(sharedValue.Value, newValue);
                 }
             });
-        var v2 = v.GetAsyncEnumerator();
+        var v2 = v.GetAsyncEnumerator(testCancellationToken);
         if (!syncCounter)
         {
             await CompleteBatch(9, sharedValue, TimeSpan.FromSeconds(10));
@@ -40,6 +41,7 @@ public class EagerTests
     [InlineData(true)]
     public async Task LimitedEager_PartiallyCompletes(bool syncCounter)
     {
+        var testCancellationToken = TestContext.Current.CancellationToken;
         const int initialLimit = 5;
         SharedValue sharedValue = new() { Value = 5 };
         var v = (syncCounter ? CounterSync(5, 15) : CounterAsync(5, 15, TimeSpan.FromMilliseconds(30)))
@@ -51,7 +53,7 @@ public class EagerTests
                     sharedValue.Value = Math.Max(sharedValue.Value, newValue);
                 }
             });
-        var v2 = v.GetAsyncEnumerator();
+        var v2 = v.GetAsyncEnumerator(testCancellationToken);
         int i = 5, max = 5 + 15;
         while (i < max)
         {
