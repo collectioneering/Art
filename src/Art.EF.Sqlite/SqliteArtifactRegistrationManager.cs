@@ -86,6 +86,7 @@ public class SqliteArtifactRegistrationManager : EFArtifactRegistrationManager<S
         catch
         {
             ClearPoolForSqliteConnection(Context);
+            Context.Dispose();
             throw;
         }
     }
@@ -152,11 +153,5 @@ public class SqliteArtifactRegistrationManager : EFArtifactRegistrationManager<S
     {
         ThrowIfReadOnly();
         return Context.CleanupDatabaseAsync(cancellationToken);
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        ClearPoolForSqliteConnection(Context);
-        base.Dispose(disposing);
     }
 }

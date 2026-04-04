@@ -6,8 +6,10 @@ using Art.EF.TestsBase;
 
 namespace Art.EF.Sqlite.Tests.TestSupport;
 
-public class SqliteTestDatabaseSource : IEFTestDatabaseSource
+public sealed class SqliteTestDatabaseSource : IEFTestDatabaseSource
 {
+    private bool _disposed;
+
     public static string CreateFileDb()
     {
         string tmpParentDirectory = Path.Join(Path.GetTempPath(), "collectioneering_art_test_db");
@@ -36,16 +38,13 @@ public class SqliteTestDatabaseSource : IEFTestDatabaseSource
         return new TestSqliteArtifactRegistrationManager(factory, sqliteArtifactRegistrationManagerConfig);
     }
 
-    private void ReleaseUnmanagedResources()
-    {
-        File.Delete(_databaseFile);
-    }
-
     public void Dispose()
     {
-        ReleaseUnmanagedResources();
-        GC.SuppressFinalize(this);
+        if (_disposed)
+        {
+            return;
+        }
+        _disposed = true;
+        File.Delete(_databaseFile);
     }
-
-    ~SqliteTestDatabaseSource() => ReleaseUnmanagedResources();
 }

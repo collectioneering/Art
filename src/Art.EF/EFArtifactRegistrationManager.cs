@@ -170,13 +170,16 @@ public class EFArtifactRegistrationManager<TContext> : IArtifactRegistrationMana
     {
         if (_disposed) return;
         _disposed = true;
-        var context = Context;
-        if (ReferenceEquals(context, null))
+        if (disposing)
         {
-            return;
+            var context = Context;
+            if (ReferenceEquals(context, null))
+            {
+                return;
+            }
+            context.Dispose();
+            Context = null!;
         }
-        context.Dispose();
-        Context = null!;
     }
 
     /// <summary>
