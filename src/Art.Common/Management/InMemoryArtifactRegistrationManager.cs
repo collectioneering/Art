@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Art.Common.Management;
 
 /// <summary>
@@ -8,7 +10,42 @@ public class InMemoryArtifactRegistrationManager : IArtifactRegistrationManager
     private readonly Dictionary<ArtifactKey, ArtifactInfo> _artifacts = new();
 
     private readonly Dictionary<ArtifactKey, Dictionary<ArtifactResourceKey, ArtifactResourceInfo>> _resources = new();
+    private readonly bool _isReadOnly;
     private bool _disposed;
+
+    /// <summary>
+    /// Initializes an instance of <see cref="InMemoryArtifactRegistrationManager"/>.
+    /// </summary>
+    public InMemoryArtifactRegistrationManager() : this(false)
+    {
+    }
+
+    /// <summary>
+    /// Initializes an instance of <see cref="InMemoryArtifactRegistrationManager"/>.
+    /// </summary>
+    /// <param name="isReadOnly">If true, writes to the database are disabled.</param>
+    public InMemoryArtifactRegistrationManager(bool isReadOnly)
+    {
+    }
+
+
+    /// <summary>
+    /// Initializes an instance of <see cref="InMemoryArtifactRegistrationManager"/>.
+    /// </summary>
+    /// <param name="inMemoryArtifactRegistrationManager">An existing <see cref="InMemoryArtifactRegistrationManager"/> to copy content from.</param>
+    /// <param name="isReadOnly">If true, writes to the database are disabled.</param>
+    public InMemoryArtifactRegistrationManager(InMemoryArtifactRegistrationManager inMemoryArtifactRegistrationManager, bool isReadOnly)
+    {
+        _isReadOnly = isReadOnly;
+        foreach (var v in inMemoryArtifactRegistrationManager._artifacts)
+        {
+            _artifacts[v.Key] = v.Value;
+        }
+        foreach (var v in inMemoryArtifactRegistrationManager._resources)
+        {
+            _resources[v.Key] = new Dictionary<ArtifactResourceKey, ArtifactResourceInfo>(v.Value);
+        }
+    }
 
     /// <inheritdoc />
     public Task<List<ArtifactInfo>> ListArtifactsAsync(CancellationToken cancellationToken = new())
@@ -53,6 +90,7 @@ public class InMemoryArtifactRegistrationManager : IArtifactRegistrationManager
     public ValueTask AddArtifactAsync(ArtifactInfo artifactInfo, CancellationToken ct = default)
     {
         EnsureNotDisposed();
+        ThrowIfReadOnly();
         _artifacts[artifactInfo.Key] = artifactInfo;
         return ValueTask.CompletedTask;
     }
@@ -68,6 +106,7 @@ public class InMemoryArtifactRegistrationManager : IArtifactRegistrationManager
     public ValueTask AddResourceAsync(ArtifactResourceInfo artifactResourceInfo, CancellationToken ct = default)
     {
         EnsureNotDisposed();
+        ThrowIfReadOnly();
         if (!_resources.TryGetValue(artifactResourceInfo.Key.Artifact, out var dict))
         {
             _resources.Add(artifactResourceInfo.Key.Artifact, dict = new Dictionary<ArtifactResourceKey, ArtifactResourceInfo>());
@@ -87,7 +126,9 @@ public class InMemoryArtifactRegistrationManager : IArtifactRegistrationManager
     public ValueTask RemoveArtifactAsync(ArtifactKey key, CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();
+        ThrowIfReadOnly();
         _artifacts.Remove(key);
+        _resources.Remove(key);
         return ValueTask.CompletedTask;
     }
 
@@ -95,11 +136,20 @@ public class InMemoryArtifactRegistrationManager : IArtifactRegistrationManager
     public ValueTask RemoveResourceAsync(ArtifactResourceKey key, CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();
+        ThrowIfReadOnly();
         if (_resources.TryGetValue(key.Artifact, out var dict))
         {
             dict.Remove(key);
         }
         return ValueTask.CompletedTask;
+    }
+
+    private void ThrowIfReadOnly([CallerMemberName] string? callerMemberName = null)
+    {
+        if (_isReadOnly)
+        {
+            throw new InvalidOperationException($"Cannot call {callerMemberName ?? "this member"} because this instance is read-only");
+        }
     }
 
     private void EnsureNotDisposed()
