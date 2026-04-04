@@ -25,15 +25,15 @@ public class TestSqliteArtifactContextFactory : SqliteArtifactContextFactory
     /// </summary>
     /// <param name="migrationsAssembly">Migrations assembly.</param>
     /// <param name="requireInMemory">If true, require using in-memory database, otherwise allow fallback to environment variable.</param>
-    /// <param name="isReadonly">If true, writes to the database are disabled.</param>
+    /// <param name="isReadOnly">If true, writes to the database are disabled.</param>
     /// <remarks>
     /// Sqlite file backing if environment variable (by default, art_ef_sqlite_backing_file) is set and <paramref name="requireInMemory"/> is false, otherwise in-memory Sqlite backing
     /// </remarks>
     public TestSqliteArtifactContextFactory(
         Assembly migrationsAssembly,
         bool requireInMemory,
-        bool isReadonly = false)
-        : base(requireInMemory, isReadonly)
+        bool isReadOnly = false)
+        : base(requireInMemory, isReadOnly)
     {
         _migrationsAssembly = migrationsAssembly;
     }
@@ -43,8 +43,8 @@ public class TestSqliteArtifactContextFactory : SqliteArtifactContextFactory
     /// </summary>
     /// <param name="migrationsAssembly">Migrations assembly.</param>
     /// <param name="storageFile">Path to sqlite storage file.</param>
-    /// <param name="isReadonly">If true, writes to the database are disabled.</param>
-    public TestSqliteArtifactContextFactory(Assembly migrationsAssembly, string storageFile, bool isReadonly = false) : base(storageFile, isReadonly)
+    /// <param name="isReadOnly">If true, writes to the database are disabled.</param>
+    public TestSqliteArtifactContextFactory(Assembly migrationsAssembly, string storageFile, bool isReadOnly = false) : base(storageFile, isReadOnly)
     {
         _migrationsAssembly = migrationsAssembly;
     }

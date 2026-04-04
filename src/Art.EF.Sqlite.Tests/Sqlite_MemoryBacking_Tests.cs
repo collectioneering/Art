@@ -1,10 +1,11 @@
 using System.Threading.Tasks;
+using Art.DbTestsBase;
 using Art.EF.TestsBase;
 using Microsoft.EntityFrameworkCore;
 
 namespace Art.EF.Sqlite.Tests;
 
-public class Sqlite_MemoryBacking_Tests : EFTestsBase
+public class Sqlite_MemoryBacking_Tests : ArtifactRegistrationManagerTestsBase
 {
     [Fact]
     public async Task MemoryAsFallback_ReadWrite_SucceedsWithInMemory()

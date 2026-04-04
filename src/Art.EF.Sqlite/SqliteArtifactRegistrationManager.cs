@@ -22,13 +22,13 @@ public class SqliteArtifactRegistrationManager : EFArtifactRegistrationManager<S
             {
                 throw new ArgumentException($"Cannot combine {nameof(SqliteArtifactRegistrationManagerConfig.IsReadOnly)} and {nameof(SqliteArtifactRegistrationManagerConfig.ApplyMigrationsOnStartup)} on config");
             }
-            if (config.IsReadOnly != factory._isReadonly)
+            if (config.IsReadOnly != factory._isReadOnly)
             {
                 throw new ArgumentException("Mismatch between readonly values of config and factory");
             }
             if (factory.UsingInMemory)
             {
-                if (!factory._isReadonly)
+                if (!factory._isReadOnly)
                 {
                     EnsureCleanInMemoryReadWriteSetup(Context.Database);
                 }
@@ -37,7 +37,7 @@ public class SqliteArtifactRegistrationManager : EFArtifactRegistrationManager<S
             {
                 if (config.ApplyMigrationsOnStartup)
                 {
-                    if (factory._isReadonly)
+                    if (factory._isReadOnly)
                     {
                         if (!config.DisablePendingMigrationsCheck)
                         {
@@ -150,6 +150,13 @@ public class SqliteArtifactRegistrationManager : EFArtifactRegistrationManager<S
 
     public Task CleanupDatabaseAsync(CancellationToken cancellationToken = default)
     {
+        ThrowIfReadOnly();
         return Context.CleanupDatabaseAsync(cancellationToken);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        ClearPoolForSqliteConnection(Context);
+        base.Dispose(disposing);
     }
 }

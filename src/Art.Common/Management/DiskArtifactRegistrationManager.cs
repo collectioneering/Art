@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
@@ -22,15 +23,18 @@ public class DiskArtifactRegistrationManager : IArtifactRegistrationManager
     public string BaseDirectory { get; }
 
     private readonly ArtifactRegistrationBaseDirectoryContext _baseDirectoryContext;
+    private readonly bool _isReadOnly;
     private bool _disposed;
 
     /// <summary>
     /// Creates a new instance of <see cref="DiskArtifactDataManager"/>.
     /// </summary>
     /// <param name="baseDirectory">Base directory.</param>
-    public DiskArtifactRegistrationManager(string baseDirectory)
+    /// <param name="isReadOnly">If true, writes to the database are disabled.</param>
+    public DiskArtifactRegistrationManager(string baseDirectory, bool isReadOnly = false)
     {
         BaseDirectory = baseDirectory;
+        _isReadOnly = isReadOnly;
         _baseDirectoryContext = new ArtifactRegistrationBaseDirectoryContext(baseDirectory);
     }
 
@@ -38,6 +42,7 @@ public class DiskArtifactRegistrationManager : IArtifactRegistrationManager
     public async ValueTask AddArtifactAsync(ArtifactInfo artifactInfo, CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();
+        ThrowIfReadOnly();
         string dir = GetArtifactInfoDir(artifactInfo.Key);
         if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
         string path = GetArtifactInfoFilePath(dir, artifactInfo.Key);
@@ -105,6 +110,7 @@ public class DiskArtifactRegistrationManager : IArtifactRegistrationManager
     public async ValueTask AddResourceAsync(ArtifactResourceInfo artifactResourceInfo, CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();
+        ThrowIfReadOnly();
         string dir = GetResourceInfoDir(artifactResourceInfo.Key.Artifact, artifactResourceInfo.Key.Path);
         if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
         string path = GetResourceInfoFilePath(dir, artifactResourceInfo.Key);
@@ -149,24 +155,33 @@ public class DiskArtifactRegistrationManager : IArtifactRegistrationManager
     }
 
     /// <inheritdoc/>
-    public ValueTask RemoveArtifactAsync(ArtifactKey key, CancellationToken cancellationToken = default)
+    public async ValueTask RemoveArtifactAsync(ArtifactKey key, CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();
+        ThrowIfReadOnly();
         string dir = GetArtifactInfoDir(key);
         string path = GetArtifactInfoFilePath(dir, key);
+        foreach (var resource in await ListResourcesAsync(key, cancellationToken).ConfigureAwait(false))
+        {
+            await RemoveResourceAsync(resource.Key, cancellationToken).ConfigureAwait(false);
+        }
         if (File.Exists(path))
+        {
             File.Delete(path);
-        return ValueTask.CompletedTask;
+        }
     }
 
     /// <inheritdoc/>
     public ValueTask RemoveResourceAsync(ArtifactResourceKey key, CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();
+        ThrowIfReadOnly();
         string dir = GetResourceInfoDir(key.Artifact, key.Path);
         string path = GetResourceInfoFilePath(dir, key);
         if (File.Exists(path))
+        {
             File.Delete(path);
+        }
         return ValueTask.CompletedTask;
     }
 
@@ -230,6 +245,13 @@ public class DiskArtifactRegistrationManager : IArtifactRegistrationManager
         ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
+    private void ThrowIfReadOnly([CallerMemberName] string? callerMemberName = null)
+    {
+        if (_isReadOnly)
+        {
+            throw new InvalidOperationException($"Cannot call {callerMemberName ?? "this member"} because this instance is read-only");
+        }
+    }
 
     /// <inheritdoc />
     public void Dispose()

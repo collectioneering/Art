@@ -37,14 +37,15 @@ public static class ArtIOUtility
     /// <param name="sibling">Sibling path.</param>
     /// <param name="extension">Extension to append to random name.</param>
     /// <param name="attempts">Maximum number of attempts to generate path.</param>
+    /// <param name="pathCreationAction">Specifies the action to take on the newly created path.</param>
     /// <returns>Random path.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="sibling"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown for invalid <paramref name="sibling"/> (e.g. drive root) or <paramref name="attempts"/> (&lt;=0) value.</exception>
     /// <exception cref="IOException">Thrown if failed to create sibling path with specified attempts.</exception>
-    public static string CreateRandomPathForSibling(string sibling, string extension, int attempts = 10)
+    public static string CreateRandomPathForSibling(string sibling, string extension, int attempts = 10, PathCreationAction pathCreationAction = PathCreationAction.None)
     {
         string dir = Path.GetDirectoryName(sibling) ?? throw new ArgumentException("Sibling path cannot be a drive root", nameof(sibling));
-        return CreateRandomPath(dir, extension, attempts);
+        return CreateRandomPath(dir, extension, attempts, pathCreationAction);
     }
 
     /// <summary>
@@ -53,19 +54,61 @@ public static class ArtIOUtility
     /// <param name="baseDirectory">Base directory.</param>
     /// <param name="extension">Extension to append to random name.</param>
     /// <param name="attempts">Maximum number of attempts to generate path.</param>
+    /// <param name="pathCreationAction">Specifies the action to take on the newly created path.</param>
     /// <returns>Random path.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="baseDirectory"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown for invalid <paramref name="attempts"/> (&lt;=0) value.</exception>
     /// <exception cref="IOException">Thrown if failed to create sibling path with specified attempts.</exception>
-    public static string CreateRandomPath(string baseDirectory, string extension, int attempts = 10)
+    public static string CreateRandomPath(string baseDirectory, string extension, int attempts = 10, PathCreationAction pathCreationAction = PathCreationAction.None)
     {
         ArgumentNullException.ThrowIfNull(baseDirectory);
         if (attempts <= 0) throw new ArgumentException("Invalid max number of attempts", nameof(attempts));
         for (int i = 0; i < attempts; i++)
         {
             string path = Path.Join(baseDirectory, $"{Guid.NewGuid():N}{extension}");
-            if (!File.Exists(path) && !Directory.Exists(path)) return path;
+            var fileInfo = new FileInfo(path);
+            var directoryInfo = new DirectoryInfo(path);
+            if (fileInfo.Exists || directoryInfo.Exists)
+            {
+                continue;
+            }
+            switch (pathCreationAction)
+            {
+                case PathCreationAction.None:
+                    return path;
+                case PathCreationAction.CreateFile:
+                    try
+                    {
+                        using (new FileStream(fileInfo.FullName, FileMode.CreateNew))
+                        {
+                        }
+                        return path;
+                    }
+                    catch
+                    {
+                        // file got created before returned, or other I/O error
+                        break;
+                    }
+                case PathCreationAction.CreateDirectory:
+                    try
+                    {
+                        directoryInfo.Create();
+                        if (directoryInfo.EnumerateFileSystemInfos().Any())
+                        {
+                            // directory has content already
+                            break;
+                        }
+                        return path;
+                    }
+                    catch
+                    {
+                        // some I/O error
+                        break;
+                    }
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(pathCreationAction), pathCreationAction, null);
+            }
         }
-        throw new IOException("Failed to create random path");
+        throw new IOException($"Failed to create random path under {baseDirectory}");
     }
 }

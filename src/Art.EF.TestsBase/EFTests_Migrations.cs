@@ -1,10 +1,11 @@
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Art.DbTestsBase;
 
 namespace Art.EF.TestsBase;
 
-public abstract class EFTests_Migrations : EFTestsBase
+public abstract class EFTests_Migrations : ArtifactRegistrationManagerTestsBase
 {
     protected abstract IEFTestDatabaseSource CreateDatabaseSource();
 

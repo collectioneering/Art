@@ -16,7 +16,7 @@ public class SqliteArtifactContextFactory : ArtifactContextFactoryBase<SqliteArt
     /// Sqlite file backing if environment variable (by default, art_ef_sqlite_backing_file) is set, otherwise in-memory Sqlite backing
     /// <br/>
     /// </remarks>
-    public SqliteArtifactContextFactory() : this(false, isReadonly: false)
+    public SqliteArtifactContextFactory() : this(false, isReadOnly: false)
     {
     }
 
@@ -24,29 +24,29 @@ public class SqliteArtifactContextFactory : ArtifactContextFactoryBase<SqliteArt
     /// Creates a new instance of <see cref="SqliteArtifactContextFactory"/> with in-memory Sqlite backing.
     /// </summary>
     /// <param name="requireInMemory">If true, require using in-memory database, otherwise allow fallback to environment variable.</param>
-    /// <param name="isReadonly">If true, writes to the database are disabled.</param>
+    /// <param name="isReadOnly">If true, writes to the database are disabled.</param>
     /// <remarks>
     /// Sqlite file backing if environment variable (by default, art_ef_sqlite_backing_file) is set and <paramref name="requireInMemory"/> is false, otherwise in-memory Sqlite backing
     /// </remarks>
-    public SqliteArtifactContextFactory(bool requireInMemory, bool isReadonly = false)
+    public SqliteArtifactContextFactory(bool requireInMemory, bool isReadOnly = false)
     {
         _requireInMemory = requireInMemory;
-        _isReadonly = isReadonly;
+        _isReadOnly = isReadOnly;
     }
 
     /// <summary>
     /// Creates a new instance of <see cref="SqliteArtifactContextFactory"/> with Sqlite file backing.
     /// </summary>
     /// <param name="storageFile">Path to sqlite storage file.</param>
-    /// <param name="isReadonly">If true, writes to the database are disabled.</param>
-    public SqliteArtifactContextFactory(string storageFile, bool isReadonly = false)
+    /// <param name="isReadOnly">If true, writes to the database are disabled.</param>
+    public SqliteArtifactContextFactory(string storageFile, bool isReadOnly = false)
     {
         StorageFile = storageFile;
-        _isReadonly = isReadonly;
+        _isReadOnly = isReadOnly;
     }
 
     internal readonly bool _requireInMemory;
-    internal readonly bool _isReadonly;
+    internal readonly bool _isReadOnly;
 
     internal bool UsingInMemory;
 
@@ -79,7 +79,7 @@ public class SqliteArtifactContextFactory : ArtifactContextFactoryBase<SqliteArt
             queryStringParts.Add("mode=memory");
             queryStringParts.Add("cache=shared");
         }
-        if (_isReadonly)
+        if (_isReadOnly)
         {
             queryStringParts.Add("immutable=1");
             queryStringParts.Add("mode=ro");
@@ -93,7 +93,7 @@ public class SqliteArtifactContextFactory : ArtifactContextFactoryBase<SqliteArt
             sb.AppendJoin("&", queryStringParts);
         }
         sb.Append(';');
-        if (_isReadonly)
+        if (_isReadOnly)
         {
             sb.Append("Mode=ReadOnly;");
         }
@@ -101,7 +101,7 @@ public class SqliteArtifactContextFactory : ArtifactContextFactoryBase<SqliteArt
         ob.UseSqlite(sb.ToString(), b => b.MigrationsAssembly(MigrationAssembly.FullName));
         var context = new SqliteArtifactContext(ob.Options);
         context.UsingInMemory = UsingInMemory;
-        context.SqliteIsReadOnly = _isReadonly;
+        context.SqliteIsReadOnly = _isReadOnly;
         return context;
     }
 }

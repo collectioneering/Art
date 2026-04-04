@@ -2,6 +2,7 @@
   <Project Path="Art.BrowserCookies/Art.BrowserCookies.csproj" />
   <Project Path="Art.Common.Tests/Art.Common.Tests.csproj" />
   <Project Path="Art.Common/Art.Common.csproj" />
+  <Project Path="Art.DbTestsBase/Art.DbTestsBase.csproj" />
   <Project Path="Art.EF.Sqlite.Tests.Migrations1/Art.EF.Sqlite.Tests.Migrations1.csproj" />
   <Project Path="Art.EF.Sqlite.Tests.Migrations2/Art.EF.Sqlite.Tests.Migrations2.csproj" />
   <Project Path="Art.EF.Sqlite.Tests/Art.EF.Sqlite.Tests.csproj" />

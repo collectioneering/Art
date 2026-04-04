@@ -6,9 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Art.Common\Art.Common.csproj" />
-    <ProjectReference Include="..\Art.EF\Art.EF.csproj" />
-    <ProjectReference Include="..\Art.DbTestsBase\Art.DbTestsBase.csproj" />
+    <ProjectReference Include="..\Art\Art.csproj" />
   </ItemGroup>
 
   <ItemGroup>

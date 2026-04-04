@@ -1,19 +1,18 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Art.Common.IO;
+using Art.DbTestsBase;
 using Art.EF.Sqlite.Tests.TestSupport;
-using Art.EF.TestsBase;
 
 namespace Art.EF.Sqlite.Tests;
 
-public class Sqlite_FileBacking_Tests : EFTestsBase
+public class Sqlite_FileBacking_Tests : ArtifactRegistrationManagerTestsBase
 {
     [Fact]
     public async Task FileBacking_ReadWrite_Success()
     {
         var testCancellationToken = TestContext.Current.CancellationToken;
-        string tempFile = ArtIOUtility.CreateRandomPath(Path.GetTempPath(), ".db");
+        string tempFile = SqliteTestDatabaseSource.CreateFileDb();
         try
         {
             var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: true, IsReadOnly: false, DisablePendingMigrationsCheck: false);
@@ -31,7 +30,7 @@ public class Sqlite_FileBacking_Tests : EFTestsBase
     public async Task FileBacking_ReadOnly_Succeeds()
     {
         var testCancellationToken = TestContext.Current.CancellationToken;
-        string tempFile = ArtIOUtility.CreateRandomPath(Path.GetTempPath(), ".db");
+        string tempFile = SqliteTestDatabaseSource.CreateFileDb();
         try
         {
             {
@@ -58,7 +57,7 @@ public class Sqlite_FileBacking_Tests : EFTestsBase
     public async Task Vacuum_Shrinks()
     {
         var testCancellationToken = TestContext.Current.CancellationToken;
-        string tempFile = ArtIOUtility.CreateRandomPath(Path.GetTempPath(), ".db");
+        string tempFile = SqliteTestDatabaseSource.CreateFileDb();
         const int n = 64;
         const int denominator = 4;
         string testValue = new('x', 2048);

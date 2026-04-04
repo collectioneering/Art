@@ -2,9 +2,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Art.EF.TestsBase;
+namespace Art.DbTestsBase;
 
-public abstract class EFTestsBase
+public abstract class ArtifactRegistrationManagerTestsBase
 {
     // 1
     private static ArtifactKey k1 = new("abec", "group1", "kraft1");

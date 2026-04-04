@@ -129,7 +129,12 @@ public class EFArtifactRegistrationManager<TContext> : IArtifactRegistrationMana
         return Context.SaveChangesAsync(cancellationToken);
     }
 
-    private void ThrowIfReadOnly([CallerMemberName] string? callerMemberName = null)
+    /// <summary>
+    /// Throws an exception if the underlying context is read-only.
+    /// </summary>
+    /// <param name="callerMemberName"></param>
+    /// <exception cref="InvalidOperationException"></exception>
+    protected void ThrowIfReadOnly([CallerMemberName] string? callerMemberName = null)
     {
         if (Context.IsReadOnly)
         {

@@ -8,11 +8,18 @@ namespace Art.EF.Sqlite.Tests.TestSupport;
 
 public class SqliteTestDatabaseSource : IEFTestDatabaseSource
 {
+    public static string CreateFileDb()
+    {
+        string tmpParentDirectory = Path.Join(Path.GetTempPath(), "collectioneering_art_test_db");
+        Directory.CreateDirectory(tmpParentDirectory);
+        return ArtIOUtility.CreateRandomPath(tmpParentDirectory, ".db");
+    }
+
     private readonly string _databaseFile;
 
     public SqliteTestDatabaseSource()
     {
-        _databaseFile = ArtIOUtility.CreateRandomPath(Path.GetTempPath(), ".db");
+        _databaseFile = CreateFileDb();
     }
 
     public IArtifactRegistrationManager CreateArtifactRegistrationManager(TestDatabaseConfig config, Assembly? migrationsAssembly)
@@ -25,7 +32,7 @@ public class SqliteTestDatabaseSource : IEFTestDatabaseSource
         {
             return new TestSqliteArtifactRegistrationManager(_databaseFile, sqliteArtifactRegistrationManagerConfig);
         }
-        var factory = new TestSqliteArtifactContextFactory(migrationsAssembly, _databaseFile, isReadonly: config.IsReadOnly);
+        var factory = new TestSqliteArtifactContextFactory(migrationsAssembly, _databaseFile, isReadOnly: config.IsReadOnly);
         return new TestSqliteArtifactRegistrationManager(factory, sqliteArtifactRegistrationManagerConfig);
     }
 

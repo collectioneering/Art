@@ -6,12 +6,21 @@ namespace Art.Common.Tests.IO;
 
 public class CommittableFileStreamTests
 {
+    public static string CreateTempFile(out string parentDirectory)
+    {
+        string tmpParentDirectory = Path.Join(Path.GetTempPath(), "collectioneering_art_test_tempfile");
+        Directory.CreateDirectory(tmpParentDirectory);
+        string tmpFile = ArtIOUtility.CreateRandomPath(tmpParentDirectory, ".tmp");
+        Assert.EndsWith(".tmp", tmpFile);
+        parentDirectory = tmpParentDirectory;
+        return tmpFile;
+    }
+
     [Fact]
     public void ShouldCommit_TrueWithNewFile_FileKeptWithContents()
     {
-        string tempDir = Path.GetTempPath();
+        string temp = CreateTempFile(out string tempDir);
         Assert.True(Directory.Exists(tempDir));
-        string temp = ArtIOUtility.CreateRandomPath(tempDir, ".tmp");
         try
         {
             Assert.Equal(Path.GetFileName(temp), Path.GetRelativePath(tempDir, temp));
@@ -35,9 +44,8 @@ public class CommittableFileStreamTests
     [Fact]
     public void ShouldCommit_TrueWithNewFile_WithPreferTemporaryLocation_FileKeptWithContents()
     {
-        string tempDir = Path.GetTempPath();
+        string temp = CreateTempFile(out string tempDir);
         Assert.True(Directory.Exists(tempDir));
-        string temp = ArtIOUtility.CreateRandomPath(tempDir, ".tmp");
         try
         {
             Assert.Equal(Path.GetFileName(temp), Path.GetRelativePath(tempDir, temp));
@@ -61,9 +69,8 @@ public class CommittableFileStreamTests
     [Fact]
     public void ShouldCommit_FalseWithNewFile_FileNotExist()
     {
-        string tempDir = Path.GetTempPath();
+        string temp = CreateTempFile(out string tempDir);
         Assert.True(Directory.Exists(tempDir));
-        string temp = ArtIOUtility.CreateRandomPath(tempDir, ".tmp");
         try
         {
             Assert.Equal(Path.GetFileName(temp), Path.GetRelativePath(tempDir, temp));
@@ -86,9 +93,8 @@ public class CommittableFileStreamTests
     [Fact]
     public void ShouldCommit_FalseWithNewFile_WithPreferTemporaryLocation_FileNotExist()
     {
-        string tempDir = Path.GetTempPath();
+        string temp = CreateTempFile(out string tempDir);
         Assert.True(Directory.Exists(tempDir));
-        string temp = ArtIOUtility.CreateRandomPath(tempDir, ".tmp");
         try
         {
             Assert.Equal(Path.GetFileName(temp), Path.GetRelativePath(tempDir, temp));

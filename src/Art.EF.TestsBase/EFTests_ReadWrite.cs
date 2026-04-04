@@ -1,8 +1,9 @@
 using System.Threading.Tasks;
+using Art.DbTestsBase;
 
 namespace Art.EF.TestsBase;
 
-public abstract class EFTests_ReadWrite : EFTestsBase
+public abstract class EFTests_ReadWrite : ArtifactRegistrationManagerTestsBase
 {
     protected abstract IEFTestDatabaseSource CreateDatabaseSource();
 
