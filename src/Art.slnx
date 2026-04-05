@@ -16,6 +16,8 @@
   <Project Path="Art.Modular/Art.Modular.csproj" />
   <Project Path="Art.TestsBase/Art.TestsBase.csproj" />
   <Project Path="Art/Art.csproj" />
+  <Project Path="Artcore.ArtTestModule1/Artcore.ArtTestModule1.csproj" />
+  <Project Path="Artcore.ArtTestModule2/Artcore.ArtTestModule2.csproj" />
   <Project Path="Artcore.Tests/Artcore.Tests.csproj" />
   <Project Path="Artcore/Artcore.csproj" />
 </Solution>

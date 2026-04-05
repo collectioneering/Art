@@ -8,6 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Artcore\Artcore.csproj" />
+    <ProjectReference Include="..\Art.Common\Art.Common.csproj" />
+    <ProjectReference Include="..\Artcore.ArtTestModule1\Artcore.ArtTestModule1.csproj" />
+    <ProjectReference Include="..\Artcore.ArtTestModule2\Artcore.ArtTestModule2.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="coverlet.collector" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit.v3" />
