@@ -36,7 +36,16 @@ public sealed class SqliteTestDatabaseSource : IEFTestDatabaseSource
             return new TestSqliteArtifactRegistrationManager(_databaseFile, sqliteArtifactRegistrationManagerConfig);
         }
         var factory = new TestSqliteArtifactContextFactory(migrationsAssembly, _databaseFile, isReadOnly: config.IsReadOnly);
-        return new TestSqliteArtifactRegistrationManager(factory, sqliteArtifactRegistrationManagerConfig);
+        var context = factory.CreateDbContext([]);
+        try
+        {
+            return new TestSqliteArtifactRegistrationManager(context, sqliteArtifactRegistrationManagerConfig);
+        }
+        catch
+        {
+            context.Dispose();
+            throw;
+        }
     }
 
     public IArtifactRegistrationManager CreateArtifactRegistrationManagerWithThrowCleanup(TestDatabaseConfig config, Assembly? migrationsAssembly)

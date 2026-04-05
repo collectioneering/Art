@@ -406,14 +406,11 @@ public class ArtifactContext : DbContext
     /// <inheritdoc />
     public override void Dispose()
     {
-        try
-        {
-            WaitGuard.WaitOne();
-        }
-        catch (ObjectDisposedException)
+        if (_disposed)
         {
             return;
         }
+        WaitGuard.WaitOne();
         base.Dispose();
         if (_disposed) return;
         _disposed = true;
@@ -424,6 +421,10 @@ public class ArtifactContext : DbContext
     /// <inheritdoc />
     public override async ValueTask DisposeAsync()
     {
+        if (_disposed)
+        {
+            return;
+        }
         WaitGuard.WaitOne();
         await base.DisposeAsync().ConfigureAwait(false);
         if (_disposed) return;

@@ -26,14 +26,6 @@ public class TestSqliteArtifactRegistrationManager : SqliteArtifactRegistrationM
     {
     }
 
-    public TestSqliteArtifactRegistrationManager(
-        SqliteArtifactContextFactory factory,
-        SqliteArtifactRegistrationManagerConfig config
-    )
-        : base(factory, config)
-    {
-    }
-
     /// <summary>
     /// Clears Sqlite pool if applicable.
     /// </summary>

@@ -24,15 +24,6 @@ public class EFArtifactRegistrationManager<TContext> : IArtifactRegistrationMana
         Context = context;
     }
 
-    /// <summary>
-    /// Creates a new instance of <see cref="EFArtifactRegistrationManager{T}"/> using the specified factory.
-    /// </summary>
-    /// <param name="factory">Context factory.</param>
-    public EFArtifactRegistrationManager(ArtifactContextFactoryBase<TContext> factory)
-    {
-        Context = factory.CreateDbContext([]);
-    }
-
     /// <inheritdoc />
     public Task<List<ArtifactInfo>> ListArtifactsAsync(CancellationToken cancellationToken = default)
     {

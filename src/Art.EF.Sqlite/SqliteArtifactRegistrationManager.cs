@@ -16,16 +16,31 @@ public class SqliteArtifactRegistrationManager : EFArtifactRegistrationManager<S
     )
         : base(context)
     {
-        SetupInternal(context.SqliteIsReadOnly, context.SqliteUsingInMemory, config);
+        SetupInternal(context, config);
     }
 
-    internal SqliteArtifactRegistrationManager(
-        SqliteArtifactContextFactory factory,
+    private void SetupInternalWithAutoDisposeContextOnException(
+        SqliteArtifactContext context,
         SqliteArtifactRegistrationManagerConfig config
     )
-        : base(factory)
     {
-        SetupInternal(factory._isReadOnly, factory.UsingInMemory, config);
+        try
+        {
+            SetupInternal(context.SqliteIsReadOnly, context.SqliteUsingInMemory, config);
+        }
+        catch
+        {
+            context.Dispose();
+            throw;
+        }
+    }
+
+    private void SetupInternal(
+        SqliteArtifactContext context,
+        SqliteArtifactRegistrationManagerConfig config
+    )
+    {
+        SetupInternal(context.SqliteIsReadOnly, context.SqliteUsingInMemory, config);
     }
 
     private void SetupInternal(
@@ -116,9 +131,9 @@ public class SqliteArtifactRegistrationManager : EFArtifactRegistrationManager<S
     /// <remarks>
     /// Sqlite file backing if environment variable art_ef_sqlite_backing_file is set, otherwise in-memory Sqlite backing
     /// </remarks>
-    public SqliteArtifactRegistrationManager()
-        : this(new SqliteArtifactContextFactory(), SqliteArtifactRegistrationManagerConfig.Default)
+    public SqliteArtifactRegistrationManager() : base(new SqliteArtifactContextFactory().CreateDbContext([]))
     {
+        SetupInternalWithAutoDisposeContextOnException(Context, SqliteArtifactRegistrationManagerConfig.Default with { IsReadOnly = Context.SqliteIsReadOnly });
     }
 
     /// <summary>
@@ -133,8 +148,9 @@ public class SqliteArtifactRegistrationManager : EFArtifactRegistrationManager<S
         bool requireInMemory,
         SqliteArtifactRegistrationManagerConfig config
     )
-        : this(new SqliteArtifactContextFactory(requireInMemory, config.IsReadOnly), config)
+        : base(new SqliteArtifactContextFactory(requireInMemory, config.IsReadOnly).CreateDbContext([]))
     {
+        SetupInternalWithAutoDisposeContextOnException(Context, config);
     }
 
     /// <summary>
@@ -146,8 +162,9 @@ public class SqliteArtifactRegistrationManager : EFArtifactRegistrationManager<S
         string file,
         SqliteArtifactRegistrationManagerConfig config
     )
-        : this(new SqliteArtifactContextFactory(file, config.IsReadOnly), config)
+        : base(new SqliteArtifactContextFactory(file, config.IsReadOnly).CreateDbContext([]))
     {
+        SetupInternalWithAutoDisposeContextOnException(Context, config);
     }
 
     public Task CleanupDatabaseAsync(CancellationToken cancellationToken = default)
