@@ -7,6 +7,17 @@ namespace Art.EF.Sqlite.Tests;
 public class Sqlite_MemoryBacking_Tests : ArtifactRegistrationManagerTestsBase
 {
     [Fact]
+    public async Task EmptyConstructor_SucceedsWithInMemory()
+    {
+        var testCancellationToken = TestContext.Current.CancellationToken;
+        await using SqliteArtifactRegistrationManager r = new();
+        Assert.True(r.Context.SqliteUsingInMemory);
+        await TestReadWriteDatabase(r, testCancellationToken);
+        await r.Context.Database.GetDbConnection().CloseAsync();
+        await VerifyWrittenDatabase(r, testCancellationToken);
+    }
+
+    [Fact]
     public async Task MemoryAsFallback_ReadWrite_SucceedsWithInMemory()
     {
         var testCancellationToken = TestContext.Current.CancellationToken;

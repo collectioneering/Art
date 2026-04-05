@@ -15,6 +15,6 @@ public record SqliteArtifactRegistrationManagerConfig(
     public static readonly SqliteArtifactRegistrationManagerConfig Default = new(
         ApplyMigrationsOnStartup: true,
         IsReadOnly: false,
-        DisablePendingMigrationsCheck: true
+        DisablePendingMigrationsCheck: false
     );
 }

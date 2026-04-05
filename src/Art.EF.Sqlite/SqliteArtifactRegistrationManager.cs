@@ -10,6 +10,48 @@ namespace Art.EF.Sqlite;
 /// </summary>
 public class SqliteArtifactRegistrationManager : EFArtifactRegistrationManager<SqliteArtifactContext>, IArtifactRegistrationManagerCleanup
 {
+    /// <summary>
+    /// Creates a new instance of <see cref="SqliteArtifactRegistrationManager"/>.
+    /// </summary>
+    /// <remarks>
+    /// Sqlite file backing if environment variable art_ef_sqlite_backing_file is set, otherwise in-memory Sqlite backing
+    /// </remarks>
+    public SqliteArtifactRegistrationManager() : base(new SqliteArtifactContextFactory().CreateDbContext([]))
+    {
+        SetupInternalWithAutoDisposeContextOnException(Context, SqliteArtifactRegistrationManagerConfig.Default with { IsReadOnly = Context.SqliteIsReadOnly, ApplyMigrationsOnStartup = !Context.SqliteIsReadOnly });
+    }
+
+    /// <summary>
+    /// Creates a new instance of <see cref="SqliteArtifactRegistrationManager"/> with in-memory Sqlite backing.
+    /// </summary>
+    /// <param name="requireInMemory">If true, require using in-memory database, otherwise allow fallback to environment variable.</param>
+    /// <param name="config">Configuration to use.</param>
+    /// <remarks>
+    /// Sqlite file backing if environment variable art_ef_sqlite_backing_file is set and <paramref name="requireInMemory"/> is false, otherwise in-memory Sqlite backing
+    /// </remarks>
+    public SqliteArtifactRegistrationManager(
+        bool requireInMemory,
+        SqliteArtifactRegistrationManagerConfig config
+    )
+        : base(new SqliteArtifactContextFactory(requireInMemory, config.IsReadOnly).CreateDbContext([]))
+    {
+        SetupInternalWithAutoDisposeContextOnException(Context, config);
+    }
+
+    /// <summary>
+    /// Creates a new instance of <see cref="SqliteArtifactRegistrationManager"/> with the specified Sqlite backing file.
+    /// </summary>
+    /// <param name="file">Sqlite backing file.</param>
+    /// <param name="config">Configuration to use.</param>
+    public SqliteArtifactRegistrationManager(
+        string file,
+        SqliteArtifactRegistrationManagerConfig config
+    )
+        : base(new SqliteArtifactContextFactory(file, config.IsReadOnly).CreateDbContext([]))
+    {
+        SetupInternalWithAutoDisposeContextOnException(Context, config);
+    }
+
     internal SqliteArtifactRegistrationManager(
         SqliteArtifactContext context,
         SqliteArtifactRegistrationManagerConfig config
@@ -123,48 +165,6 @@ public class SqliteArtifactRegistrationManager : EFArtifactRegistrationManager<S
     {
         dbFacade.EnsureDeleted();
         dbFacade.EnsureCreated();
-    }
-
-    /// <summary>
-    /// Creates a new instance of <see cref="SqliteArtifactRegistrationManager"/>.
-    /// </summary>
-    /// <remarks>
-    /// Sqlite file backing if environment variable art_ef_sqlite_backing_file is set, otherwise in-memory Sqlite backing
-    /// </remarks>
-    public SqliteArtifactRegistrationManager() : base(new SqliteArtifactContextFactory().CreateDbContext([]))
-    {
-        SetupInternalWithAutoDisposeContextOnException(Context, SqliteArtifactRegistrationManagerConfig.Default with { IsReadOnly = Context.SqliteIsReadOnly });
-    }
-
-    /// <summary>
-    /// Creates a new instance of <see cref="SqliteArtifactRegistrationManager"/> with in-memory Sqlite backing.
-    /// </summary>
-    /// <param name="requireInMemory">If true, require using in-memory database, otherwise allow fallback to environment variable.</param>
-    /// <param name="config">Configuration to use.</param>
-    /// <remarks>
-    /// Sqlite file backing if environment variable art_ef_sqlite_backing_file is set and <paramref name="requireInMemory"/> is false, otherwise in-memory Sqlite backing
-    /// </remarks>
-    public SqliteArtifactRegistrationManager(
-        bool requireInMemory,
-        SqliteArtifactRegistrationManagerConfig config
-    )
-        : base(new SqliteArtifactContextFactory(requireInMemory, config.IsReadOnly).CreateDbContext([]))
-    {
-        SetupInternalWithAutoDisposeContextOnException(Context, config);
-    }
-
-    /// <summary>
-    /// Creates a new instance of <see cref="SqliteArtifactRegistrationManager"/> with the specified Sqlite backing file.
-    /// </summary>
-    /// <param name="file">Sqlite backing file.</param>
-    /// <param name="config">Configuration to use.</param>
-    public SqliteArtifactRegistrationManager(
-        string file,
-        SqliteArtifactRegistrationManagerConfig config
-    )
-        : base(new SqliteArtifactContextFactory(file, config.IsReadOnly).CreateDbContext([]))
-    {
-        SetupInternalWithAutoDisposeContextOnException(Context, config);
     }
 
     public Task CleanupDatabaseAsync(CancellationToken cancellationToken = default)
