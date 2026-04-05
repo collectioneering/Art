@@ -17,7 +17,7 @@ public class Sqlite_FileBacking_Tests : ArtifactRegistrationManagerTestsBase
         {
             var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: true, IsReadOnly: false, DisablePendingMigrationsCheck: false);
             using TestSqliteArtifactRegistrationManager r = new(tempFile, config);
-            Assert.False(r.Context.UsingInMemory);
+            Assert.False(r.Context.SqliteUsingInMemory);
             await TestReadWriteDatabase(r, testCancellationToken);
         }
         finally
@@ -36,14 +36,14 @@ public class Sqlite_FileBacking_Tests : ArtifactRegistrationManagerTestsBase
             {
                 var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: true, IsReadOnly: false, DisablePendingMigrationsCheck: false);
                 using TestSqliteArtifactRegistrationManager r = new(tempFile, config);
-                Assert.False(r.Context.UsingInMemory);
+                Assert.False(r.Context.SqliteUsingInMemory);
                 await PrepareDatabaseForReadOnly(r, testCancellationToken);
             }
 
             {
                 var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: false, IsReadOnly: true, DisablePendingMigrationsCheck: false);
                 using TestSqliteArtifactRegistrationManager r = new(tempFile, config);
-                Assert.False(r.Context.UsingInMemory);
+                Assert.False(r.Context.SqliteUsingInMemory);
                 await TestDatabaseReadOnly(r, testEmpty: false, testCancellationToken);
             }
         }
@@ -67,7 +67,7 @@ public class Sqlite_FileBacking_Tests : ArtifactRegistrationManagerTestsBase
             {
                 var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: true, IsReadOnly: false, DisablePendingMigrationsCheck: false);
                 using SqliteArtifactRegistrationManager r = new(tempFile, config);
-                Assert.False(r.Context.UsingInMemory);
+                Assert.False(r.Context.SqliteUsingInMemory);
                 for (int i = 0; i < n; i++)
                 {
                     await r.AddArtifactAsync(new ArtifactInfo(new ArtifactKey("TOOL", "GROUP", $"{testValue}{i}")), testCancellationToken);
@@ -77,7 +77,7 @@ public class Sqlite_FileBacking_Tests : ArtifactRegistrationManagerTestsBase
             {
                 var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: true, IsReadOnly: false, DisablePendingMigrationsCheck: false);
                 using TestSqliteArtifactRegistrationManager r = new(tempFile, config);
-                Assert.False(r.Context.UsingInMemory);
+                Assert.False(r.Context.SqliteUsingInMemory);
                 foreach (var artifactInfo in (await r.ListArtifactsAsync(testCancellationToken)).ToList().Take(n - n / denominator))
                 {
                     await r.RemoveArtifactAsync(artifactInfo.Key, testCancellationToken);
@@ -87,14 +87,14 @@ public class Sqlite_FileBacking_Tests : ArtifactRegistrationManagerTestsBase
             {
                 var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: true, IsReadOnly: false, DisablePendingMigrationsCheck: false);
                 using TestSqliteArtifactRegistrationManager r = new(tempFile, config);
-                Assert.False(r.Context.UsingInMemory);
+                Assert.False(r.Context.SqliteUsingInMemory);
             }
             long fileSizeC = new FileInfo(tempFile).Length;
             // cleanup and measure
             {
                 var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: true, IsReadOnly: false, DisablePendingMigrationsCheck: false);
                 using TestSqliteArtifactRegistrationManager r = new(tempFile, config);
-                Assert.False(r.Context.UsingInMemory);
+                Assert.False(r.Context.SqliteUsingInMemory);
                 await r.CleanupDatabaseAsync(testCancellationToken);
             }
             long fileSizeD = new FileInfo(tempFile).Length;

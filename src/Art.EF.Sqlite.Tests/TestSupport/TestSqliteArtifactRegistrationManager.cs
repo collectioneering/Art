@@ -19,6 +19,14 @@ public class TestSqliteArtifactRegistrationManager : SqliteArtifactRegistrationM
     }
 
     public TestSqliteArtifactRegistrationManager(
+        SqliteArtifactContext context,
+        SqliteArtifactRegistrationManagerConfig config
+    )
+        : base(context, config)
+    {
+    }
+
+    public TestSqliteArtifactRegistrationManager(
         SqliteArtifactContextFactory factory,
         SqliteArtifactRegistrationManagerConfig config
     )

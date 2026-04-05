@@ -50,13 +50,15 @@ public sealed class SqliteTestDatabaseSource : IEFTestDatabaseSource
             return new TestSqliteArtifactRegistrationManager(_databaseFile, sqliteArtifactRegistrationManagerConfig);
         }
         var factory = new TestSqliteArtifactContextFactory(migrationsAssembly, _databaseFile, isReadOnly: config.IsReadOnly);
+        var context = factory.CreateDbContext([]);
         try
         {
-            return new TestSqliteArtifactRegistrationManager(factory, sqliteArtifactRegistrationManagerConfig);
+            return new TestSqliteArtifactRegistrationManager(context, sqliteArtifactRegistrationManagerConfig);
         }
         catch
         {
             SqliteConnection.ClearPool(new SqliteConnection(factory.BuildConnectionString()));
+            context.Dispose();
             throw;
         }
     }

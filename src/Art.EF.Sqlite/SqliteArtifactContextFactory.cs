@@ -107,7 +107,7 @@ public class SqliteArtifactContextFactory : ArtifactContextFactoryBase<SqliteArt
         var ob = new DbContextOptionsBuilder<ArtifactContext>();
         ob.UseSqlite(BuildConnectionString(), b => b.MigrationsAssembly(MigrationAssembly.FullName));
         var context = new SqliteArtifactContext(ob.Options);
-        context.UsingInMemory = UsingInMemory;
+        context.SqliteUsingInMemory = UsingInMemory;
         context.SqliteIsReadOnly = _isReadOnly;
         return context;
     }

@@ -12,7 +12,7 @@ public class Sqlite_MemoryBacking_Tests : ArtifactRegistrationManagerTestsBase
         var testCancellationToken = TestContext.Current.CancellationToken;
         var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: true, IsReadOnly: false, DisablePendingMigrationsCheck: false);
         await using SqliteArtifactRegistrationManager r = new(false, config);
-        Assert.True(r.Context.UsingInMemory);
+        Assert.True(r.Context.SqliteUsingInMemory);
         await TestReadWriteDatabase(r, testCancellationToken);
         await r.Context.Database.GetDbConnection().CloseAsync();
         await VerifyWrittenDatabase(r, testCancellationToken);
@@ -24,7 +24,7 @@ public class Sqlite_MemoryBacking_Tests : ArtifactRegistrationManagerTestsBase
         var testCancellationToken = TestContext.Current.CancellationToken;
         var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: true, IsReadOnly: false, DisablePendingMigrationsCheck: false);
         await using SqliteArtifactRegistrationManager r = new(true, config);
-        Assert.True(r.Context.UsingInMemory);
+        Assert.True(r.Context.SqliteUsingInMemory);
         await TestReadWriteDatabase(r, testCancellationToken);
         await r.Context.Database.GetDbConnection().CloseAsync();
         await VerifyWrittenDatabase(r, testCancellationToken);
@@ -39,14 +39,14 @@ public class Sqlite_MemoryBacking_Tests : ArtifactRegistrationManagerTestsBase
             var factory = new SqliteArtifactContextFactory(requireInMemory: false, isReadOnly: false) { MemoryFileId = memoryFileId };
             var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: true, IsReadOnly: false, DisablePendingMigrationsCheck: false);
             await using SqliteArtifactRegistrationManager r = new(factory, config);
-            Assert.True(r.Context.UsingInMemory);
+            Assert.True(r.Context.SqliteUsingInMemory);
             await TestReadWriteDatabase(r, testCancellationToken);
         }
         {
             var factory = new SqliteArtifactContextFactory(requireInMemory: false, isReadOnly: true) { MemoryFileId = memoryFileId };
             var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: false, IsReadOnly: true, DisablePendingMigrationsCheck: false);
             await using SqliteArtifactRegistrationManager r = new(factory, config);
-            Assert.True(r.Context.UsingInMemory);
+            Assert.True(r.Context.SqliteUsingInMemory);
             await TestDatabaseReadOnly(r, testEmpty: true, testCancellationToken);
         }
     }
@@ -60,14 +60,14 @@ public class Sqlite_MemoryBacking_Tests : ArtifactRegistrationManagerTestsBase
             var factory = new SqliteArtifactContextFactory(requireInMemory: true, isReadOnly: false) { MemoryFileId = memoryFileId };
             var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: true, IsReadOnly: false, DisablePendingMigrationsCheck: false);
             await using SqliteArtifactRegistrationManager r = new(factory, config);
-            Assert.True(r.Context.UsingInMemory);
+            Assert.True(r.Context.SqliteUsingInMemory);
             await TestReadWriteDatabase(r, testCancellationToken);
         }
         {
             var factory = new SqliteArtifactContextFactory(requireInMemory: true, isReadOnly: true) { MemoryFileId = memoryFileId };
             var config = new SqliteArtifactRegistrationManagerConfig(ApplyMigrationsOnStartup: false, IsReadOnly: true, DisablePendingMigrationsCheck: false);
             await using SqliteArtifactRegistrationManager r = new(factory, config);
-            Assert.True(r.Context.UsingInMemory);
+            Assert.True(r.Context.SqliteUsingInMemory);
             await TestDatabaseReadOnly(r, testEmpty: true, testCancellationToken);
         }
     }

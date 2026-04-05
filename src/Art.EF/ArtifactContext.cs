@@ -406,7 +406,14 @@ public class ArtifactContext : DbContext
     /// <inheritdoc />
     public override void Dispose()
     {
-        WaitGuard.WaitOne();
+        try
+        {
+            WaitGuard.WaitOne();
+        }
+        catch (ObjectDisposedException)
+        {
+            return;
+        }
         base.Dispose();
         if (_disposed) return;
         _disposed = true;
