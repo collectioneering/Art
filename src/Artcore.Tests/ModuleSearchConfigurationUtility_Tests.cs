@@ -37,8 +37,8 @@ public class ModuleSearchConfigurationUtility_Tests
         string modulesDir = CreateModulesDir();
         try
         {
-            CreateModule(modulesDir, TestModule1CreationInput);
-            CreateModule(modulesDir, TestModule2CreationInput);
+            var testModule1 = CreateModule(modulesDir, TestModule1CreationInput);
+            var testModule2 = CreateModule(modulesDir, TestModule2CreationInput);
             var moduleProviders = ModuleSearchConfigurationUtility.GetModuleProviders(
                 new ModuleLoadConfiguration(IsCollectible: true, ["Art"]),
                 [
@@ -56,7 +56,7 @@ public class ModuleSearchConfigurationUtility_Tests
             using (var alcCache = new AlcCache())
             {
                 // even same module loaded twice should be loaded distinct
-                CheckModuleLoadability_MutualExclusion(alcCache, moduleProvider, [TestModule1Name, TestModule1Name, TestModule2Name]);
+                CheckModuleLoadability_MutualExclusion(alcCache, moduleProvider, [testModule1, testModule1, testModule2]);
             }
         }
         finally
@@ -71,8 +71,8 @@ public class ModuleSearchConfigurationUtility_Tests
         string modulesDir = CreateModulesDir();
         try
         {
-            CreateModule(modulesDir, TestModule1CreationInput);
-            CreateModule(modulesDir, TestModule2CreationInput);
+            var testModule1 = CreateModule(modulesDir, TestModule1CreationInput);
+            var testModule2 = CreateModule(modulesDir, TestModule2CreationInput);
             string moduleSearchFile = Path.Join(modulesDir, "modules_search.json");
             CreateModuleSearchFile(modulesDir, moduleSearchFile);
             var moduleProviders = ModuleSearchConfigurationUtility.GetModuleProvidersByPaths(
@@ -84,7 +84,7 @@ public class ModuleSearchConfigurationUtility_Tests
             using (var alcCache = new AlcCache())
             {
                 // even same module loaded twice should be loaded distinct
-                CheckModuleLoadability_MutualExclusion(alcCache, moduleProvider, [TestModule1Name, TestModule1Name, TestModule2Name]);
+                CheckModuleLoadability_MutualExclusion(alcCache, moduleProvider, [testModule1, testModule1, testModule2]);
             }
         }
         finally
@@ -99,8 +99,8 @@ public class ModuleSearchConfigurationUtility_Tests
         string modulesDir = CreateModulesDir();
         try
         {
-            CreateModule(modulesDir, TestModule1CreationInput);
-            CreateModule(modulesDir, TestModule2CreationInput);
+            var testModule1 = CreateModule(modulesDir, TestModule1CreationInput);
+            var testModule2 = CreateModule(modulesDir, TestModule2CreationInput);
             string moduleSearchFile = Path.Join(modulesDir, "modules_search.json");
             CreateModuleSearchFile(modulesDir, moduleSearchFile);
             var moduleProviders = ModuleSearchConfigurationUtility.GetModuleProvidersByPaths(
@@ -112,7 +112,7 @@ public class ModuleSearchConfigurationUtility_Tests
             using (var alcCache = new AlcCache())
             {
                 // even same module loaded twice should be loaded distinct
-                CheckModuleLoadability_MutualExclusion(alcCache, moduleProvider, [TestModule1Name, TestModule1Name, TestModule2Name]);
+                CheckModuleLoadability_MutualExclusion(alcCache, moduleProvider, [testModule1, testModule1, testModule2]);
             }
         }
         finally
@@ -128,8 +128,8 @@ public class ModuleSearchConfigurationUtility_Tests
         string modulesDir = CreateModulesDir();
         try
         {
-            CreateModule(modulesDir, TestModule1CreationInput);
-            CreateModule(modulesDir, TestModule2CreationInput);
+            var testModule1 = CreateModule(modulesDir, TestModule1CreationInput);
+            var testModule2 = CreateModule(modulesDir, TestModule2CreationInput);
             string moduleSearchFile = Path.Join(modulesDir, "modules_search.json");
             CreateModuleSearchFile(modulesDir, moduleSearchFile);
             var moduleProviders = await ModuleSearchConfigurationUtility.GetModuleProvidersByPathsAsync(
@@ -143,7 +143,7 @@ public class ModuleSearchConfigurationUtility_Tests
             await using (var alcCache = new AlcCache())
             {
                 // even same module loaded twice should be loaded distinct
-                CheckModuleLoadability_MutualExclusion(alcCache, moduleProvider, [TestModule1Name, TestModule1Name, TestModule2Name]);
+                CheckModuleLoadability_MutualExclusion(alcCache, moduleProvider, [testModule1, testModule1, testModule2]);
             }
         }
         finally
@@ -159,8 +159,8 @@ public class ModuleSearchConfigurationUtility_Tests
         string modulesDir = CreateModulesDir();
         try
         {
-            CreateModule(modulesDir, TestModule1CreationInput);
-            CreateModule(modulesDir, TestModule2CreationInput);
+            var testModule1 = CreateModule(modulesDir, TestModule1CreationInput);
+            var testModule2 = CreateModule(modulesDir, TestModule2CreationInput);
             string moduleSearchFile = Path.Join(modulesDir, "modules_search.json");
             CreateModuleSearchFile(modulesDir, moduleSearchFile);
             var moduleProviders = await ModuleSearchConfigurationUtility.GetModuleProvidersByPathsAsync(
@@ -174,7 +174,7 @@ public class ModuleSearchConfigurationUtility_Tests
             await using (var alcCache = new AlcCache())
             {
                 // even same module loaded twice should be loaded distinct
-                CheckModuleLoadability_MutualExclusion(alcCache, moduleProvider, [TestModule1Name, TestModule1Name, TestModule2Name]);
+                CheckModuleLoadability_MutualExclusion(alcCache, moduleProvider, [testModule1, testModule1, testModule2]);
             }
         }
         finally
@@ -183,17 +183,19 @@ public class ModuleSearchConfigurationUtility_Tests
         }
     }
 
-    private static void CheckModuleLoadability_MutualExclusion(AlcCache alcCache, IModuleProvider<ALCModule> moduleProvider, string[] moduleNames)
+    private static void CheckModuleLoadability_MutualExclusion(AlcCache alcCache, IModuleProvider<ALCModule> moduleProvider, CreatedModuleInfo[] createdModules)
     {
         List<Assembly> artAssemblies = [];
         List<Assembly> artCommonAssemblies = [];
+        List<Assembly> selfAssemblies = [];
         try
         {
-            foreach (string moduleName in moduleNames)
+            foreach (var createdModule in createdModules)
             {
-                var module = CheckModuleLoadability_GetModule(alcCache, moduleProvider, moduleName);
+                var module = CheckModuleLoadability_GetModule(alcCache, moduleProvider, createdModule);
                 artAssemblies.Add(module.AssemblyLoadContext.LoadFromAssemblyName(new AssemblyName("Art")));
                 artCommonAssemblies.Add(module.AssemblyLoadContext.LoadFromAssemblyName(new AssemblyName("Art.Common")));
+                selfAssemblies.Add(module.Assembly);
             }
             for (int i = 0; i < artAssemblies.Count; i++)
             {
@@ -209,6 +211,13 @@ public class ModuleSearchConfigurationUtility_Tests
                     Assert.False(artCommonAssemblies[i] == artCommonAssemblies[j]);
                 }
             }
+            for (int i = 0; i < selfAssemblies.Count; i++)
+            {
+                for (int j = i + 1; j < selfAssemblies.Count; j++)
+                {
+                    Assert.False(selfAssemblies[i] == selfAssemblies[j]);
+                }
+            }
         }
         finally
         {
@@ -220,19 +229,29 @@ public class ModuleSearchConfigurationUtility_Tests
         }
     }
 
-    private static ALCModule CheckModuleLoadability_GetModule(AlcCache alcCache, IModuleProvider<ALCModule> moduleProvider, string moduleName)
+    private static ALCModule CheckModuleLoadability_GetModule(AlcCache alcCache, IModuleProvider<ALCModule> moduleProvider, CreatedModuleInfo createdModuleInfo)
     {
-        bool gotModuleLocation = moduleProvider.TryLocateModule(moduleName, out var moduleLocation);
+        bool gotModuleLocation = moduleProvider.TryLocateModule(createdModuleInfo.Info.AssemblySimpleName, out var moduleLocation);
         Assert.True(gotModuleLocation);
         Assert.True(moduleProvider.CanLoadModule(moduleLocation!));
         var module = moduleProvider.LoadModule(moduleLocation!);
         alcCache.RegisterAssemblyLoadContext(module.AssemblyLoadContext);
-        Assert.Equal(moduleName, module.Assembly.GetName().Name);
+        Assert.Equal(createdModuleInfo.Info.AssemblySimpleName, module.Assembly.GetName().Name);
         Assert.True(typeof(IArtifactTool).Assembly == module.AssemblyLoadContext.LoadFromAssemblyName(new AssemblyName("Art")));
         foreach (var testAssembly in s_localTestModuleAssemblyReferences)
         {
             Assert.False(testAssembly == module.Assembly);
-            Assert.False(testAssembly == module.AssemblyLoadContext.LoadFromAssemblyName(new AssemblyName(moduleName)));
+            Assert.False(testAssembly == module.AssemblyLoadContext.LoadFromAssemblyName(new AssemblyName(createdModuleInfo.Info.AssemblySimpleName)));
+        }
+        foreach (var expectedAssemblyInfo in createdModuleInfo.IncludedAssemblies.Values)
+        {
+            if (expectedAssemblyInfo.AssemblySimpleName == "Art")
+            {
+                continue;
+            }
+            string fullPathExpected = Path.GetFullPath(expectedAssemblyInfo.AssemblyPath);
+            string fullPathCreated = Path.GetFullPath(module.AssemblyLoadContext.LoadFromAssemblyName(new AssemblyName(expectedAssemblyInfo.AssemblySimpleName)).Location);
+            Assert.Equal(fullPathExpected, fullPathCreated);
         }
         return module;
     }
@@ -240,6 +259,15 @@ public class ModuleSearchConfigurationUtility_Tests
     private record ModuleCreationInput(
         string ModuleAssemblySimpleName,
         string[] IncludedAssemblySimpleNames);
+
+    private record CreatedModuleInfo(
+        string ModulePath,
+        ExpectedAssemblyInfo Info,
+        Dictionary<string, ExpectedAssemblyInfo> IncludedAssemblies);
+
+    private record ExpectedAssemblyInfo(
+        string AssemblySimpleName,
+        string AssemblyPath);
 
     private static string CreateModulesDir()
     {
@@ -260,19 +288,23 @@ public class ModuleSearchConfigurationUtility_Tests
                    """);
     }
 
-    private static void CopyAssemblies(string moduleDir, string[] assemblySimpleNames)
+    private static Dictionary<string, ExpectedAssemblyInfo> CopyAssemblies(string moduleDir, string[] assemblySimpleNames)
     {
         string baseDirectory = AppContext.BaseDirectory;
+        var dict = new Dictionary<string, ExpectedAssemblyInfo>();
         foreach (string assemblySimpleName in assemblySimpleNames)
         {
             string assemblyFileName = $"{assemblySimpleName}.dll";
-            File.Copy(Path.Join(baseDirectory, assemblyFileName), Path.Join(moduleDir, assemblyFileName));
+            string outputFilePath = Path.Join(moduleDir, assemblyFileName);
+            File.Copy(Path.Join(baseDirectory, assemblyFileName), outputFilePath);
+            dict[assemblySimpleName] = new ExpectedAssemblyInfo(assemblySimpleName, outputFilePath);
         }
+        return dict;
     }
 
-    private static void CreateModule(string modulesDir, ModuleCreationInput moduleCreationInput)
+    private static CreatedModuleInfo CreateModule(string modulesDir, ModuleCreationInput moduleCreationInput)
     {
-        CreateModule(
+        return CreateModule(
             Path.Join(modulesDir, $"{moduleCreationInput.ModuleAssemblySimpleName}{ModuleDirectorySuffix}"),
             $"{moduleCreationInput.ModuleAssemblySimpleName}{ModuleManifestFileSuffix}",
             moduleCreationInput.ModuleAssemblySimpleName,
@@ -280,11 +312,12 @@ public class ModuleSearchConfigurationUtility_Tests
         );
     }
 
-    private static void CreateModule(string moduleDir, string moduleManifestFileName, string assemblySimpleName, string[] assemblySimpleNames)
+    private static CreatedModuleInfo CreateModule(string moduleDir, string moduleManifestFileName, string assemblySimpleName, string[] assemblySimpleNames)
     {
         Directory.CreateDirectory(moduleDir);
         WriteModuleManifest(Path.Join(moduleDir, moduleManifestFileName), assemblySimpleName);
-        CopyAssemblies(moduleDir, assemblySimpleNames);
+        var dict = CopyAssemblies(moduleDir, assemblySimpleNames);
+        return new CreatedModuleInfo(moduleDir, dict[assemblySimpleName], dict);
     }
 
     private static void CreateModuleSearchFile(string modulesDir, string moduleSearchFile)
