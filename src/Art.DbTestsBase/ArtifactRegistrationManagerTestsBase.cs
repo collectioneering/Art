@@ -83,7 +83,12 @@ public abstract class ArtifactRegistrationManagerTestsBase
 
     protected static async Task TestDatabaseReadOnly(IArtifactRegistrationManager r, bool testEmpty, CancellationToken testCancellationToken = default)
     {
-        if (!testEmpty)
+        if (testEmpty)
+        {
+            Assert.Null(await r.TryGetArtifactAsync(k1, testCancellationToken));
+            Assert.Null(await r.TryGetResourceAsync(i1_k1, testCancellationToken));
+        }
+        else
         {
             await VerifyWrittenDatabase(r, testCancellationToken);
         }
@@ -91,7 +96,12 @@ public abstract class ArtifactRegistrationManagerTestsBase
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await r.AddArtifactAsync(i1, testCancellationToken));
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await r.RemoveArtifactAsync(k2, testCancellationToken));
 
-        if (!testEmpty)
+        if (testEmpty)
+        {
+            Assert.Null(await r.TryGetArtifactAsync(k1, testCancellationToken));
+            Assert.Null(await r.TryGetResourceAsync(i1_k1, testCancellationToken));
+        }
+        else
         {
             await VerifyWrittenDatabase(r, testCancellationToken);
         }

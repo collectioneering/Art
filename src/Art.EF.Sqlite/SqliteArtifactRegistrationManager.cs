@@ -28,8 +28,12 @@ public class SqliteArtifactRegistrationManager : EFArtifactRegistrationManager<S
             }
             if (factory.UsingInMemory)
             {
-                if (!factory._isReadOnly)
+                if (config.ApplyMigrationsOnStartup)
                 {
+                    if (factory._isReadOnly)
+                    {
+                        throw new ArgumentException("Cannot apply migrations to read-only in-memory database");
+                    }
                     EnsureCleanInMemoryReadWriteSetup(Context.Database);
                 }
             }
