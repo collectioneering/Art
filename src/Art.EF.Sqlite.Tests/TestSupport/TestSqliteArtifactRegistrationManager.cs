@@ -1,4 +1,7 @@
-﻿namespace Art.EF.Sqlite.Tests.TestSupport;
+﻿using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+
+namespace Art.EF.Sqlite.Tests.TestSupport;
 
 public class TestSqliteArtifactRegistrationManager : SqliteArtifactRegistrationManager
 {
@@ -21,6 +24,18 @@ public class TestSqliteArtifactRegistrationManager : SqliteArtifactRegistrationM
     )
         : base(factory, config)
     {
+    }
+
+    /// <summary>
+    /// Clears Sqlite pool if applicable.
+    /// </summary>
+    protected internal static void ClearPoolForSqliteConnection(SqliteArtifactContext context)
+    {
+        if (context is { Database: var databaseFacade }
+            && databaseFacade.GetDbConnection() is SqliteConnection sqliteConnection)
+        {
+            SqliteConnection.ClearPool(sqliteConnection);
+        }
     }
 
     protected override void Dispose(bool disposing)

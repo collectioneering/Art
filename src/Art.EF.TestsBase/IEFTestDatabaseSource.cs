@@ -6,6 +6,7 @@ namespace Art.EF.TestsBase;
 public interface IEFTestDatabaseSource : IDisposable
 {
     public IArtifactRegistrationManager CreateArtifactRegistrationManager(TestDatabaseConfig config, Assembly? migrationsAssembly);
+    public IArtifactRegistrationManager CreateArtifactRegistrationManagerWithThrowCleanup(TestDatabaseConfig config, Assembly? migrationsAssembly);
 }
 
 /// <summary>

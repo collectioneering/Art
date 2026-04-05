@@ -69,8 +69,7 @@ public class SqliteArtifactContextFactory : ArtifactContextFactoryBase<SqliteArt
 
     internal string? MemoryFileId { get; set; }
 
-    /// <inheritdoc />
-    public override SqliteArtifactContext CreateDbContext(string[] args)
+    internal string BuildConnectionString()
     {
         string? file = StorageFile ?? (_requireInMemory ? null : Environment.GetEnvironmentVariable(EnvStorageFile));
         var queryStringParts = new List<string>();
@@ -86,21 +85,27 @@ public class SqliteArtifactContextFactory : ArtifactContextFactoryBase<SqliteArt
             queryStringParts.Add("immutable=1");
             queryStringParts.Add("mode=ro");
         }
-        var sb = new StringBuilder("DataSource=");
-        sb.Append("file:");
-        sb.Append(file);
+        var connectionStringBuilder = new StringBuilder("DataSource=");
+        connectionStringBuilder.Append("file:");
+        connectionStringBuilder.Append(file);
         if (queryStringParts.Count > 0)
         {
-            sb.Append('?');
-            sb.AppendJoin("&", queryStringParts);
+            connectionStringBuilder.Append('?');
+            connectionStringBuilder.AppendJoin("&", queryStringParts);
         }
-        sb.Append(';');
+        connectionStringBuilder.Append(';');
         if (_isReadOnly)
         {
-            sb.Append("Mode=ReadOnly;");
+            connectionStringBuilder.Append("Mode=ReadOnly;");
         }
+        return connectionStringBuilder.ToString();
+    }
+
+    /// <inheritdoc />
+    public override SqliteArtifactContext CreateDbContext(string[] args)
+    {
         var ob = new DbContextOptionsBuilder<ArtifactContext>();
-        ob.UseSqlite(sb.ToString(), b => b.MigrationsAssembly(MigrationAssembly.FullName));
+        ob.UseSqlite(BuildConnectionString(), b => b.MigrationsAssembly(MigrationAssembly.FullName));
         var context = new SqliteArtifactContext(ob.Options);
         context.UsingInMemory = UsingInMemory;
         context.SqliteIsReadOnly = _isReadOnly;

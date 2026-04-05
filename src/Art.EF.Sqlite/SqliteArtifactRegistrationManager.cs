@@ -89,7 +89,6 @@ public class SqliteArtifactRegistrationManager : EFArtifactRegistrationManager<S
         }
         catch
         {
-            ClearPoolForSqliteConnection(Context);
             Context.Dispose();
             throw;
         }
@@ -99,18 +98,6 @@ public class SqliteArtifactRegistrationManager : EFArtifactRegistrationManager<S
     {
         dbFacade.EnsureDeleted();
         dbFacade.EnsureCreated();
-    }
-
-    /// <summary>
-    /// Clears Sqlite pool if applicable.
-    /// </summary>
-    protected static void ClearPoolForSqliteConnection(SqliteArtifactContext context)
-    {
-        if (context is { Database: var databaseFacade }
-            && databaseFacade.GetDbConnection() is SqliteConnection sqliteConnection)
-        {
-            SqliteConnection.ClearPool(sqliteConnection);
-        }
     }
 
     /// <summary>

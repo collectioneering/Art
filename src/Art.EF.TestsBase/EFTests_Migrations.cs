@@ -20,7 +20,7 @@ public abstract class EFTests_Migrations : ArtifactRegistrationManagerTestsBase
 
         {
             var config = new TestDatabaseConfig(ApplyMigrationsOnStartup: false, IsReadOnly: false, DisablePendingMigrationsCheck: false);
-            var pendingMigrationsPresentException = Assert.Throws<EFPendingMigrationsPresentException>(() => dbSource.CreateArtifactRegistrationManager(config, GetInitialCreateMigrationsAssembly()));
+            var pendingMigrationsPresentException = Assert.Throws<EFPendingMigrationsPresentException>(() => dbSource.CreateArtifactRegistrationManagerWithThrowCleanup(config, GetInitialCreateMigrationsAssembly()));
             Assert.Single(pendingMigrationsPresentException.PendingMigrations);
             Assert.EndsWith("_InitialCreate", pendingMigrationsPresentException.PendingMigrations.First());
         }
@@ -91,7 +91,7 @@ public abstract class EFTests_Migrations : ArtifactRegistrationManagerTestsBase
 
         {
             var config = new TestDatabaseConfig(ApplyMigrationsOnStartup: false, IsReadOnly: false, DisablePendingMigrationsCheck: false);
-            var pendingMigrationsPresentException = Assert.Throws<EFPendingMigrationsPresentException>(() => dbSource.CreateArtifactRegistrationManager(config, GetDummyMigrationQX1MigrationsAssembly()));
+            var pendingMigrationsPresentException = Assert.Throws<EFPendingMigrationsPresentException>(() => dbSource.CreateArtifactRegistrationManagerWithThrowCleanup(config, GetDummyMigrationQX1MigrationsAssembly()));
             Assert.Single(pendingMigrationsPresentException.PendingMigrations);
             Assert.EndsWith("_DummyMigrationQX1", pendingMigrationsPresentException.PendingMigrations.First());
         }
@@ -111,7 +111,7 @@ public abstract class EFTests_Migrations : ArtifactRegistrationManagerTestsBase
 
         {
             var config = new TestDatabaseConfig(ApplyMigrationsOnStartup: false, IsReadOnly: true, DisablePendingMigrationsCheck: false);
-            var pendingMigrationsPresentException = Assert.Throws<EFPendingMigrationsPresentException>(() => dbSource.CreateArtifactRegistrationManager(config, GetDummyMigrationQX1MigrationsAssembly()));
+            var pendingMigrationsPresentException = Assert.Throws<EFPendingMigrationsPresentException>(() => dbSource.CreateArtifactRegistrationManagerWithThrowCleanup(config, GetDummyMigrationQX1MigrationsAssembly()));
             Assert.Single(pendingMigrationsPresentException.PendingMigrations);
             Assert.EndsWith("_DummyMigrationQX1", pendingMigrationsPresentException.PendingMigrations.First());
         }
