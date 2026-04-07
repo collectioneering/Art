@@ -4,7 +4,7 @@ using System.Reflection;
 namespace Artcore;
 
 /// <summary>
-/// Provides loading of modules stored on disks with manifests.
+/// Provides loading of modules stored on disk with manifests.
 /// </summary>
 [RequiresUnreferencedCode("Loading modules might require types that cannot be statically analyzed.")]
 public class DiskManifestModuleLoader : IModuleLoader<ALCModule>
