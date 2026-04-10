@@ -9,12 +9,19 @@ public enum ArtifactSkipMode
     /// Never skip.
     /// </summary>
     None,
+
     /// <summary>
     /// Skip all artifacts starting from first known artifact.
     /// </summary>
     FastExit,
+
     /// <summary>
     /// Skip only known artifacts.
     /// </summary>
-    Known
+    Known,
+
+    /// <summary>
+    /// Skip only known artifacts which are <see cref="ArtifactInfo.Full"/>.
+    /// </summary>
+    KnownFull
 }

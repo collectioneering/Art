@@ -163,6 +163,15 @@ public record ArtifactToolDumpProxy
                         }
                         break;
                     }
+                case ArtifactSkipMode.KnownFull:
+                    {
+                        ArtifactInfo? info = await artifactTool.RegistrationManager.TryGetArtifactAsync(data.Info.Key, cancellationToken).ConfigureAwait(false);
+                        if (info != null && info.Full)
+                        {
+                            continue;
+                        }
+                        break;
+                    }
             }
             if (!data.Info.Full && !Options.IncludeNonFull)
             {
@@ -209,6 +218,15 @@ public record ArtifactToolDumpProxy
                     {
                         ArtifactInfo? info = await artifactTool.RegistrationManager.TryGetArtifactAsync(data.Info.Key, cancellationToken).ConfigureAwait(false);
                         if (info != null)
+                        {
+                            continue;
+                        }
+                        break;
+                    }
+                case ArtifactSkipMode.KnownFull:
+                    {
+                        ArtifactInfo? info = await artifactTool.RegistrationManager.TryGetArtifactAsync(data.Info.Key, cancellationToken).ConfigureAwait(false);
+                        if (info != null && info.Full)
                         {
                             continue;
                         }
