@@ -177,16 +177,7 @@ public record ArtifactToolDumpProxy
             {
                 continue;
             }
-            tasks.Add(artifactTool.DumpArtifactAsync(
-                data,
-                Options.ResourceUpdate,
-                LogHandler,
-                Options.ChecksumSource,
-                artifactTool.TimeProvider,
-                artifactTool.Config.GetArtifactRetrievalTimestamps,
-                artifactTool.Config.GetResourceRetrievalTimestamps,
-                Options.EagerFlags,
-                cancellationToken));
+            tasks.Add(DumpArtifactAsync(data, artifactTool, cancellationToken));
         }
         await WaitForTasksAsync(tasks).ConfigureAwait(false);
     }
@@ -239,17 +230,7 @@ public record ArtifactToolDumpProxy
             }
             try
             {
-                await artifactTool.DumpArtifactAsync(
-                        data,
-                        Options.ResourceUpdate,
-                        LogHandler,
-                        Options.ChecksumSource,
-                        artifactTool.TimeProvider,
-                        artifactTool.Config.GetArtifactRetrievalTimestamps,
-                        artifactTool.Config.GetResourceRetrievalTimestamps,
-                        Options.EagerFlags,
-                        cancellationToken)
-                    .ConfigureAwait(false);
+                await DumpArtifactAsync(data, artifactTool, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -263,6 +244,20 @@ public record ArtifactToolDumpProxy
                 }
             }
         }
+    }
+
+    private Task DumpArtifactAsync(IArtifactData data, IArtifactListTool artifactTool, CancellationToken cancellationToken)
+    {
+        return artifactTool.DumpArtifactAsync(
+            data,
+            Options.ResourceUpdate,
+            LogHandler,
+            Options.ChecksumSource,
+            artifactTool.TimeProvider,
+            artifactTool.Config.GetArtifactRetrievalTimestamps,
+            artifactTool.Config.GetResourceRetrievalTimestamps,
+            Options.EagerFlags,
+            cancellationToken);
     }
 
     private async Task WaitForTasksAsync(IReadOnlyList<Task> tasks)
