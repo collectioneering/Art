@@ -45,14 +45,26 @@ public record ArtifactToolDumpProxy
             throw new InvalidOperationException(SharedStrings.ExcOptionsCannotBeNull);
         }
         ArtifactToolDumpOptions.Validate(options, constructor);
-        if (options.SkipMode == ArtifactSkipMode.FastExit && (options.EagerFlags & EagerFlags.ArtifactDump) != 0)
+        if ((options.EagerFlags & EagerFlags.ArtifactDump) != 0)
         {
-            const string errorMessage = $"Cannot pair {nameof(ArtifactSkipMode)}.{nameof(ArtifactSkipMode.FastExit)} with {nameof(EagerFlags)}.{nameof(EagerFlags.ArtifactDump)}";
-            if (constructor)
+            if (options.SkipMode == ArtifactSkipMode.FastExit)
             {
-                throw new ArgumentException(errorMessage);
+                const string errorMessage = $"Cannot pair {nameof(ArtifactSkipMode)}.{nameof(ArtifactSkipMode.FastExit)} with {nameof(EagerFlags)}.{nameof(EagerFlags.ArtifactDump)}";
+                if (constructor)
+                {
+                    throw new ArgumentException(errorMessage);
+                }
+                throw new InvalidOperationException(errorMessage);
             }
-            throw new InvalidOperationException(errorMessage);
+            if (options.SkipMode == ArtifactSkipMode.FastExitFull)
+            {
+                const string errorMessage = $"Cannot pair {nameof(ArtifactSkipMode)}.{nameof(ArtifactSkipMode.FastExitFull)} with {nameof(EagerFlags)}.{nameof(EagerFlags.ArtifactDump)}";
+                if (constructor)
+                {
+                    throw new ArgumentException(errorMessage);
+                }
+                throw new InvalidOperationException(errorMessage);
+            }
         }
     }
 
@@ -117,9 +129,90 @@ public record ArtifactToolDumpProxy
         await artifactTool.DumpAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    private class DumpContext
+    {
+        private readonly IArtifactTool _artifactTool;
+        private bool _fastExitFlagged;
+
+        public DumpContext(IArtifactTool artifactTool)
+        {
+            _artifactTool = artifactTool;
+        }
+
+        public async ValueTask<ListFilterCommand> FilterKnownAsync(ArtifactKey artifactKey, CancellationToken cancellationToken = default)
+        {
+            ArtifactInfo? info = await _artifactTool.RegistrationManager.TryGetArtifactAsync(artifactKey, cancellationToken).ConfigureAwait(false);
+            if (info != null)
+            {
+                return ListFilterCommand.Reject;
+            }
+            return ListFilterCommand.Accept;
+        }
+
+        public async ValueTask<ListFilterCommand> FilterKnownFullAsync(ArtifactKey artifactKey, CancellationToken cancellationToken = default)
+        {
+            ArtifactInfo? info = await _artifactTool.RegistrationManager.TryGetArtifactAsync(artifactKey, cancellationToken).ConfigureAwait(false);
+            if (info != null)
+            {
+                return ListFilterCommand.Reject;
+            }
+            return ListFilterCommand.Accept;
+        }
+
+        public async ValueTask<ListFilterCommand> FilterFastExitAsync(ArtifactKey artifactKey, CancellationToken cancellationToken = default)
+        {
+            if (_fastExitFlagged)
+            {
+                return ListFilterCommand.Abort;
+            }
+            ArtifactInfo? info = await _artifactTool.RegistrationManager.TryGetArtifactAsync(artifactKey, cancellationToken).ConfigureAwait(false);
+            if (info != null)
+            {
+                _fastExitFlagged = true;
+                return ListFilterCommand.Abort;
+            }
+            return ListFilterCommand.Accept;
+        }
+
+        public async ValueTask<ListFilterCommand> FilterFastExitFullAsync(ArtifactKey artifactKey, CancellationToken cancellationToken = default)
+        {
+            if (_fastExitFlagged)
+            {
+                return ListFilterCommand.Abort;
+            }
+            ArtifactInfo? info = await _artifactTool.RegistrationManager.TryGetArtifactAsync(artifactKey, cancellationToken).ConfigureAwait(false);
+            if (info != null && info.Full)
+            {
+                _fastExitFlagged = true;
+                return ListFilterCommand.Abort;
+            }
+            return ListFilterCommand.Accept;
+        }
+    }
+
     private ValueTask DumpAsListAsync(IArtifactListTool artifactTool, CancellationToken cancellationToken = default)
     {
-        IAsyncEnumerable<IArtifactData> enumerable = artifactTool.ListAsync(cancellationToken);
+        FilterDelegate<ArtifactKey, ListFilterCommand>? filterPredicate = null;
+        switch (Options.SkipMode)
+        {
+            case ArtifactSkipMode.None:
+                break;
+            case ArtifactSkipMode.FastExit:
+                filterPredicate = new DumpContext(artifactTool).FilterFastExitAsync;
+                break;
+            case ArtifactSkipMode.FastExitFull:
+                filterPredicate = new DumpContext(artifactTool).FilterFastExitFullAsync;
+                break;
+            case ArtifactSkipMode.Known:
+                filterPredicate = new DumpContext(artifactTool).FilterKnownAsync;
+                break;
+            case ArtifactSkipMode.KnownFull:
+                filterPredicate = new DumpContext(artifactTool).FilterKnownFullAsync;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+        IAsyncEnumerable<IArtifactData> enumerable = filterPredicate != null ? artifactTool.ListAsync(filterPredicate, cancellationToken) : artifactTool.ListAsync(cancellationToken);
         if ((Options.EagerFlags & artifactTool.AllowedEagerModes & EagerFlags.ArtifactList) != 0)
         {
             enumerable = enumerable.EagerAsync();
@@ -148,6 +241,16 @@ public record ArtifactToolDumpProxy
                     {
                         ArtifactInfo? info = await artifactTool.RegistrationManager.TryGetArtifactAsync(data.Info.Key, cancellationToken).ConfigureAwait(false);
                         if (info != null)
+                        {
+                            await WaitForTasksAsync(tasks).ConfigureAwait(false);
+                            return;
+                        }
+                        break;
+                    }
+                case ArtifactSkipMode.FastExitFull:
+                    {
+                        ArtifactInfo? info = await artifactTool.RegistrationManager.TryGetArtifactAsync(data.Info.Key, cancellationToken).ConfigureAwait(false);
+                        if (info != null && info.Full)
                         {
                             await WaitForTasksAsync(tasks).ConfigureAwait(false);
                             return;
@@ -200,6 +303,15 @@ public record ArtifactToolDumpProxy
                     {
                         ArtifactInfo? info = await artifactTool.RegistrationManager.TryGetArtifactAsync(data.Info.Key, cancellationToken).ConfigureAwait(false);
                         if (info != null)
+                        {
+                            return;
+                        }
+                        break;
+                    }
+                case ArtifactSkipMode.FastExitFull:
+                    {
+                        ArtifactInfo? info = await artifactTool.RegistrationManager.TryGetArtifactAsync(data.Info.Key, cancellationToken).ConfigureAwait(false);
+                        if (info != null && info.Full)
                         {
                             return;
                         }

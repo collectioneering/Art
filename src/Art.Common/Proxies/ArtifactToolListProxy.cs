@@ -90,6 +90,13 @@ public record ArtifactToolListProxy
                                     yield break;
                                 break;
                             }
+                        case ArtifactSkipMode.FastExitFull:
+                            {
+                                ArtifactInfo? info = await artifactTool.RegistrationManager.TryGetArtifactAsync(data.Info.Key, cancellationToken).ConfigureAwait(false);
+                                if (info != null && info.Full)
+                                    yield break;
+                                break;
+                            }
                         case ArtifactSkipMode.Known:
                             {
                                 ArtifactInfo? info = await artifactTool.RegistrationManager.TryGetArtifactAsync(data.Info.Key, cancellationToken).ConfigureAwait(false);

@@ -36,6 +36,7 @@ public record ArtifactToolDumpOptions(
         {
             case ArtifactSkipMode.None:
             case ArtifactSkipMode.FastExit:
+            case ArtifactSkipMode.FastExitFull:
             case ArtifactSkipMode.Known:
             case ArtifactSkipMode.KnownFull:
                 break;

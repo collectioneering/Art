@@ -38,7 +38,18 @@ public partial class ArtifactTool
         {
             retrievalDate = TimeProvider.GetUtcNow();
         }
-        return new ArtifactData(this, Profile.Tool, ResolveGroup(group), id, name, date, updateDate, retrievalDate, full);
+        return new ArtifactData(this, ResolveArtifactKey(id, group), name, date, updateDate, retrievalDate, full);
+    }
+
+    /// <summary>
+    /// Resolves the key that would be produced for an ID and group.
+    /// </summary>
+    /// <param name="id">Artifact ID.</param>
+    /// <param name="group">Custom group.</param>
+    /// <returns>Artifact key.</returns>
+    public virtual ArtifactKey ResolveArtifactKey(string id, string? group = null)
+    {
+        return new ArtifactKey(Profile.Tool, ResolveGroup(group), id);
     }
 
     /// <summary>

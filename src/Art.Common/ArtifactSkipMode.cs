@@ -16,6 +16,11 @@ public enum ArtifactSkipMode
     FastExit,
 
     /// <summary>
+    /// Skip all artifacts starting from first known artifact which is <see cref="ArtifactInfo.Full"/>.
+    /// </summary>
+    FastExitFull,
+
+    /// <summary>
     /// Skip only known artifacts.
     /// </summary>
     Known,
