@@ -77,6 +77,10 @@ internal static class DiskPaths
         string fullPath = Path.GetFullPath(path);
         if (fullPath.StartsWith(fullBaseDirectory))
         {
+            if (fullBaseDirectory == Path.GetPathRoot(fullBaseDirectory))
+            {
+                return;
+            }
             if (fullPath.Length > fullBaseDirectory.Length)
             {
                 char c = fullPath[fullBaseDirectory.Length];
