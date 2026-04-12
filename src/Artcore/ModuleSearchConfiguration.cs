@@ -41,7 +41,7 @@ public record ModuleSearchConfiguration(
     /// <returns>Task returning search configuration.</returns>
     public static async Task<ModuleSearchConfiguration> ParseUtf8StreamAsync(Stream stream, CancellationToken cancellationToken = default)
     {
-        return Validate(await JsonSerializer.DeserializeAsync(stream, SourceGenerationContext.Default.ModuleSearchConfiguration, cancellationToken));
+        return Validate(await JsonSerializer.DeserializeAsync(stream, SourceGenerationContext.s_context.ModuleSearchConfiguration, cancellationToken));
     }
 
 
@@ -52,7 +52,7 @@ public record ModuleSearchConfiguration(
     /// <returns>Search configuration.</returns>
     public static ModuleSearchConfiguration ParseUtf8Stream(Stream stream)
     {
-        return Validate(JsonSerializer.Deserialize(stream, SourceGenerationContext.Default.ModuleSearchConfiguration));
+        return Validate(JsonSerializer.Deserialize(stream, SourceGenerationContext.s_context.ModuleSearchConfiguration));
     }
 
     private static ModuleSearchConfiguration Validate(ModuleSearchConfiguration? moduleSearchConfiguration)

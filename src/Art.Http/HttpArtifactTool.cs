@@ -121,7 +121,7 @@ public abstract partial class HttpArtifactTool : ArtifactTool
         _cookieContainer = await CreateCookieContainerAsync(cancellationToken).ConfigureAwait(false);
         _httpMessageHandler = CreateHttpMessageHandler();
         _httpClient = CreateHttpClient(_httpMessageHandler);
-        string userAgent = TryGetOption(OptUserAgent, out string? customUserAgent, SourceGenerationContext.Default.String) ? customUserAgent : DefaultUserAgent;
+        string userAgent = TryGetOption(OptUserAgent, out string? customUserAgent, SourceGenerationContext.s_context.String) ? customUserAgent : DefaultUserAgent;
         _httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd(userAgent);
     }
 
@@ -229,18 +229,18 @@ public abstract partial class HttpArtifactTool : ArtifactTool
         [NotNullWhen(true)] out string? browserName,
         out string? profile)
     {
-        if (TryGetOption(optKeyBrowserName, out browserName, SourceGenerationContext.Default.String))
+        if (TryGetOption(optKeyBrowserName, out browserName, SourceGenerationContext.s_context.String))
         {
             mappedDomains = [];
-            if (TryGetOption(optKeyBrowserDomain, out string? domain, SourceGenerationContext.Default.String))
+            if (TryGetOption(optKeyBrowserDomain, out string? domain, SourceGenerationContext.s_context.String))
             {
                 mappedDomains.Add(new CookieFilter(domain));
             }
-            if (TryGetOption(optKeyBrowserDomains, out string[]? domains, SourceGenerationContext.Default.StringArray))
+            if (TryGetOption(optKeyBrowserDomains, out string[]? domains, SourceGenerationContext.s_context.StringArray))
             {
                 mappedDomains.AddRange(domains.Select(v => new CookieFilter(v)));
             }
-            profile = optKeyProfile != null && TryGetOption(optKeyProfile, out string? profileValue, SourceGenerationContext.Default.String) ? profileValue : null;
+            profile = optKeyProfile != null && TryGetOption(optKeyProfile, out string? profileValue, SourceGenerationContext.s_context.String) ? profileValue : null;
             return true;
         }
         mappedDomains = null;
@@ -257,7 +257,7 @@ public abstract partial class HttpArtifactTool : ArtifactTool
     /// <returns>True if option key was found.</returns>
     public bool TryLoadCookieFileFromOption(CookieContainer cookies, string optKey)
     {
-        if (TryGetOption(optKey, out string? cookieFile, SourceGenerationContext.Default.String))
+        if (TryGetOption(optKey, out string? cookieFile, SourceGenerationContext.s_context.String))
         {
             using StreamReader f = File.OpenText(cookieFile);
             cookies.LoadCookieFile(f);
@@ -275,7 +275,7 @@ public abstract partial class HttpArtifactTool : ArtifactTool
     /// <returns>Task returning if option key was found.</returns>
     public async Task<bool> TryLoadCookieFileFromOptionAsync(CookieContainer cookies, string optKey, CancellationToken cancellationToken = default)
     {
-        if (TryGetOption(optKey, out string? cookieFile, SourceGenerationContext.Default.String))
+        if (TryGetOption(optKey, out string? cookieFile, SourceGenerationContext.s_context.String))
         {
             using StreamReader f = File.OpenText(cookieFile);
             await cookies.LoadCookieFileAsync(f, cancellationToken).ConfigureAwait(false);

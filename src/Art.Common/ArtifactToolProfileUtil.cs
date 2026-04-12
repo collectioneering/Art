@@ -34,7 +34,7 @@ public static class ArtifactToolProfileUtil
     {
         ArgumentNullException.ThrowIfNull(path);
         ArgumentNullException.ThrowIfNull(options);
-        return DeserializeProfilesFromFileInternal(path, new SourceGenerationContext(options), out _);
+        return DeserializeProfilesFromFileInternal(path, new SourceGenerationContext.SourceGenerationContextImpl(options), out _);
     }
 
     /// <summary>
@@ -64,12 +64,12 @@ public static class ArtifactToolProfileUtil
     {
         ArgumentNullException.ThrowIfNull(path);
         ArgumentNullException.ThrowIfNull(options);
-        return DeserializeProfilesFromFileInternal(path, new SourceGenerationContext(options), out isSingleObject);
+        return DeserializeProfilesFromFileInternal(path, new SourceGenerationContext.SourceGenerationContextImpl(options), out isSingleObject);
     }
 
     private static ArtifactToolProfile[] DeserializeProfilesFromFileInternal(
         string path,
-        SourceGenerationContext sourceGenerationContext,
+        SourceGenerationContext.SourceGenerationContextImpl sourceGenerationContext,
         out bool isSingleObject)
     {
         return DeserializeProfilesInternal(JsonSerializer.Deserialize(File.ReadAllText(path), sourceGenerationContext.JsonElement), sourceGenerationContext, out isSingleObject);
@@ -100,7 +100,7 @@ public static class ArtifactToolProfileUtil
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(profiles);
-        SerializeProfilesToFileInternal(path, new SourceGenerationContext(options), profiles);
+        SerializeProfilesToFileInternal(path, new SourceGenerationContext.SourceGenerationContextImpl(options), profiles);
     }
 
     /// <summary>
@@ -128,7 +128,7 @@ public static class ArtifactToolProfileUtil
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(profiles);
-        SerializeProfilesToFileInternal(path, new SourceGenerationContext(options), profiles);
+        SerializeProfilesToFileInternal(path, new SourceGenerationContext.SourceGenerationContextImpl(options), profiles);
     }
 
     /// <summary>
@@ -156,15 +156,15 @@ public static class ArtifactToolProfileUtil
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(profile);
-        SerializeProfileToFileInternal(path, new SourceGenerationContext(options), profile);
+        SerializeProfileToFileInternal(path, new SourceGenerationContext.SourceGenerationContextImpl(options), profile);
     }
 
-    private static void SerializeProfilesToFileInternal(string path, SourceGenerationContext sourceGenerationContext, IReadOnlyList<ArtifactToolProfile> profiles)
+    private static void SerializeProfilesToFileInternal(string path, SourceGenerationContext.SourceGenerationContextImpl sourceGenerationContext, IReadOnlyList<ArtifactToolProfile> profiles)
     {
         SerializeToFile(path, profiles, sourceGenerationContext.IReadOnlyListArtifactToolProfile);
     }
 
-    private static void SerializeProfileToFileInternal(string path, SourceGenerationContext sourceGenerationContext, ArtifactToolProfile profile)
+    private static void SerializeProfileToFileInternal(string path, SourceGenerationContext.SourceGenerationContextImpl sourceGenerationContext, ArtifactToolProfile profile)
     {
         SerializeToFile(path, profile, sourceGenerationContext.ArtifactToolProfile);
     }
@@ -207,7 +207,7 @@ public static class ArtifactToolProfileUtil
     {
         ArgumentNullException.ThrowIfNull(utf8Stream);
         ArgumentNullException.ThrowIfNull(options);
-        return DeserializeProfilesInternal(utf8Stream, new SourceGenerationContext(options), out _);
+        return DeserializeProfilesInternal(utf8Stream, new SourceGenerationContext.SourceGenerationContextImpl(options), out _);
     }
 
     /// <summary>
@@ -236,7 +236,7 @@ public static class ArtifactToolProfileUtil
     {
         ArgumentNullException.ThrowIfNull(utf8Stream);
         ArgumentNullException.ThrowIfNull(options);
-        return DeserializeProfilesInternal(utf8Stream, new SourceGenerationContext(options), out isSingleObject);
+        return DeserializeProfilesInternal(utf8Stream, new SourceGenerationContext.SourceGenerationContextImpl(options), out isSingleObject);
     }
 
     /// <summary>
@@ -266,7 +266,7 @@ public static class ArtifactToolProfileUtil
         ArgumentNullException.ThrowIfNull(utf8Stream);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(profiles);
-        SerializeProfilesInternal(utf8Stream, new SourceGenerationContext(options), profiles);
+        SerializeProfilesInternal(utf8Stream, new SourceGenerationContext.SourceGenerationContextImpl(options), profiles);
     }
 
     /// <summary>
@@ -296,10 +296,10 @@ public static class ArtifactToolProfileUtil
         ArgumentNullException.ThrowIfNull(utf8Stream);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(profiles);
-        SerializeProfilesInternal(utf8Stream, new SourceGenerationContext(options), profiles);
+        SerializeProfilesInternal(utf8Stream, new SourceGenerationContext.SourceGenerationContextImpl(options), profiles);
     }
 
-    private static void SerializeProfilesInternal(Stream utf8Stream, SourceGenerationContext sourceGenerationContext, IReadOnlyList<ArtifactToolProfile> profiles)
+    private static void SerializeProfilesInternal(Stream utf8Stream, SourceGenerationContext.SourceGenerationContextImpl sourceGenerationContext, IReadOnlyList<ArtifactToolProfile> profiles)
     {
 #if USE_PRESERIALIZE
         using var ms = new MemoryStream();
@@ -333,7 +333,7 @@ public static class ArtifactToolProfileUtil
     public static ArtifactToolProfile[] DeserializeProfiles(JsonElement element, JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
-        return DeserializeProfilesInternal(element, new SourceGenerationContext(options), out _);
+        return DeserializeProfilesInternal(element, new SourceGenerationContext.SourceGenerationContextImpl(options), out _);
     }
 
     /// <summary>
@@ -360,12 +360,12 @@ public static class ArtifactToolProfileUtil
     public static ArtifactToolProfile[] DeserializeProfiles(JsonElement element, JsonSerializerOptions options, out bool isSingleObject)
     {
         ArgumentNullException.ThrowIfNull(options);
-        return DeserializeProfilesInternal(element, new SourceGenerationContext(options), out isSingleObject);
+        return DeserializeProfilesInternal(element, new SourceGenerationContext.SourceGenerationContextImpl(options), out isSingleObject);
     }
 
     private static ArtifactToolProfile[] DeserializeProfilesInternal(
         Stream utf8Stream,
-        SourceGenerationContext sourceGenerationContext,
+        SourceGenerationContext.SourceGenerationContextImpl sourceGenerationContext,
         out bool isSingleObject)
     {
         return DeserializeProfilesInternal(JsonSerializer.Deserialize(utf8Stream, sourceGenerationContext.JsonElement), sourceGenerationContext, out isSingleObject);
@@ -373,7 +373,7 @@ public static class ArtifactToolProfileUtil
 
     private static ArtifactToolProfile[] DeserializeProfilesInternal(
         JsonElement element,
-        SourceGenerationContext sourceGenerationContext,
+        SourceGenerationContext.SourceGenerationContextImpl sourceGenerationContext,
         out bool isSingleObject)
     {
         if (element.ValueKind == JsonValueKind.Object)
@@ -408,7 +408,7 @@ public static class ArtifactToolProfileUtil
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(profiles);
-        return SerializeProfilesInternal(new SourceGenerationContext(options), profiles);
+        return SerializeProfilesInternal(new SourceGenerationContext.SourceGenerationContextImpl(options), profiles);
     }
 
     /// <summary>
@@ -434,10 +434,10 @@ public static class ArtifactToolProfileUtil
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(profiles);
-        return SerializeProfilesInternal(new SourceGenerationContext(options), profiles);
+        return SerializeProfilesInternal(new SourceGenerationContext.SourceGenerationContextImpl(options), profiles);
     }
 
-    private static JsonElement SerializeProfilesInternal(SourceGenerationContext sourceGenerationContext, IReadOnlyList<ArtifactToolProfile> profiles)
+    private static JsonElement SerializeProfilesInternal(SourceGenerationContext.SourceGenerationContextImpl sourceGenerationContext, IReadOnlyList<ArtifactToolProfile> profiles)
     {
         return JsonSerializer.SerializeToElement(profiles, sourceGenerationContext.IReadOnlyListArtifactToolProfile);
     }

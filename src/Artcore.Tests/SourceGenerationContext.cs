@@ -3,16 +3,21 @@ using System.Text.Json.Serialization;
 
 namespace Artcore.Tests;
 
-[JsonSourceGenerationOptions(WriteIndented = true)]
-[JsonSerializable(typeof(ModuleSearchConfiguration))]
-internal partial class SourceGenerationContext : JsonSerializerContext
+internal partial class SourceGenerationContext
 {
-    static SourceGenerationContext()
-    {
-        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true, WriteIndented = true, AllowTrailingCommas = true, ReadCommentHandling = JsonCommentHandling.Skip };
-        options.Converters.Add(new JsonStringEnumConverter());
-        s_context = new SourceGenerationContext(options);
-    }
+    internal static SourceGenerationContextImpl s_context => SourceGenerationContextImpl.s_context;
 
-    internal static readonly SourceGenerationContext s_context;
+    //[JsonSourceGenerationOptions(WriteIndented = true)]
+    [JsonSerializable(typeof(ModuleSearchConfiguration))]
+    internal partial class SourceGenerationContextImpl : JsonSerializerContext
+    {
+        static SourceGenerationContextImpl()
+        {
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true, WriteIndented = true, AllowTrailingCommas = true, ReadCommentHandling = JsonCommentHandling.Skip };
+            options.Converters.Add(new JsonStringEnumConverter());
+            s_context = new SourceGenerationContextImpl(options);
+        }
+
+        internal static readonly SourceGenerationContextImpl s_context;
+    }
 }
