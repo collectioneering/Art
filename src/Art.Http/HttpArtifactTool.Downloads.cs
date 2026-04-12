@@ -319,35 +319,9 @@ public partial class HttpArtifactTool
                     : logHandler.TryGetOperationProgressContext(desc, s_downloadOperation, out context))
             {
                 using var ctx = context;
-                const int bufferSize = 8192;
-                byte[] buf = ArrayPool<byte>.Shared.Rent(bufferSize);
-                try
-                {
-                    var stream = await sourceMessage.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                    var mem = buf.AsMemory(0, bufferSize);
-                    long total = 0;
-                    while (true)
-                    {
-                        int read;
-                        if ((read = await stream.ReadAsync(mem, cancellationToken).ConfigureAwait(false)) != 0)
-                        {
-                            await targetStream.WriteAsync(mem[..read], cancellationToken).ConfigureAwait(false);
-                            total += read;
-                            ctx.Report(Math.Clamp((float)((double)total / contentLength), 0.0f, 1.0f));
-                        }
-                        else
-                        {
-                            ctx.Report(1.0f);
-                            ctx.MarkSafe();
-                            break;
-                        }
-                    }
-                    return;
-                }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(buf);
-                }
+                var stream = await sourceMessage.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                await ReportUtility.CopyToWithReportAsync(stream, targetStream, context, null, contentLength, cancellationToken).ConfigureAwait(false);
+                ctx.MarkSafe();
             }
         }
         // fall back to copy without logging
