@@ -20,7 +20,7 @@ public class ArtifactToolTests
         _ = await arm.TryGetResourceAsync(fakeKey, testCancellationToken);
         var tool = new ArtifactTool();
         var profile = new ArtifactToolProfile(toolString, null, null);
-        var config = new ArtifactToolConfig(arm, adm, new FakeTimeProvider(), true, true);
+        var config = new ArtifactToolConfig(arm, adm, NullExtensionsContext.Instance, new FakeTimeProvider(), true, true);
         await tool.InitializeAsync(config: config, profile: profile, testCancellationToken);
         Assert.Same(adm, tool.Config.DataManager);
         Assert.Same(arm, tool.Config.RegistrationManager);
@@ -48,7 +48,7 @@ public class ArtifactToolTests
         _ = await arm.TryGetResourceAsync(fakeKey, testCancellationToken);
         var tool = new ArtifactTool();
         var profile = new ArtifactToolProfile(toolString, null, null);
-        var config = new ArtifactToolConfig(arm, adm, new FakeTimeProvider(), true, true);
+        var config = new ArtifactToolConfig(arm, adm, NullExtensionsContext.Instance, new FakeTimeProvider(), true, true);
         await tool.InitializeAsync(config: config, profile: profile, testCancellationToken);
         Assert.Same(adm, tool.Config.DataManager);
         Assert.Same(arm, tool.Config.RegistrationManager);
@@ -149,7 +149,7 @@ public class ArtifactToolTests
         var profile = new ArtifactToolProfile(toolString, group, opts);
         var adm = new InMemoryArtifactDataManager();
         var arm = new InMemoryArtifactRegistrationManager();
-        var config = new ArtifactToolConfig(arm, adm, new FakeTimeProvider(), true, true);
+        var config = new ArtifactToolConfig(arm, adm, NullExtensionsContext.Instance, new FakeTimeProvider(), true, true);
         await tool.InitializeAsync(config: config, profile: profile, cancellationToken: testCancellationToken);
         Assert.Equal(toolString, tool.Profile.Tool);
         Assert.Equal(group, tool.Profile.Group);
@@ -181,7 +181,7 @@ public class ArtifactToolTests
             var profile = new ArtifactToolProfile(toolString, group, opts);
             var adm = new InMemoryArtifactDataManager();
             var arm = new InMemoryArtifactRegistrationManager();
-            var config = new ArtifactToolConfig(arm, adm, new FakeTimeProvider(), true, true);
+            var config = new ArtifactToolConfig(arm, adm, NullExtensionsContext.Instance, new FakeTimeProvider(), true, true);
             await tool.InitializeAsync(config: config, profile: profile, cancellationToken: testCancellationToken);
             Assert.Equal(toolString, tool.Profile.Tool);
             Assert.Equal(group, tool.Profile.Group);

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Text;
+using Art.Extensions.BrowserCookies;
 
 namespace Art.BrowserCookies.Chromium;
 

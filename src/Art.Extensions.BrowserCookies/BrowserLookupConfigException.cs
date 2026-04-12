@@ -1,4 +1,4 @@
-﻿namespace Art.BrowserCookies;
+﻿namespace Art.Extensions.BrowserCookies;
 
 /// <summary>
 /// Exception thrown for errors regarding browser lookup configuration.

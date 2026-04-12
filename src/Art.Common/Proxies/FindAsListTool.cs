@@ -45,6 +45,12 @@ internal class FindAsListTool : IArtifactListTool
         set => _baseFindTool.DataManager = value;
     }
 
+    public IExtensionsContext ExtensionsContext
+    {
+        get => _baseFindTool.ExtensionsContext;
+        set => _baseFindTool.ExtensionsContext = value;
+    }
+
     public JsonSerializerOptions JsonOptions
     {
         get => _baseFindTool.JsonOptions;

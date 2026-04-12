@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.WebSockets;
-using Art.BrowserCookies;
 using Art.Common;
+using Art.Extensions.BrowserCookies;
 
 namespace Art.Http;
 
@@ -173,7 +173,14 @@ public abstract partial class HttpArtifactTool : ArtifactTool
     {
         if (TryPrepareCookiesFromOption(optKeyBrowserName, optKeyBrowserDomain, optKeyBrowserDomains, optKeyProfile, out List<CookieFilter>? mappedDomains, out string? browserName, out string? profile))
         {
-            CookieSource.LoadCookies(cookies, mappedDomains, browserName, profile, LogHandler != null ? LogHandler.LogInformation : null);
+            if (ExtensionsContext.TryGetExtension(out ICookieProviderExtension? cookieProviderExtension))
+            {
+                cookieProviderExtension.LoadCookies(cookies, mappedDomains, browserName, profile, LogHandler != null ? LogHandler.LogInformation : null);
+            }
+            else
+            {
+                LogError("No cookie provider extension is available");
+            }
         }
         return false;
     }
@@ -192,16 +199,23 @@ public abstract partial class HttpArtifactTool : ArtifactTool
     {
         if (TryPrepareCookiesFromOption(optKeyBrowserName, optKeyBrowserDomain, optKeyBrowserDomains, optKeyProfile, out List<CookieFilter>? mappedDomains, out string? browserName, out string? profile))
         {
-            await CookieSource.LoadCookiesAsync(
-                cookies,
-                mappedDomains,
-                browserName,
-                profile,
-                LogHandler != null
-                    ? LogHandler.LogInformation
-                    : null,
-                cancellationToken: cancellationToken
-            ).ConfigureAwait(false);
+            if (ExtensionsContext.TryGetExtension(out ICookieProviderExtension? cookieProviderExtension))
+            {
+                await cookieProviderExtension.LoadCookiesAsync(
+                    cookies,
+                    mappedDomains,
+                    browserName,
+                    profile,
+                    LogHandler != null
+                        ? LogHandler.LogInformation
+                        : null,
+                    cancellationToken: cancellationToken
+                ).ConfigureAwait(false);
+            }
+            else
+            {
+                LogError("No cookie provider extension is available");
+            }
         }
         return false;
     }

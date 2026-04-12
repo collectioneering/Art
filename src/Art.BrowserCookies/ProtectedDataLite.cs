@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Windows.Win32;
 using Windows.Win32.Security.Cryptography;
+using Art.Extensions.BrowserCookies;
 
 namespace Art.BrowserCookies;
 

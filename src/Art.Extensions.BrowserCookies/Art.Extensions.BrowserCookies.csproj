@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <PackageVersion>0.51.0</PackageVersion>
@@ -7,23 +7,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ReferenceLocalProject_Art>true</ReferenceLocalProject_Art>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Art" Condition="'$(ReferenceLocalProject_Art)'!='true'" />
-    <ProjectReference Include="..\Art\Art.csproj" Condition="'$(ReferenceLocalProject_Art)'=='true'" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" />
-  </ItemGroup>
-
-  <PropertyGroup>
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <NoWarn>NU5105</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -36,13 +24,13 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Authors>Lucina,riina</Authors>
-    <Owners>Lucina,riina</Owners>
-    <Description>Artifact retrieval toolkit (EF Core)</Description>
-    <Copyright>Copyright ©2021 Lucina</Copyright>
+    <Authors>Riina</Authors>
+    <Owners>Riina</Owners>
+    <Description>Artifact retrieval toolkit (interface for browser cookies)</Description>
+    <Copyright>Copyright ©2026 riina</Copyright>
     <PackageProjectUrl>https://github.com/collectioneering/Art</PackageProjectUrl>
     <RepositoryUrl>https://github.com/collectioneering/Art</RepositoryUrl>
-    <Company>Lucina</Company>
+    <Company>Riina</Company>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -1,4 +1,6 @@
-﻿namespace Art.BrowserCookies.Chromium;
+﻿using Art.Extensions.BrowserCookies;
+
+namespace Art.BrowserCookies.Chromium;
 
 /// <summary>
 /// Represents a context-specific keychain accessor.

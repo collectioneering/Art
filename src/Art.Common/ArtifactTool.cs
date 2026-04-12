@@ -42,6 +42,9 @@ public partial class ArtifactTool : IArtifactTool
     public IArtifactDataManager DataManager { get; set; }
 
     /// <inheritdoc />
+    public IExtensionsContext ExtensionsContext { get; set; }
+
+    /// <inheritdoc />
     public JsonSerializerOptions JsonOptions
     {
         get => _jsonOptions ??= new JsonSerializerOptions();
@@ -74,6 +77,7 @@ public partial class ArtifactTool : IArtifactTool
     {
         RegistrationManager = null!;
         DataManager = null!;
+        ExtensionsContext = null!;
         Profile = null!;
         Config = null!;
         TimeProvider = null!;
@@ -94,7 +98,7 @@ public partial class ArtifactTool : IArtifactTool
 
     private void InitializeCore(ArtifactToolConfig? config, ArtifactToolProfile? profile)
     {
-        config ??= new ArtifactToolConfig(new NullArtifactRegistrationManager(), new NullArtifactDataManager(), TimeProvider.System, true, true);
+        config ??= new ArtifactToolConfig(new NullArtifactRegistrationManager(), new NullArtifactDataManager(), NullExtensionsContext.Instance, TimeProvider.System, true, true);
         if (config.RegistrationManager == null)
         {
             throw new ArgumentException("Cannot configure with null registration manager");
@@ -111,6 +115,7 @@ public partial class ArtifactTool : IArtifactTool
         RegistrationManager = config.RegistrationManager;
         DataManager = config.DataManager;
         TimeProvider = config.TimeProvider;
+        ExtensionsContext = config.ExtensionsContext;
         Profile = profile ?? new ArtifactToolProfile(ArtifactToolIDUtil.CreateToolString(GetType()), null, null);
         if (Profile.Options != null)
             ConfigureOptions();
@@ -179,6 +184,7 @@ public partial class ArtifactTool : IArtifactTool
     /// <param name="artifactToolProfile">Tool profile.</param>
     /// <param name="artifactRegistrationManager">Registration manager.</param>
     /// <param name="artifactDataManager">Data manager.</param>
+    /// <param name="extensionsContext">Extensions context.</param>
     /// <param name="timeProvider">Time provider.</param>
     /// <param name="getArtifactRetrievalTimestamps">Get artifact retrieval timestamps.</param>
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
@@ -191,6 +197,7 @@ public partial class ArtifactTool : IArtifactTool
         ArtifactToolProfile artifactToolProfile,
         IArtifactRegistrationManager artifactRegistrationManager,
         IArtifactDataManager artifactDataManager,
+        IExtensionsContext extensionsContext,
         TimeProvider timeProvider,
         bool getArtifactRetrievalTimestamps,
         bool getResourceRetrievalTimestamps,
@@ -198,7 +205,7 @@ public partial class ArtifactTool : IArtifactTool
     {
         if (!ArtifactToolLoader.TryLoad(artifactToolProfile.Tool, out IArtifactTool? t))
             throw new ArtifactToolNotFoundException(artifactToolProfile.Tool);
-        return PrepareToolInternalAsync(t, artifactToolProfile, artifactRegistrationManager, artifactDataManager, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken);
+        return PrepareToolInternalAsync(t, artifactToolProfile, artifactRegistrationManager, artifactDataManager, extensionsContext, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken);
     }
 
     /// <summary>
@@ -208,6 +215,7 @@ public partial class ArtifactTool : IArtifactTool
     /// <param name="artifactToolProfile">Tool profile.</param>
     /// <param name="artifactRegistrationManager">Registration manager.</param>
     /// <param name="artifactDataManager">Data manager.</param>
+    /// <param name="extensionsContext">Extensions context.</param>
     /// <param name="timeProvider">Time provider.</param>
     /// <param name="getArtifactRetrievalTimestamps">Get artifact retrieval timestamps.</param>
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
@@ -221,6 +229,7 @@ public partial class ArtifactTool : IArtifactTool
         ArtifactToolProfile artifactToolProfile,
         IArtifactRegistrationManager artifactRegistrationManager,
         IArtifactDataManager artifactDataManager,
+        IExtensionsContext extensionsContext,
         TimeProvider timeProvider,
         bool getArtifactRetrievalTimestamps,
         bool getResourceRetrievalTimestamps,
@@ -228,7 +237,7 @@ public partial class ArtifactTool : IArtifactTool
     {
         if (!ArtifactToolLoader.TryLoad(assemblyLoadContext, artifactToolProfile.Tool, out IArtifactTool? t))
             throw new ArtifactToolNotFoundException(artifactToolProfile.Tool);
-        return PrepareToolInternalAsync(t, artifactToolProfile, artifactRegistrationManager, artifactDataManager, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken);
+        return PrepareToolInternalAsync(t, artifactToolProfile, artifactRegistrationManager, artifactDataManager, extensionsContext, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken);
     }
 
     /// <summary>
@@ -238,6 +247,7 @@ public partial class ArtifactTool : IArtifactTool
     /// <param name="artifactToolProfile">Tool profile.</param>
     /// <param name="artifactRegistrationManager">Registration manager.</param>
     /// <param name="artifactDataManager">Data manager.</param>
+    /// <param name="extensionsContext">Extensions context.</param>
     /// <param name="timeProvider">Time provider.</param>
     /// <param name="getArtifactRetrievalTimestamps">Get artifact retrieval timestamps.</param>
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
@@ -250,6 +260,7 @@ public partial class ArtifactTool : IArtifactTool
         ArtifactToolProfile artifactToolProfile,
         IArtifactRegistrationManager artifactRegistrationManager,
         IArtifactDataManager artifactDataManager,
+        IExtensionsContext extensionsContext,
         TimeProvider timeProvider,
         bool getArtifactRetrievalTimestamps,
         bool getResourceRetrievalTimestamps,
@@ -262,6 +273,7 @@ public partial class ArtifactTool : IArtifactTool
             artifactToolProfile,
             artifactRegistrationManager,
             artifactDataManager,
+            extensionsContext,
             timeProvider,
             getArtifactRetrievalTimestamps,
             getResourceRetrievalTimestamps,
@@ -275,6 +287,7 @@ public partial class ArtifactTool : IArtifactTool
     /// <param name="artifactToolProfile">Tool profile.</param>
     /// <param name="artifactRegistrationManager">Registration manager.</param>
     /// <param name="artifactDataManager">Data manager.</param>
+    /// <param name="extensionsContext">Extensions context.</param>
     /// <param name="timeProvider">Time provider.</param>
     /// <param name="getArtifactRetrievalTimestamps">Get artifact retrieval timestamps.</param>
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
@@ -285,6 +298,7 @@ public partial class ArtifactTool : IArtifactTool
         ArtifactToolProfile artifactToolProfile,
         IArtifactRegistrationManager artifactRegistrationManager,
         IArtifactDataManager artifactDataManager,
+        IExtensionsContext extensionsContext,
         TimeProvider timeProvider,
         bool getArtifactRetrievalTimestamps,
         bool getResourceRetrievalTimestamps,
@@ -296,6 +310,7 @@ public partial class ArtifactTool : IArtifactTool
             artifactToolProfile,
             artifactRegistrationManager,
             artifactDataManager,
+            extensionsContext,
             timeProvider,
             getArtifactRetrievalTimestamps,
             getResourceRetrievalTimestamps,
@@ -307,6 +322,7 @@ public partial class ArtifactTool : IArtifactTool
         ArtifactToolProfile artifactToolProfile,
         IArtifactRegistrationManager artifactRegistrationManager,
         IArtifactDataManager artifactDataManager,
+        IExtensionsContext extensionsContext,
         TimeProvider timeProvider,
         bool getArtifactRetrievalTimestamps,
         bool getResourceRetrievalTimestamps,
@@ -315,6 +331,7 @@ public partial class ArtifactTool : IArtifactTool
         ArtifactToolConfig config = new(
             artifactRegistrationManager,
             artifactDataManager,
+            extensionsContext,
             timeProvider,
             getArtifactRetrievalTimestamps,
             getResourceRetrievalTimestamps);

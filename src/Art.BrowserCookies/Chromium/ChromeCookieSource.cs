@@ -1,4 +1,6 @@
-﻿namespace Art.BrowserCookies.Chromium;
+﻿using Art.Extensions.BrowserCookies;
+
+namespace Art.BrowserCookies.Chromium;
 
 /// <summary>
 /// Represents a <see cref="CookieSource"/> for the Google Chrome web browser.

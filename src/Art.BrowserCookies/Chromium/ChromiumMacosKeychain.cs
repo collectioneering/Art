@@ -1,6 +1,7 @@
 using System.Buffers;
 using System.Security.Cryptography;
 using System.Text;
+using Art.Extensions.BrowserCookies;
 
 namespace Art.BrowserCookies.Chromium;
 

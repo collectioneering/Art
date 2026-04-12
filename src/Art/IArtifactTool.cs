@@ -48,6 +48,11 @@ public interface IArtifactTool : IDisposable
     IArtifactDataManager DataManager { get; set; }
 
     /// <summary>
+    /// Extensions context used by this instance.
+    /// </summary>
+    IExtensionsContext ExtensionsContext { get; set; }
+
+    /// <summary>
     /// JSON serialization defaults.
     /// </summary>
     JsonSerializerOptions JsonOptions { get; set; }

@@ -38,7 +38,7 @@ public class ArtifactToolDumpProxyTests
         var options = new Dictionary<string, JsonElement> { { "artifactList", JsonSerializer.SerializeToElement(new[] { "1", "2", "3" }) } };
         var profile = new ArtifactToolProfile("tool", null, options);
         var arm = new InMemoryArtifactRegistrationManager();
-        var config = new ArtifactToolConfig(arm, new NullArtifactDataManager(), new FakeTimeProvider(), true, true);
+        var config = new ArtifactToolConfig(arm, new NullArtifactDataManager(), NullExtensionsContext.Instance, new FakeTimeProvider(), true, true);
         var tool = new ProgrammableArtifactFindTool((v, k) =>
         {
             int i = int.Parse(k);
@@ -108,7 +108,7 @@ public class ArtifactToolDumpProxyTests
         var timeProvider = new FakeTimeProvider(DateTimeOffset.FromUnixTimeMilliseconds(946713600000));
         var dict = new Dictionary<(int id, int? resourceIndex), DateTimeOffset>();
         var dict2 = new Dictionary<int, ArtifactKey>();
-        var config = new ArtifactToolConfig(arm, new InMemoryArtifactDataManager(), timeProvider, true, true);
+        var config = new ArtifactToolConfig(arm, new InMemoryArtifactDataManager(), NullExtensionsContext.Instance, timeProvider, true, true);
         var tool = new ProgrammableArtifactFindTool((v, k) =>
         {
             int i = int.Parse(k);
@@ -157,7 +157,7 @@ public class ArtifactToolDumpProxyTests
         var options = new Dictionary<string, JsonElement> { { "artifactList", JsonSerializer.SerializeToElement(new[] { "1", "2", "3" }) } };
         var profile = new ArtifactToolProfile("tool", null, options);
         var arm = new InMemoryArtifactRegistrationManager();
-        var config = new ArtifactToolConfig(arm, new NullArtifactDataManager(), new FakeTimeProvider(), true, true);
+        var config = new ArtifactToolConfig(arm, new NullArtifactDataManager(), NullExtensionsContext.Instance, new FakeTimeProvider(), true, true);
         var tool = new AsyncProgrammableArtifactDumpTool(async v =>
         {
             for (int i = 1; i <= 3; i++)
@@ -186,7 +186,7 @@ public class ArtifactToolDumpProxyTests
         var options = new Dictionary<string, JsonElement> { { "artifactList", JsonSerializer.SerializeToElement(new[] { "1", "2" }) } };
         var profile = new ArtifactToolProfile("tool", null, options);
         var arm = new InMemoryArtifactRegistrationManager();
-        var config = new ArtifactToolConfig(arm, new NullArtifactDataManager(), new FakeTimeProvider(), true, true);
+        var config = new ArtifactToolConfig(arm, new NullArtifactDataManager(), NullExtensionsContext.Instance, new FakeTimeProvider(), true, true);
         var tool = new AsyncProgrammableArtifactDumpTool(async v =>
         {
             for (int i = 1; i <= 3; i++)

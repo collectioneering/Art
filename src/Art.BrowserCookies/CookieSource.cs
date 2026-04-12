@@ -1,13 +1,14 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using Art.BrowserCookies.Chromium;
+using Art.Extensions.BrowserCookies;
 
 namespace Art.BrowserCookies;
 
 /// <summary>
 /// Represents a browser or browser profile that can be used to retrieve cookies.
 /// </summary>
-public abstract record CookieSource
+public abstract record CookieSource : ICookieSource
 {
     /// <summary>
     /// A simple name that identifies this browser type.
@@ -20,6 +21,8 @@ public abstract record CookieSource
     /// <exception cref="BrowserProfileNotFoundException">Thrown for unknown browser profile name.</exception>
     /// <remarks>Implementations can, for example, attempt to resolve a user-configured profile name to the profile directory name on the filesystem.</remarks>
     public abstract CookieSource Resolve();
+
+    ICookieSource ICookieSource.Resolve() => Resolve();
 
     private static readonly Dictionary<string, BrowserInfo> s_info = new(StringComparer.InvariantCultureIgnoreCase);
 

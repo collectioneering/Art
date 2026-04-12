@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Art.Extensions.BrowserCookies;
 using Microsoft.Data.Sqlite;
 
 namespace Art.BrowserCookies.Chromium;

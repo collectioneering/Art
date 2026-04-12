@@ -15,6 +15,7 @@ public static class ArtifactDumping
     /// </summary>
     /// <param name="artifactToolProfilePath">Path to tool profile.</param>
     /// <param name="targetDirectory">Base directory.</param>
+    /// <param name="extensionsContext">Extensions context.</param>
     /// <param name="timeProvider">Time provider.</param>
     /// <param name="getArtifactRetrievalTimestamps">Get artifact retrieval timestamps.</param>
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
@@ -27,6 +28,7 @@ public static class ArtifactDumping
     public static async Task DumpAsync(
         string artifactToolProfilePath,
         string targetDirectory,
+        IExtensionsContext extensionsContext,
         TimeProvider timeProvider,
         bool getArtifactRetrievalTimestamps,
         bool getResourceRetrievalTimestamps,
@@ -43,6 +45,7 @@ public static class ArtifactDumping
                     profile,
                     srm,
                     sdm,
+                    extensionsContext,
                     timeProvider,
                     getArtifactRetrievalTimestamps,
                     getResourceRetrievalTimestamps,
@@ -59,6 +62,7 @@ public static class ArtifactDumping
     /// <param name="assemblyLoadContext">Custom <see cref="AssemblyLoadContext"/>.</param>
     /// <param name="artifactToolProfilePath">Path to tool profile.</param>
     /// <param name="targetDirectory">Base directory.</param>
+    /// <param name="extensionsContext">Extensions context.</param>
     /// <param name="timeProvider">Time provider.</param>
     /// <param name="getArtifactRetrievalTimestamps">Get artifact retrieval timestamps.</param>
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
@@ -72,6 +76,7 @@ public static class ArtifactDumping
         AssemblyLoadContext assemblyLoadContext,
         string artifactToolProfilePath,
         string targetDirectory,
+        IExtensionsContext extensionsContext,
         TimeProvider timeProvider,
         bool getArtifactRetrievalTimestamps,
         bool getResourceRetrievalTimestamps,
@@ -88,6 +93,7 @@ public static class ArtifactDumping
                     profile,
                     srm,
                     sdm,
+                    extensionsContext,
                     timeProvider,
                     getArtifactRetrievalTimestamps,
                     getResourceRetrievalTimestamps,
@@ -104,6 +110,7 @@ public static class ArtifactDumping
     /// <param name="artifactToolRegistry">Custom <see cref="IArtifactToolRegistry"/>.</param>
     /// <param name="artifactToolProfilePath">Path to tool profile.</param>
     /// <param name="targetDirectory">Base directory.</param>
+    /// <param name="extensionsContext">Extensions context.</param>
     /// <param name="timeProvider">Time provider.</param>
     /// <param name="getArtifactRetrievalTimestamps">Get artifact retrieval timestamps.</param>
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
@@ -116,6 +123,7 @@ public static class ArtifactDumping
         IArtifactToolRegistry artifactToolRegistry,
         string artifactToolProfilePath,
         string targetDirectory,
+        IExtensionsContext extensionsContext,
         TimeProvider timeProvider,
         bool getArtifactRetrievalTimestamps,
         bool getResourceRetrievalTimestamps,
@@ -132,6 +140,7 @@ public static class ArtifactDumping
                     profile,
                     srm,
                     sdm,
+                    extensionsContext,
                     timeProvider,
                     getArtifactRetrievalTimestamps,
                     getResourceRetrievalTimestamps,
@@ -147,6 +156,7 @@ public static class ArtifactDumping
     /// <param name="artifactToolProfile">Tool profile.</param>
     /// <param name="artifactRegistrationManager">Registration manager.</param>
     /// <param name="artifactDataManager">Data manager.</param>
+    /// <param name="extensionsContext">Extensions context.</param>
     /// <param name="timeProvider">Time provider.</param>
     /// <param name="getArtifactRetrievalTimestamps">Get artifact retrieval timestamps.</param>
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
@@ -161,6 +171,7 @@ public static class ArtifactDumping
         ArtifactToolProfile artifactToolProfile,
         IArtifactRegistrationManager artifactRegistrationManager,
         IArtifactDataManager artifactDataManager,
+        IExtensionsContext extensionsContext,
         TimeProvider timeProvider,
         bool getArtifactRetrievalTimestamps,
         bool getResourceRetrievalTimestamps,
@@ -168,7 +179,15 @@ public static class ArtifactDumping
         IToolLogHandler? toolLogHandler = null,
         CancellationToken cancellationToken = default)
     {
-        using IArtifactTool tool = await ArtifactTool.PrepareToolAsync(artifactToolProfile, artifactRegistrationManager, artifactDataManager, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
+        using IArtifactTool tool = await ArtifactTool.PrepareToolAsync(
+            artifactToolProfile,
+            artifactRegistrationManager,
+            artifactDataManager,
+            extensionsContext,
+            timeProvider,
+            getArtifactRetrievalTimestamps,
+            getResourceRetrievalTimestamps,
+            cancellationToken).ConfigureAwait(false);
         await new ArtifactToolDumpProxy(
                 tool,
                 dumpOptions ?? new ArtifactToolDumpOptions(),
@@ -184,6 +203,7 @@ public static class ArtifactDumping
     /// <param name="artifactToolProfile">Tool profile.</param>
     /// <param name="artifactRegistrationManager">Registration manager.</param>
     /// <param name="artifactDataManager">Data manager.</param>
+    /// <param name="extensionsContext">Extensions context.</param>
     /// <param name="timeProvider">Time provider.</param>
     /// <param name="getArtifactRetrievalTimestamps">Get artifact retrieval timestamps.</param>
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
@@ -199,6 +219,7 @@ public static class ArtifactDumping
         ArtifactToolProfile artifactToolProfile,
         IArtifactRegistrationManager artifactRegistrationManager,
         IArtifactDataManager artifactDataManager,
+        IExtensionsContext extensionsContext,
         TimeProvider timeProvider,
         bool getArtifactRetrievalTimestamps,
         bool getResourceRetrievalTimestamps,
@@ -206,7 +227,16 @@ public static class ArtifactDumping
         IToolLogHandler? toolLogHandler = null,
         CancellationToken cancellationToken = default)
     {
-        using IArtifactTool tool = await ArtifactTool.PrepareToolAsync(assemblyLoadContext, artifactToolProfile, artifactRegistrationManager, artifactDataManager, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
+        using IArtifactTool tool = await ArtifactTool.PrepareToolAsync(
+            assemblyLoadContext,
+            artifactToolProfile,
+            artifactRegistrationManager,
+            artifactDataManager,
+            extensionsContext,
+            timeProvider,
+            getArtifactRetrievalTimestamps,
+            getResourceRetrievalTimestamps,
+            cancellationToken).ConfigureAwait(false);
         await new ArtifactToolDumpProxy(
             tool,
             dumpOptions ?? new ArtifactToolDumpOptions(),
@@ -221,6 +251,7 @@ public static class ArtifactDumping
     /// <param name="artifactToolProfile">Tool profile.</param>
     /// <param name="artifactRegistrationManager">Registration manager.</param>
     /// <param name="artifactDataManager">Data manager.</param>
+    /// <param name="extensionsContext">Extensions context.</param>
     /// <param name="timeProvider">Time provider.</param>
     /// <param name="getArtifactRetrievalTimestamps">Get artifact retrieval timestamps.</param>
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
@@ -235,6 +266,7 @@ public static class ArtifactDumping
         ArtifactToolProfile artifactToolProfile,
         IArtifactRegistrationManager artifactRegistrationManager,
         IArtifactDataManager artifactDataManager,
+        IExtensionsContext extensionsContext,
         TimeProvider timeProvider,
         bool getArtifactRetrievalTimestamps,
         bool getResourceRetrievalTimestamps,
@@ -242,7 +274,16 @@ public static class ArtifactDumping
         IToolLogHandler? toolLogHandler = null,
         CancellationToken cancellationToken = default)
     {
-        using IArtifactTool tool = await ArtifactTool.PrepareToolAsync(artifactToolRegistry, artifactToolProfile, artifactRegistrationManager, artifactDataManager, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
+        using IArtifactTool tool = await ArtifactTool.PrepareToolAsync(
+            artifactToolRegistry,
+            artifactToolProfile,
+            artifactRegistrationManager,
+            artifactDataManager,
+            extensionsContext,
+            timeProvider,
+            getArtifactRetrievalTimestamps,
+            getResourceRetrievalTimestamps,
+            cancellationToken).ConfigureAwait(false);
         await new ArtifactToolDumpProxy(
                 tool,
                 dumpOptions ?? new ArtifactToolDumpOptions(),
@@ -258,6 +299,7 @@ public static class ArtifactDumping
     /// <param name="artifactToolProfile">Tool profile.</param>
     /// <param name="artifactRegistrationManager">Registration manager.</param>
     /// <param name="artifactDataManager">Data manager.</param>
+    /// <param name="extensionsContext">Extensions context.</param>
     /// <param name="timeProvider">Time provider.</param>
     /// <param name="getArtifactRetrievalTimestamps">Get artifact retrieval timestamps.</param>
     /// <param name="getResourceRetrievalTimestamps">Get resource retrieval timestamps.</param>
@@ -271,6 +313,7 @@ public static class ArtifactDumping
         ArtifactToolProfile artifactToolProfile,
         IArtifactRegistrationManager artifactRegistrationManager,
         IArtifactDataManager artifactDataManager,
+        IExtensionsContext extensionsContext,
         TimeProvider timeProvider,
         bool getArtifactRetrievalTimestamps,
         bool getResourceRetrievalTimestamps,
@@ -278,7 +321,15 @@ public static class ArtifactDumping
         IToolLogHandler? toolLogHandler = null,
         CancellationToken cancellationToken = default) where T : IArtifactToolFactory
     {
-        using IArtifactTool tool = await ArtifactTool.PrepareToolAsync<T>(artifactToolProfile, artifactRegistrationManager, artifactDataManager, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken).ConfigureAwait(false);
+        using IArtifactTool tool = await ArtifactTool.PrepareToolAsync<T>(
+            artifactToolProfile,
+            artifactRegistrationManager,
+            artifactDataManager,
+            extensionsContext,
+            timeProvider,
+            getArtifactRetrievalTimestamps,
+            getResourceRetrievalTimestamps,
+            cancellationToken).ConfigureAwait(false);
         await new ArtifactToolDumpProxy(
                 tool,
                 dumpOptions ?? new ArtifactToolDumpOptions(),

@@ -1,4 +1,4 @@
-﻿namespace Art.BrowserCookies;
+﻿namespace Art.Extensions.BrowserCookies;
 
 /// <summary>
 /// Represents a method that accepts a log consisting of an optional title and optional body.

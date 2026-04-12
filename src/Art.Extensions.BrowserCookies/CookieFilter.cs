@@ -1,4 +1,4 @@
-namespace Art.BrowserCookies;
+namespace Art.Extensions.BrowserCookies;
 
 /// <summary>
 /// Represents a search filter for cookies.

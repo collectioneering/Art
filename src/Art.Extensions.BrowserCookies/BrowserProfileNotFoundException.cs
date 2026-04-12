@@ -1,7 +1,7 @@
 ﻿using System.Collections.Frozen;
 using System.Text;
 
-namespace Art.BrowserCookies;
+namespace Art.Extensions.BrowserCookies;
 
 /// <summary>
 /// Exception thrown when a browser profile was not found.
