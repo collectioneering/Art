@@ -39,9 +39,7 @@ public class InMemoryArtifactRegistrationManager : IArtifactRegistrationManager
     {
         _isReadOnly = isReadOnly;
         foreach (var v in inMemoryArtifactRegistrationManager._artifacts)
-        {
             _artifacts[v.Key] = v.Value;
-        }
         foreach (var v in inMemoryArtifactRegistrationManager._resources)
         {
             _resources[v.Key] = new Dictionary<ArtifactResourceKey, ArtifactResourceInfo>(v.Value);
