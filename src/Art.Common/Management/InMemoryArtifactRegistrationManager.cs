@@ -26,6 +26,7 @@ public class InMemoryArtifactRegistrationManager : IArtifactRegistrationManager
     /// <param name="isReadOnly">If true, writes to the database are disabled.</param>
     public InMemoryArtifactRegistrationManager(bool isReadOnly)
     {
+        _isReadOnly = isReadOnly;
     }
 
 
