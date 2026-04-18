@@ -26,6 +26,7 @@ public sealed partial class ReviewGithubCommand : Command
     private readonly Option<FileInfo> _sarifFile;
     private readonly Option<long> _repoIdOption;
     private readonly Option<int> _issueNumberOption;
+    private readonly Option<bool> _useApiDiffs;
 
     public ReviewGithubCommand() : this("review", "Produce review comments for GitHub")
     {
@@ -35,7 +36,7 @@ public sealed partial class ReviewGithubCommand : Command
     {
         _headCommit = new Option<string>("--head-commit") { Description = "Commit containing the target code", Required = true };
         Add(_headCommit);
-        _baseCommit = new Option<string>("--base-commit") { Description = "Base commit to compare against", Required = true };
+        _baseCommit = new Option<string>("--base-commit") { Description = "Base commit to compare against" };
         Add(_baseCommit);
         _sarifFile = new Option<FileInfo>("--sarif-file") { Description = "SARIF file to ingest", Required = true };
         _sarifFile.AcceptExistingOnly();
@@ -44,38 +45,59 @@ public sealed partial class ReviewGithubCommand : Command
         Add(_repoIdOption);
         _issueNumberOption = new Option<int>("--issue") { Description = "Issue number in repo", Required = true };
         Add(_issueNumberOption);
+        _useApiDiffs = new Option<bool>("--use-api-diffs") { Description = "If true, use GitHub API to retrieve diffs" };
+        Add(_useApiDiffs);
         SetAction(HandleAsync);
     }
 
     private async Task<int> HandleAsync(ParseResult parseResult, CancellationToken cancellationToken)
     {
         string headCommit = parseResult.GetRequiredValue(_headCommit);
-        string baseCommit = parseResult.GetRequiredValue(_baseCommit);
+        string? baseCommit = parseResult.GetValue(_baseCommit);
         FileInfo sarifFileSrc = parseResult.GetRequiredValue(_sarifFile);
         long repoId = parseResult.GetRequiredValue(_repoIdOption);
         int issue = parseResult.GetRequiredValue(_issueNumberOption);
+        bool useApiDiffs = parseResult.GetValue(_useApiDiffs);
         SarifFile sarifFile;
         using (var stream = sarifFileSrc.OpenRead())
         {
             sarifFile = await JsonSerializer.DeserializeAsync(stream, SourceGenerationContext.SharedContext.SarifFile, cancellationToken)
                         ?? throw new InvalidDataException($"Unexpected null json in sarif file {sarifFileSrc.FullName}");
         }
-        var psi = new ProcessStartInfo("git") { UseShellExecute = false, RedirectStandardOutput = true };
-        psi.ArgumentList.Add("diff");
-        psi.ArgumentList.Add(baseCommit);
-        psi.ArgumentList.Add(headCommit);
-        var process = Process.Start(psi);
-        if (process == null)
-        {
-            throw new InvalidOperationException();
-        }
+        var gitHubClient = new GitHubClient(new ProductHeaderValue("bongjo"));
+        gitHubClient.Credentials = new Credentials(Environment.GetEnvironmentVariable("GITHUB_TOKEN") ?? "");
         Dictionary<string, List<FixedRange>> ranges = new();
-        foreach (var list in ranges.Values)
+        if (useApiDiffs)
         {
-            list.Sort();
+            var files = await gitHubClient.PullRequest.Files(repoId, issue);
+            foreach (var file in files)
+            {
+                await ProcessDiffForFile(new StringReader(file.Patch), ranges, Path.GetFullPath(file.FileName));
+            }
         }
-        await ProcessDiff(process.StandardOutput, ranges);
-        await process.WaitForExitAsync(cancellationToken);
+        else
+        {
+            if (baseCommit == null)
+            {
+                Console.Error.WriteLine($"At least one of {_useApiDiffs.Name} or {_baseCommit.Name} must be supplied");
+                return 1;
+            }
+            var psi = new ProcessStartInfo("git") { UseShellExecute = false, RedirectStandardOutput = true };
+            psi.ArgumentList.Add("diff");
+            psi.ArgumentList.Add(baseCommit);
+            psi.ArgumentList.Add(headCommit);
+            var process = Process.Start(psi);
+            if (process == null)
+            {
+                throw new InvalidOperationException();
+            }
+            foreach (var list in ranges.Values)
+            {
+                list.Sort();
+            }
+            await ProcessDiff(process.StandardOutput, ranges);
+            await process.WaitForExitAsync(cancellationToken);
+        }
         List<TargetedComment> comments = [];
         foreach (var run in sarifFile.Runs)
         {
@@ -102,6 +124,7 @@ public sealed partial class ReviewGithubCommand : Command
                                 comments.Add(new TargetedComment(
                                     localPath,
                                     overlapLine - range.Line + range.DiffDelta,
+                                    overlapLine,
                                     result.Message.Text,
                                     result.RuleId));
                             }
@@ -110,27 +133,50 @@ public sealed partial class ReviewGithubCommand : Command
                 }
             }
         }
-        var gitHubClient = new GitHubClient(new ProductHeaderValue("bongjo"));
-        gitHubClient.Credentials = new Credentials(Environment.GetEnvironmentVariable("GITHUB_TOKEN") ?? "");
+        var reviewComments = await gitHubClient.PullRequest.ReviewComment.GetAll(repoId, issue);
+        var reviewCommentsByKey = reviewComments
+            .GroupBy(static v => new CommentKey(v.Path, v.OriginalPosition ?? 0))
+            .ToDictionary(static v => v.Key, static v2 => v2.ToList());
         foreach (var comment in comments)
         {
+            var commentKey = new CommentKey(comment.File, comment.PatchLine);
+            if (reviewCommentsByKey.TryGetValue(commentKey, out var existingReviewComments))
+            {
+                bool skipComment = false;
+                foreach (var existingReviewComment in existingReviewComments)
+                {
+                    if (!string.IsNullOrWhiteSpace(comment.RuleId) && existingReviewComment.Body.Contains(comment.RuleId))
+                    {
+                        skipComment = true;
+                        break;
+                    }
+                }
+                if (skipComment)
+                {
+                    Console.WriteLine($"Skipping comment for {commentKey.File} diff line {commentKey.Line} rule {comment.RuleId}");
+                    continue;
+                }
+            }
             Console.WriteLine(comment);
             string commentText = $"{comment.Message} ({comment.RuleId})";
-            await gitHubClient.PullRequest.ReviewComment.Create(repoId, issue, new PullRequestReviewCommentCreate(commentText, headCommit, comment.File, comment.Line));
+            //await gitHubClient.PullRequest.ReviewComment.Create(repoId, issue, new PullRequestReviewCommentCreate(commentText, headCommit, comment.File, comment.PatchLine));
         }
         return 0;
     }
 
-    private record TargetedComment(string File, int Line, string Message, string RuleId);
+    private record TargetedComment(string File, int PatchLine, int Line, string Message, string RuleId);
 
-    private async Task ProcessDiff(StreamReader sr, Dictionary<string, List<FixedRange>> ranges)
+    private record struct CommentKey(string File, int Line);
+
+    internal static async Task ProcessDiff(StreamReader textReader, Dictionary<string, List<FixedRange>> ranges)
     {
         // look exclusively for added code
-        string? line;
-        while ((line = await sr.ReadLineAsync()) != null)
+        string? line = await textReader.ReadLineAsync();
+        while (line != null)
         {
             if (!line.StartsWith("+++") || line.EndsWith("/dev/null"))
             {
+                line = await textReader.ReadLineAsync();
                 continue;
             }
             if (GetPlusLineFormat().Match(line) is not { Success: true } lineMatch)
@@ -138,31 +184,38 @@ public sealed partial class ReviewGithubCommand : Command
                 throw new InvalidDataException($"Unmatched +++ section: {line}");
             }
             string fullPath = Path.GetFullPath(lineMatch.Groups["path"].Value);
-            int lineNumber = 0;
-            while ((line = await sr.ReadLineAsync()) != null)
-            {
-                lineNumber++;
-                if (line.StartsWith('+') || line.StartsWith('-') || line.StartsWith(' '))
-                {
-                    continue;
-                }
-                if (!line.StartsWith("@@"))
-                {
-                    break;
-                }
-                if (GetDoubleAtLineFormat().Match(line) is not { Success: true } cmpLineMatch)
-                {
-                    throw new InvalidDataException($"Unmatched @@ section: {line}");
-                }
-                int start = int.Parse(cmpLineMatch.Groups["plusStart"].Value, CultureInfo.InvariantCulture);
-                int count = int.Parse(cmpLineMatch.Groups["plusLength"].Value, CultureInfo.InvariantCulture);
-                if (!ranges.TryGetValue(fullPath, out var list))
-                {
-                    ranges.Add(fullPath, list = []);
-                }
-                list.Add(new FixedRange(start, count, lineNumber));
-            }
+            line = await ProcessDiffForFile(textReader, ranges, fullPath) ?? await textReader.ReadLineAsync();
         }
+    }
+
+    internal static async Task<string?> ProcessDiffForFile(TextReader textReader, Dictionary<string, List<FixedRange>> ranges, string fullPath, int lineOffset = 0)
+    {
+        string? line;
+        int lineNumber = 0;
+        while ((line = await textReader.ReadLineAsync()) != null)
+        {
+            lineNumber++;
+            if (line.StartsWith('+') || line.StartsWith('-') || line.StartsWith(' '))
+            {
+                continue;
+            }
+            if (!line.StartsWith("@@"))
+            {
+                return line;
+            }
+            if (GetDoubleAtLineFormat().Match(line) is not { Success: true } cmpLineMatch)
+            {
+                throw new InvalidDataException($"Unmatched @@ section: {line}");
+            }
+            int start = int.Parse(cmpLineMatch.Groups["plusStart"].Value, CultureInfo.InvariantCulture);
+            int count = int.Parse(cmpLineMatch.Groups["plusLength"].Value, CultureInfo.InvariantCulture);
+            if (!ranges.TryGetValue(fullPath, out var list))
+            {
+                ranges.Add(fullPath, list = []);
+            }
+            list.Add(new FixedRange(start, count, lineNumber));
+        }
+        return null;
     }
 }
 
