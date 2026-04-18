@@ -329,10 +329,7 @@ public record ArtifactToolDumpProxy
                 case ArtifactSkipMode.KnownFull:
                     {
                         ArtifactInfo? info = await artifactTool.RegistrationManager.TryGetArtifactAsync(data.Info.Key, cancellationToken).ConfigureAwait(false);
-                        if (info != null && info.Full)
-                        {
-                            continue;
-                        }
+                        if (info != null && info.Full) continue;
                         break;
                     }
             }
@@ -384,9 +381,7 @@ public record ArtifactToolDumpProxy
         {
             var ignored = exc.Where(ignoreException).ToList();
             foreach (var ignore in ignored)
-            {
                 LogHandler?.Log($"Ignored exception of type {ignore.GetType().FullName}", ignore.ToString(), LogLevel.Warning);
-            }
             failed = exc.Where(v => !ignoreException(v)).ToList();
         }
         else

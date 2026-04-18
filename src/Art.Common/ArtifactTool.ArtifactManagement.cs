@@ -164,9 +164,7 @@ public static class ItemStateFlagsUtility
         {
             state |= ItemStateFlags.New;
             if (artifactInfo.Date != null || artifactInfo.UpdateDate != null)
-            {
                 state |= ItemStateFlags.NewerDate;
-            }
         }
         else
         {
