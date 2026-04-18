@@ -1,0 +1,56 @@
+name: InspectCode
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        submodules: 'recursive'
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: |
+          8.0.x
+          10.0.x
+    - name: Install dependencies
+      run: dotnet restore src
+    - name: Build
+      run: dotnet build src --configuration Release --no-restore
+    - name: Test
+      run: dotnet test src --configuration Release --no-build --verbosity normal
+
+  inspect:
+    name: Code Inspections
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        submodules: 'recursive'
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: |
+          8.0.x
+          10.0.x
+    - name: Install JetBrains-InspectCode
+      run: |
+        dotnet new tool-manifest
+        dotnet tool install JetBrains.ReSharper.GlobalTools
+        dotnet tool restore
+    - name: Generate SARIF file from JetBrains-InspectCode
+      run: dotnet tool run jb inspectcode src/Art.slnx -o=report.sarif -f="sarif" --absolute-paths --settings="src/Art.sln.DotSettings" -e=WARNING
+    - name: Upload SARIF file
+      uses: github/codeql-action/upload-sarif@v4
+      with:
+        sarif_file: report.sarif
+        category: JetBrains-InspectCode
