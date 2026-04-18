@@ -135,7 +135,7 @@ public sealed partial class ReviewGithubCommand : Command
         }
         var reviewComments = await gitHubClient.PullRequest.ReviewComment.GetAll(repoId, issue);
         var reviewCommentsByKey = reviewComments
-            .GroupBy(static v => new CommentKey(v.Path, v.OriginalPosition ?? 0))
+            .GroupBy(static v => new CommentKey(v.Path, v.Position ?? 0))
             .ToDictionary(static v => v.Key, static v2 => v2.ToList());
         foreach (var comment in comments)
         {
