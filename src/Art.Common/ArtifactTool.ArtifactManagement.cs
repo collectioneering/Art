@@ -251,9 +251,7 @@ public static class ItemStateFlagsUtility
                 state |= ItemStateFlags.ChangedMetadata;
             }
             if (resource.Checksum != null && !ChecksumUtility.DatawiseEquals(resource.Checksum, previousResource.Checksum))
-            {
                 state |= ItemStateFlags.NewChecksum;
-            }
         }
         return state;
     }
