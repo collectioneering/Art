@@ -58,7 +58,8 @@ jobs:
         echo "inspection_count=$(cat inspection_results/report.sarif | jq ".runs[0].results | length")" >> "$GITHUB_OUTPUT"
         {
           echo 'comment_body<<Inspection_Comment_EOF'
-          echo "Including this pull request, the following code inspection warnings/errors were created:\n\`\`\`"
+          echo "Including this pull request, the following code inspection warnings/errors were created:"
+          echo "\`\`\`"
           cat inspection_results/report.txt
           echo "\`\`\`"
           echo Inspection_Comment_EOF
