@@ -96,10 +96,14 @@ public sealed partial class ReviewGithubCommand : Command
                             if (range.OverlapsLines(
                                     location.PhysicalLocation.Region.StartLine,
                                     location.PhysicalLocation.Region.EndLine - location.PhysicalLocation.Region.StartLine + 1,
-                                    out int overlapColumn,
+                                    out int overlapLine,
                                     out _))
                             {
-                                comments.Add(new TargetedComment(localPath, overlapColumn, result.Message.Text, result.RuleId));
+                                comments.Add(new TargetedComment(
+                                    localPath,
+                                    overlapLine - range.Line + range.DiffDelta,
+                                    result.Message.Text,
+                                    result.RuleId));
                             }
                         }
                     }
@@ -110,6 +114,7 @@ public sealed partial class ReviewGithubCommand : Command
         gitHubClient.Credentials = new Credentials(Environment.GetEnvironmentVariable("GITHUB_TOKEN") ?? "");
         foreach (var comment in comments)
         {
+            Console.WriteLine(comment);
             string commentText = $"{comment.Message} ({comment.RuleId})";
             await gitHubClient.PullRequest.ReviewComment.Create(repoId, issue, new PullRequestReviewCommentCreate(commentText, headCommit, comment.File, comment.Line));
         }
@@ -132,8 +137,11 @@ public sealed partial class ReviewGithubCommand : Command
             {
                 throw new InvalidDataException($"Unmatched +++ section: {line}");
             }
+            string fullPath = Path.GetFullPath(lineMatch.Groups["path"].Value);
+            int lineNumber = 0;
             while ((line = await sr.ReadLineAsync()) != null)
             {
+                lineNumber++;
                 if (line.StartsWith('+') || line.StartsWith('-') || line.StartsWith(' '))
                 {
                     continue;
@@ -146,14 +154,13 @@ public sealed partial class ReviewGithubCommand : Command
                 {
                     throw new InvalidDataException($"Unmatched @@ section: {line}");
                 }
-                string fullPath = Path.GetFullPath(lineMatch.Groups["path"].Value);
                 int start = int.Parse(cmpLineMatch.Groups["plusStart"].Value, CultureInfo.InvariantCulture);
                 int count = int.Parse(cmpLineMatch.Groups["plusLength"].Value, CultureInfo.InvariantCulture);
                 if (!ranges.TryGetValue(fullPath, out var list))
                 {
                     ranges.Add(fullPath, list = []);
                 }
-                list.Add(new FixedRange(start, count));
+                list.Add(new FixedRange(start, count, lineNumber));
             }
         }
     }
@@ -235,12 +242,12 @@ internal partial class SourceGenerationContext
     }
 }
 
-internal record struct FixedRange(int Index, int Length) : IComparable<FixedRange>
+internal record struct FixedRange(int Line, int Length, int DiffDelta) : IComparable<FixedRange>
 {
     public bool OverlapsLines(int startLine, int lineCount, out int matchLine, out int matchLineCount)
     {
-        int maxSharedStart = Math.Max(startLine, Index);
-        int minSharedEnd = Math.Min(startLine + lineCount, Index + Length);
+        int maxSharedStart = Math.Max(startLine, Line);
+        int minSharedEnd = Math.Min(startLine + lineCount, Line + Length);
         if (maxSharedStart < minSharedEnd)
         {
             matchLine = maxSharedStart;
@@ -257,7 +264,7 @@ internal record struct FixedRange(int Index, int Length) : IComparable<FixedRang
 
     public int CompareTo(FixedRange other)
     {
-        int indexComparison = Index.CompareTo(other.Index);
+        int indexComparison = Line.CompareTo(other.Line);
         if (indexComparison != 0)
         {
             return indexComparison;
