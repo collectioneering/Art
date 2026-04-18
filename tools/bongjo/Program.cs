@@ -191,7 +191,7 @@ public sealed partial class ReviewGithubCommand : Command
             else if (line.StartsWith('+') || line.StartsWith('-') || line.StartsWith(' '))
             {
                 Console.WriteLine($"{lineNumber}/{localLineNumber}:{line}");
-                if (entriesPerLocation.TryGetValue(fullPath, out var entries))
+                if (!line.StartsWith('-') && entriesPerLocation.TryGetValue(fullPath, out var entries))
                 {
                     for (int i = 0; i < entries.Count; i++)
                     {
