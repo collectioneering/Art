@@ -25,4 +25,15 @@ jobs:
       run: dotnet build src --configuration Release --no-restore
     - name: Test
       run: dotnet test src --configuration Release --no-build --verbosity normal
-
+    - name: Install JetBrains-InspectCode
+      run: |
+        dotnet new tool-manifest
+        dotnet tool install JetBrains.ReSharper.GlobalTools
+        dotnet tool restore
+    - name: Generate SARIF file from JetBrains-InspectCode
+      run: jb inspectcode src/Art.slnx -o=inspection_results -f="sarif" --settings="src/Art.sln.DotSettings" -e=WARNING
+    - name: Upload SARIF file
+      uses: github/codeql-action/upload-sarif@v4
+      with:
+        sarif_file: inspection_results/report.sarif
+        category: JetBrains-InspectCode
