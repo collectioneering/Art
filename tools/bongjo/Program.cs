@@ -110,40 +110,6 @@ public sealed partial class ReviewGithubCommand : Command
             await ProcessDiff(process.StandardOutput, comments, entriesPerLocation);
             await process.WaitForExitAsync(cancellationToken);
         }
-        /*foreach (var run in sarifFile.Runs)
-        {
-            foreach (var result in run.Results)
-            {
-                foreach (var location in result.Locations)
-                {
-                    string path = Path.GetFullPath(new Uri(location.PhysicalLocation.ArtifactLocation.Uri).LocalPath);
-                    if (ranges.TryGetValue(path, out var fileRanges))
-                    {
-                        string localPath = Path.GetRelativePath(Path.GetFullPath("."), path);
-                        if (new HashSet<char> { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }.SetEquals(['/', '\\']))
-                        {
-                            localPath = localPath.Replace('\\', '/');
-                        }
-                        foreach (var range in fileRanges)
-                        {
-                            if (range.OverlapsLines(
-                                    location.PhysicalLocation.Region.StartLine,
-                                    location.PhysicalLocation.Region.EndLine - location.PhysicalLocation.Region.StartLine + 1,
-                                    out int overlapLine,
-                                    out _))
-                            {
-                                comments.Add(new TargetedComment(
-                                    localPath,
-                                    overlapLine - range.Line + range.DiffDelta,
-                                    overlapLine,
-                                    result.Message.Text,
-                                    result.RuleId));
-                            }
-                        }
-                    }
-                }
-            }
-        }*/
         var reviewComments = await gitHubClient.PullRequest.ReviewComment.GetAll(repoId, issue);
         var reviewCommentsByKey = reviewComments
             .GroupBy(static v => new CommentKey(v.Path, v.OriginalPosition ?? 0))
@@ -209,7 +175,7 @@ public sealed partial class ReviewGithubCommand : Command
         string fullPath, int lineOffset = 0)
     {
         int? lineNumber = null;
-        int localLineNumber = 1;
+        int localLineNumber = 0;
         while (await textReader.ReadLineAsync() is { } line)
         {
             if (line.StartsWith("@@"))
@@ -220,6 +186,7 @@ public sealed partial class ReviewGithubCommand : Command
                 }
                 lineNumber = int.Parse(cmpLineMatch.Groups["plusStart"].Value, CultureInfo.InvariantCulture);
                 Console.WriteLine($"{lineNumber}/{localLineNumber}:{line}");
+                localLineNumber++;
             }
             else if (line.StartsWith('+') || line.StartsWith('-') || line.StartsWith(' '))
             {
