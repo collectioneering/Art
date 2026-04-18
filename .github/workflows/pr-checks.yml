@@ -34,6 +34,8 @@ jobs:
     - uses: actions/checkout@v6
       with:
         submodules: 'recursive'
+    - name: Fetch base ref
+      run: git fetch "origin" "${{ github.base_ref }}"
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
       with:
@@ -46,7 +48,15 @@ jobs:
         dotnet tool install JetBrains.ReSharper.GlobalTools
         dotnet tool restore
     - name: Generate SARIF file from JetBrains-InspectCode
-      run: dotnet tool run jb inspectcode src/Art.slnx -o="inspection_results" -f="sarif;text" --absolute-paths --settings="src/Art.sln.DotSettings" -e=WARNING
+      run: |
+        dotnet tool run jb inspectcode \
+          src/Art.slnx \
+          --settings="src/Art.sln.DotSettings" \
+          -o="inspection_results" \
+          -f="sarif;text" \
+          --absolute-paths \
+          -e=WARNING \
+          --disable-settings-layers="GlobalAll; GlobalPerProduct; SolutionPersonal; ProjectPersonal"
     - name: Upload SARIF file
       uses: github/codeql-action/upload-sarif@v4
       with:
@@ -59,11 +69,11 @@ jobs:
       if: ${{ steps.check_inspection_outputs.outputs.inspection_count != '0' }}
       run: |
         dotnet run --project tools/bongjo -- review \
-        --base-commit "${{ github.base_ref }}" \
-        --head-commit "${{ github.head_ref }}" \
-        --sarif-file inspection_results/report.sarif \
-        --repo-id "${{ github.repository_id }}" \
-        --issue "${{ github.event.number }}"
+          --base-commit "${{ github.base_ref }}" \
+          --head-commit "${{ github.head_ref }}" \
+          --sarif-file inspection_results/report.sarif \
+          --repo-id "${{ github.repository_id }}" \
+          --issue "${{ github.event.number }}"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Mark run as failed if inspection has outputs
