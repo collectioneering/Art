@@ -193,8 +193,9 @@ public sealed partial class ReviewGithubCommand : Command
                 Console.WriteLine($"{lineNumber}/{localLineNumber}:{line}");
                 if (entriesPerLocation.TryGetValue(fullPath, out var entries))
                 {
-                    foreach (var entry in entries)
+                    for (int i = 0; i < entries.Count; i++)
                     {
+                        KeyValuePair<SarifRunResultLocation, SarifRunResult> entry = entries[i];
                         if (lineNumber == entry.Key.PhysicalLocation.Region.StartLine)
                         {
                             string localPath = Path.GetRelativePath(Path.GetFullPath("."), fullPath);
@@ -208,6 +209,8 @@ public sealed partial class ReviewGithubCommand : Command
                                 (int)lineNumber,
                                 entry.Value.Message.Text,
                                 entry.Value.RuleId));
+                            entries.RemoveAt(i);
+                            break;
                         }
                     }
                 }
