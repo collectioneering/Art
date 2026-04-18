@@ -13,6 +13,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v6
+      with:
+        submodules: 'recursive'
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
       with:
@@ -25,15 +27,30 @@ jobs:
       run: dotnet build src --configuration Release --no-restore
     - name: Test
       run: dotnet test src --configuration Release --no-build --verbosity normal
+
+  inspect:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        submodules: 'recursive'
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: |
+          8.0.x
+          10.0.x
     - name: Install JetBrains-InspectCode
       run: |
         dotnet new tool-manifest
         dotnet tool install JetBrains.ReSharper.GlobalTools
         dotnet tool restore
     - name: Generate SARIF file from JetBrains-InspectCode
-      run: dotnet tool run jb inspectcode src/Art.slnx -o=inspection_results -f="sarif" --settings="src/Art.sln.DotSettings" -e=WARNING
+      run: dotnet tool run jb inspectcode src/Art.slnx -o=report.sarif -f="sarif" --settings="src/Art.sln.DotSettings" -e=WARNING
     - name: Upload SARIF file
       uses: github/codeql-action/upload-sarif@v4
       with:
-        sarif_file: inspection_results/report.sarif
+        sarif_file: report.sarif
         category: JetBrains-InspectCode
