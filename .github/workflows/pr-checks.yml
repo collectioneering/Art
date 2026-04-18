@@ -54,15 +54,18 @@ jobs:
         category: JetBrains-InspectCode
     - name: Check inspection outputs
       id: check_inspection_outputs
-      run: echo "inspection_count=$(cat inspection_results/report.sarif | jq ".runs[0].results | length")" >> "$GITHUB_OUTPUT"
-    - name: Add comment to PR if inspection has outputs
-      if: ${{ steps.check_inspection_outputs.outputs.inspection_count != '0' }}
-      uses: actions/github-script@v7
-      env:
-        comment_body: |
+      run: |
+        echo "inspection_count=$(cat inspection_results/report.sarif | jq ".runs[0].results | length")" >> "$GITHUB_OUTPUT"
+        {
+          echo 'comment_body<<Inspection_Comment_EOF'
           echo "Including this pull request, the following code inspection warnings/errors were created:\n```"
           cat inspection_results/report.txt
           echo "```"
+          echo Inspection_Comment_EOF
+        } >> "$GITHUB_ENV"
+    - name: Add comment to PR if inspection has outputs
+      if: ${{ steps.check_inspection_outputs.outputs.inspection_count != '0' }}
+      uses: actions/github-script@v7
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
