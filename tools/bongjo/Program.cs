@@ -66,13 +66,29 @@ public sealed partial class ReviewGithubCommand : Command
         }
         var gitHubClient = new GitHubClient(new ProductHeaderValue("bongjo"));
         gitHubClient.Credentials = new Credentials(Environment.GetEnvironmentVariable("GITHUB_TOKEN") ?? "");
-        Dictionary<string, List<FixedRange>> ranges = new();
+        var entriesPerLocation = new Dictionary<string, List<KeyValuePair<SarifRunResultLocation, SarifRunResult>>>();
+        foreach (var run in sarifFile.Runs)
+        {
+            foreach (var result in run.Results)
+            {
+                foreach (var location in result.Locations)
+                {
+                    string path = Path.GetFullPath(new Uri(location.PhysicalLocation.ArtifactLocation.Uri).LocalPath);
+                    if (!entriesPerLocation.TryGetValue(path, out var list))
+                    {
+                        entriesPerLocation.Add(path, list = []);
+                    }
+                    list.Add(new KeyValuePair<SarifRunResultLocation, SarifRunResult>(location, result));
+                }
+            }
+        }
+        List<TargetedComment> comments = [];
         if (useApiDiffs)
         {
             var files = await gitHubClient.PullRequest.Files(repoId, issue);
             foreach (var file in files)
             {
-                await ProcessDiffForFile(new StringReader(file.Patch), ranges, Path.GetFullPath(file.FileName));
+                await ProcessDiffForFile(new StringReader(file.Patch), comments, entriesPerLocation, Path.GetFullPath(file.FileName));
             }
         }
         else
@@ -91,15 +107,10 @@ public sealed partial class ReviewGithubCommand : Command
             {
                 throw new InvalidOperationException();
             }
-            foreach (var list in ranges.Values)
-            {
-                list.Sort();
-            }
-            await ProcessDiff(process.StandardOutput, ranges);
+            await ProcessDiff(process.StandardOutput, comments, entriesPerLocation);
             await process.WaitForExitAsync(cancellationToken);
         }
-        List<TargetedComment> comments = [];
-        foreach (var run in sarifFile.Runs)
+        /*foreach (var run in sarifFile.Runs)
         {
             foreach (var result in run.Results)
             {
@@ -132,10 +143,10 @@ public sealed partial class ReviewGithubCommand : Command
                     }
                 }
             }
-        }
+        }*/
         var reviewComments = await gitHubClient.PullRequest.ReviewComment.GetAll(repoId, issue);
         var reviewCommentsByKey = reviewComments
-            .GroupBy(static v => new CommentKey(v.Path, v.Position ?? 0))
+            .GroupBy(static v => new CommentKey(v.Path, v.OriginalPosition ?? 0))
             .ToDictionary(static v => v.Key, static v2 => v2.ToList());
         foreach (var comment in comments)
         {
@@ -159,16 +170,19 @@ public sealed partial class ReviewGithubCommand : Command
             }
             Console.WriteLine(comment);
             string commentText = $"{comment.Message} ({comment.RuleId})";
-            //await gitHubClient.PullRequest.ReviewComment.Create(repoId, issue, new PullRequestReviewCommentCreate(commentText, headCommit, comment.File, comment.PatchLine));
+            await gitHubClient.PullRequest.ReviewComment.Create(repoId, issue, new PullRequestReviewCommentCreate(commentText, headCommit, comment.File, comment.PatchLine));
         }
         return 0;
     }
 
-    private record TargetedComment(string File, int PatchLine, int Line, string Message, string RuleId);
+    internal record TargetedComment(string File, int PatchLine, int Line, string Message, string RuleId);
 
     private record struct CommentKey(string File, int Line);
 
-    internal static async Task ProcessDiff(StreamReader textReader, Dictionary<string, List<FixedRange>> ranges)
+    internal static async Task ProcessDiff(
+        StreamReader textReader,
+        List<TargetedComment> comments,
+        IReadOnlyDictionary<string, List<KeyValuePair<SarifRunResultLocation, SarifRunResult>>> entriesPerLocation)
     {
         // look exclusively for added code
         string? line = await textReader.ReadLineAsync();
@@ -184,36 +198,62 @@ public sealed partial class ReviewGithubCommand : Command
                 throw new InvalidDataException($"Unmatched +++ section: {line}");
             }
             string fullPath = Path.GetFullPath(lineMatch.Groups["path"].Value);
-            line = await ProcessDiffForFile(textReader, ranges, fullPath) ?? await textReader.ReadLineAsync();
+            line = await ProcessDiffForFile(textReader, comments, entriesPerLocation, fullPath) ?? await textReader.ReadLineAsync();
         }
     }
 
-    internal static async Task<string?> ProcessDiffForFile(TextReader textReader, Dictionary<string, List<FixedRange>> ranges, string fullPath, int lineOffset = 0)
+    internal static async Task<string?> ProcessDiffForFile(
+        TextReader textReader,
+        List<TargetedComment> comments,
+        IReadOnlyDictionary<string, List<KeyValuePair<SarifRunResultLocation, SarifRunResult>>> entriesPerLocation,
+        string fullPath, int lineOffset = 0)
     {
-        string? line;
-        int lineNumber = 0;
-        while ((line = await textReader.ReadLineAsync()) != null)
+        int? lineNumber = null;
+        int localLineNumber = 1;
+        while (await textReader.ReadLineAsync() is { } line)
         {
-            lineNumber++;
-            if (line.StartsWith('+') || line.StartsWith('-') || line.StartsWith(' '))
+            if (line.StartsWith("@@"))
             {
-                continue;
+                if (GetDoubleAtLineFormat().Match(line) is not { Success: true } cmpLineMatch)
+                {
+                    throw new InvalidDataException($"Unmatched @@ section: {line}");
+                }
+                lineNumber = int.Parse(cmpLineMatch.Groups["plusStart"].Value, CultureInfo.InvariantCulture);
+                Console.WriteLine($"{lineNumber}/{localLineNumber}:{line}");
             }
-            if (!line.StartsWith("@@"))
+            else if (line.StartsWith('+') || line.StartsWith('-') || line.StartsWith(' '))
+            {
+                Console.WriteLine($"{lineNumber}/{localLineNumber}:{line}");
+                if (entriesPerLocation.TryGetValue(fullPath, out var entries))
+                {
+                    foreach (var entry in entries)
+                    {
+                        if (lineNumber == entry.Key.PhysicalLocation.Region.StartLine)
+                        {
+                            string localPath = Path.GetRelativePath(Path.GetFullPath("."), fullPath);
+                            if (new HashSet<char> { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }.SetEquals(['/', '\\']))
+                            {
+                                localPath = localPath.Replace('\\', '/');
+                            }
+                            comments.Add(new TargetedComment(
+                                localPath,
+                                localLineNumber,
+                                (int)lineNumber,
+                                entry.Value.Message.Text,
+                                entry.Value.RuleId));
+                        }
+                    }
+                }
+                localLineNumber++;
+                if (!line.StartsWith('-') && lineNumber != null)
+                {
+                    lineNumber++;
+                }
+            }
+            else
             {
                 return line;
             }
-            if (GetDoubleAtLineFormat().Match(line) is not { Success: true } cmpLineMatch)
-            {
-                throw new InvalidDataException($"Unmatched @@ section: {line}");
-            }
-            int start = int.Parse(cmpLineMatch.Groups["plusStart"].Value, CultureInfo.InvariantCulture);
-            int count = int.Parse(cmpLineMatch.Groups["plusLength"].Value, CultureInfo.InvariantCulture);
-            if (!ranges.TryGetValue(fullPath, out var list))
-            {
-                ranges.Add(fullPath, list = []);
-            }
-            list.Add(new FixedRange(start, count, lineNumber));
         }
         return null;
     }

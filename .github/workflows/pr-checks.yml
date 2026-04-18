@@ -73,7 +73,8 @@ jobs:
           --head-commit "${{ github.event.pull_request.head.sha }}" \
           --sarif-file inspection_results/report.sarif \
           --repo-id "${{ github.repository_id }}" \
-          --issue "${{ github.event.number }}"
+          --issue "${{ github.event.number }}" \
+          --use-api-diffs
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Mark run as failed if inspection has outputs
