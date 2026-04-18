@@ -490,7 +490,9 @@ public partial class HttpArtifactTool
     {
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(response);
         if (!DebugMode)
+        {
             return await DeserializeJsonAsync(await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false), jsonTypeInfo, cancellationToken).ConfigureAwait(false);
+        }
         string text = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         LogInformation($"JSON from {response.RequestMessage?.RequestUri?.ToString() ?? "unknown request"}", text);
         return DeserializeJson(text, jsonTypeInfo);
@@ -535,7 +537,9 @@ public partial class HttpArtifactTool
     {
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(response);
         if (!DebugMode)
+        {
             return await DeserializeRequiredJsonAsync(await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false), jsonTypeInfo, cancellationToken).ConfigureAwait(false);
+        }
         string text = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         LogInformation($"JSON from {response.RequestMessage?.RequestUri?.ToString() ?? "unknown request"}", text);
         return DeserializeRequiredJson(text, jsonTypeInfo);
@@ -559,7 +563,9 @@ public partial class HttpArtifactTool
     {
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(response);
         if (!DebugMode)
+        {
             return await DeserializeJsonAsync<T>(await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false), jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
+        }
         string text = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         LogInformation($"JSON from {response.RequestMessage?.RequestUri?.ToString() ?? "unknown request"}", text);
         return DeserializeJson<T>(text, jsonSerializerOptions);
@@ -584,7 +590,9 @@ public partial class HttpArtifactTool
     {
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(response);
         if (!DebugMode)
+        {
             return await DeserializeRequiredJsonAsync<T>(await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false), jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
+        }
         string text = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         LogInformation($"JSON from {response.RequestMessage?.RequestUri?.ToString() ?? "unknown request"}", text);
         return DeserializeRequiredJson<T>(text, jsonSerializerOptions);

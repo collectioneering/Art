@@ -164,33 +164,49 @@ public static class ItemStateFlagsUtility
         {
             state |= ItemStateFlags.New;
             if (artifactInfo.Date != null || artifactInfo.UpdateDate != null)
+            {
                 state |= ItemStateFlags.NewerDate;
+            }
         }
         else
         {
             if (artifactInfo.UpdateDate != null && previousArtifactInfo.UpdateDate != null)
             {
                 if (artifactInfo.UpdateDate > previousArtifactInfo.UpdateDate)
+                {
                     state |= ItemStateFlags.NewerDate;
+                }
                 else if (artifactInfo.UpdateDate < previousArtifactInfo.UpdateDate)
+                {
                     state |= ItemStateFlags.OlderDate;
+                }
             }
             else if (artifactInfo.UpdateDate != null && previousArtifactInfo.UpdateDate == null)
+            {
                 state |= ItemStateFlags.NewerDate;
+            }
             else if (artifactInfo.UpdateDate == null && previousArtifactInfo.UpdateDate == null)
             {
                 if (artifactInfo.Date != null && previousArtifactInfo.Date != null)
                 {
                     if (artifactInfo.Date > previousArtifactInfo.Date)
+                    {
                         state |= ItemStateFlags.NewerDate;
+                    }
                     else if (artifactInfo.Date < previousArtifactInfo.Date)
+                    {
                         state |= ItemStateFlags.OlderDate;
+                    }
                 }
                 else if (artifactInfo.Date != null && previousArtifactInfo.Date == null)
+                {
                     state |= ItemStateFlags.NewerDate;
+                }
             }
             if (artifactInfo.Full && !previousArtifactInfo.Full)
+            {
                 state |= ItemStateFlags.New;
+            }
         }
         return state;
     }
@@ -208,24 +224,40 @@ public static class ItemStateFlagsUtility
         {
             state |= ItemStateFlags.ChangedMetadata | ItemStateFlags.New;
             if (resource.Updated != null)
+            {
                 state |= ItemStateFlags.NewerDate;
+            }
             if (resource.Version != null)
+            {
                 state |= ItemStateFlags.ChangedVersion;
+            }
             if (resource.Checksum != null && !ChecksumUtility.DatawiseEquals(resource.Checksum, null))
+            {
                 state |= ItemStateFlags.NewChecksum;
+            }
         }
         else
         {
             if (resource.Version != previousResource.Version)
+            {
                 state |= ItemStateFlags.ChangedVersion;
+            }
             if (resource.Updated > previousResource.Updated)
+            {
                 state |= ItemStateFlags.NewerDate;
+            }
             else if (resource.Updated < previousResource.Updated)
+            {
                 state |= ItemStateFlags.OlderDate;
+            }
             if (resource.IsMetadataDifferent(previousResource))
+            {
                 state |= ItemStateFlags.ChangedMetadata;
+            }
             if (resource.Checksum != null && !ChecksumUtility.DatawiseEquals(resource.Checksum, previousResource.Checksum))
+            {
                 state |= ItemStateFlags.NewChecksum;
+            }
         }
         return state;
     }

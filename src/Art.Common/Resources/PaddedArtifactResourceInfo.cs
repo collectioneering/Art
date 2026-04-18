@@ -41,7 +41,10 @@ public record PaddedArtifactResourceInfo(ArtPaddingMode ArtPaddingMode, int? Blo
     private DepaddingHandler GetDepaddingHandler()
     {
         GetParameters(out int? blockSizeBytesV);
-        if (blockSizeBytesV is not { } blockSizeBytes) throw new InvalidOperationException("No block size provided");
+        if (blockSizeBytesV is not { } blockSizeBytes)
+        {
+            throw new InvalidOperationException("No block size provided");
+        }
         return ArtPaddingMode switch
         {
             ArtPaddingMode.Zero => new ZeroDepaddingHandler(blockSizeBytes),

@@ -81,8 +81,14 @@ public class StyledLogHandler : IToolLogHandler
         try
         {
             var textWriter = SelectTextWriter(level);
-            if (title != null) WriteTitle(textWriter, level, title, group);
-            if (body != null) textWriter.WriteLine(body);
+            if (title != null)
+            {
+                WriteTitle(textWriter, level, title, group);
+            }
+            if (body != null)
+            {
+                textWriter.WriteLine(body);
+            }
         }
         finally
         {
@@ -97,8 +103,14 @@ public class StyledLogHandler : IToolLogHandler
         try
         {
             var textWriter = SelectTextWriter(level);
-            if (title != null) WriteTitle(textWriter, level, title);
-            if (body != null) textWriter.WriteLine(body);
+            if (title != null)
+            {
+                WriteTitle(textWriter, level, title);
+            }
+            if (body != null)
+            {
+                textWriter.WriteLine(body);
+            }
         }
         finally
         {

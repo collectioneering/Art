@@ -88,12 +88,21 @@ internal class EagerAsyncEnumerator<T> : IAsyncEnumerator<T>
 
     public async ValueTask<bool> MoveNextAsync()
     {
-        if (_over) return false;
-        if (!_qt.TryDequeue(out JobState? state)) throw new InvalidOperationException($"State violation ({nameof(_qt)}");
+        if (_over)
+        {
+            return false;
+        }
+        if (!_qt.TryDequeue(out JobState? state))
+        {
+            throw new InvalidOperationException($"State violation ({nameof(_qt)}");
+        }
         (_, bool advanced) = await state.Task.ConfigureAwait(false);
         if (advanced)
         {
-            if (!_queue.TryDequeue(out T? value)) throw new InvalidOperationException($"State violation ({nameof(_queue)})");
+            if (!_queue.TryDequeue(out T? value))
+            {
+                throw new InvalidOperationException($"State violation ({nameof(_queue)})");
+            }
             Current = value;
             if (state.CallFlag)
             {

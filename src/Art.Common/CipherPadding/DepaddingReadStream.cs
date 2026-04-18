@@ -191,8 +191,14 @@ public class DepaddingReadStream : Stream
     {
         if (_handler.TryUpdate(readBuffer, out var a, out var b))
         {
-            if (a.Length != 0) _cache.Write(a.Span);
-            if (b.Length != 0) _cache.Write(b.Span);
+            if (a.Length != 0)
+            {
+                _cache.Write(a.Span);
+            }
+            if (b.Length != 0)
+            {
+                _cache.Write(b.Span);
+            }
             _cache.Position = 0;
         }
     }
@@ -248,12 +254,18 @@ public class DepaddingReadStream : Stream
 
     private void DisposeCore()
     {
-        if (!_keepOpen) _sourceStream.Dispose();
+        if (!_keepOpen)
+        {
+            _sourceStream.Dispose();
+        }
     }
 
     private async ValueTask DisposeCoreAsync()
     {
-        if (!_keepOpen) await _sourceStream.DisposeAsync().ConfigureAwait(false);
+        if (!_keepOpen)
+        {
+            await _sourceStream.DisposeAsync().ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc />
@@ -261,7 +273,10 @@ public class DepaddingReadStream : Stream
     {
         lock (__lock)
         {
-            if (_disposed) return;
+            if (_disposed)
+            {
+                return;
+            }
             _disposed = true;
         }
         DisposeCore();
@@ -272,7 +287,10 @@ public class DepaddingReadStream : Stream
     {
         lock (__lock)
         {
-            if (_disposed) return ValueTask.CompletedTask;
+            if (_disposed)
+            {
+                return ValueTask.CompletedTask;
+            }
             _disposed = true;
         }
         return DisposeCoreAsync();

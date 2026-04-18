@@ -44,11 +44,16 @@ public class LimitedStream : Stream
     public LimitedStream(Stream baseStream, long length, bool isolate = true)
     {
         if (isolate && !baseStream.CanSeek)
+        {
             throw new ArgumentException("Cannot set isolate if stream is not seekable");
+        }
         Isolate = isolate;
         _position = 0;
         _baseStream = baseStream;
-        if (baseStream.CanSeek) _offset = baseStream.Position;
+        if (baseStream.CanSeek)
+        {
+            _offset = baseStream.Position;
+        }
         _length = length;
     }
 
@@ -78,7 +83,9 @@ public class LimitedStream : Stream
     public override int Read(byte[] buffer, int offset, int count)
     {
         if (Isolate && _offset + _position != _baseStream.Position)
+        {
             _baseStream.Seek(_offset + _position, SeekOrigin.Begin);
+        }
         int read = _baseStream.Read(buffer, offset,
             (int)(Math.Min(_length, _position + count) - _position));
         _position += read;
@@ -88,9 +95,14 @@ public class LimitedStream : Stream
     /// <inheritdoc />
     public override long Seek(long offset, SeekOrigin origin)
     {
-        if (!CanSeek) throw new NotSupportedException();
+        if (!CanSeek)
+        {
+            throw new NotSupportedException();
+        }
         if (!Isolate && origin == SeekOrigin.Current)
+        {
             return _position = _baseStream.Seek(offset, SeekOrigin.Begin) - _offset;
+        }
         return _position = origin switch
         {
             SeekOrigin.Begin => _baseStream.Seek(_offset + offset, SeekOrigin.Begin),
@@ -103,10 +115,15 @@ public class LimitedStream : Stream
     /// <inheritdoc />
     public override void SetLength(long value)
     {
-        if (value < 0) throw new ArgumentException("Length cannot be negative");
+        if (value < 0)
+        {
+            throw new ArgumentException("Length cannot be negative");
+        }
         if (_baseStream.CanSeek && _offset + _length > _baseStream.Length)
+        {
             throw new ArgumentException(
                 $"Cannot set length to {value}, base stream length {_baseStream.Length} self offset {_offset}");
+        }
         _length = value;
         _position = Math.Min(_length, _position);
     }
@@ -115,7 +132,9 @@ public class LimitedStream : Stream
     public override void Write(byte[] buffer, int offset, int count)
     {
         if (Isolate && _offset + _position != _baseStream.Position)
+        {
             _baseStream.Seek(_offset + _position, SeekOrigin.Begin);
+        }
         int write = (int)(Math.Min(_length, _position + count) - _position);
         _baseStream.Write(buffer, offset, write);
         _position += write;

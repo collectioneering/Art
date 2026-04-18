@@ -58,7 +58,10 @@ internal class BlowfishSymmetricAlgorithm : SymmetricAlgorithm
 
     private static void DoFill(byte[]? v)
     {
-        if (v == null) return;
+        if (v == null)
+        {
+            return;
+        }
         Array.Fill<byte>(v, 0);
     }
 
@@ -98,18 +101,36 @@ internal class BlowfishSymmetricAlgorithm : SymmetricAlgorithm
 
         private void Decode(ReadOnlySpan<byte> srcBuffer, Span<byte> resBuffer)
         {
-            if (srcBuffer.Length % 8 != 0) throw new ArgumentException("Cannot process data not matching block size");
-            if (resBuffer.Length != srcBuffer.Length) throw new ArgumentException("Result buffer size must be equal to source buffer size");
+            if (srcBuffer.Length % 8 != 0)
+            {
+                throw new ArgumentException("Cannot process data not matching block size");
+            }
+            if (resBuffer.Length != srcBuffer.Length)
+            {
+                throw new ArgumentException("Result buffer size must be equal to source buffer size");
+            }
             srcBuffer.CopyTo(resBuffer);
             switch (_mode)
             {
                 case CipherMode.CBC:
-                    if (_e) _b.EncryptCbc(resBuffer);
-                    else _b.DecryptCbc(resBuffer);
+                    if (_e)
+                    {
+                        _b.EncryptCbc(resBuffer);
+                    }
+                    else
+                    {
+                        _b.DecryptCbc(resBuffer);
+                    }
                     break;
                 case CipherMode.ECB:
-                    if (_e) _b.EncryptEcb(resBuffer);
-                    else _b.DecryptEcb(resBuffer);
+                    if (_e)
+                    {
+                        _b.EncryptEcb(resBuffer);
+                    }
+                    else
+                    {
+                        _b.DecryptEcb(resBuffer);
+                    }
                     break;
                 case CipherMode.OFB:
                 case CipherMode.CFB:

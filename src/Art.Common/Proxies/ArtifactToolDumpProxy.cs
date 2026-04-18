@@ -384,7 +384,9 @@ public record ArtifactToolDumpProxy
         {
             var ignored = exc.Where(ignoreException).ToList();
             foreach (var ignore in ignored)
+            {
                 LogHandler?.Log($"Ignored exception of type {ignore.GetType().FullName}", ignore.ToString(), LogLevel.Warning);
+            }
             failed = exc.Where(v => !ignoreException(v)).ToList();
         }
         else

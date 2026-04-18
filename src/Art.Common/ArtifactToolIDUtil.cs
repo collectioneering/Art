@@ -57,7 +57,10 @@ public static class ArtifactToolIDUtil
     public static ArtifactToolID CreateCoreToolID(Type type)
     {
         Type? coreType = type;
-        while (coreType != null && coreType.GetCustomAttribute<CoreAttribute>() == null) coreType = coreType.BaseType;
+        while (coreType != null && coreType.GetCustomAttribute<CoreAttribute>() == null)
+        {
+            coreType = coreType.BaseType;
+        }
         return CreateToolID(coreType ?? type);
     }
 
@@ -69,7 +72,10 @@ public static class ArtifactToolIDUtil
     public static string CreateCoreToolString(Type type)
     {
         Type? coreType = type;
-        while (coreType != null && coreType.GetCustomAttribute<CoreAttribute>() == null) coreType = coreType.BaseType;
+        while (coreType != null && coreType.GetCustomAttribute<CoreAttribute>() == null)
+        {
+            coreType = coreType.BaseType;
+        }
         return CreateToolString(coreType ?? type);
     }
 

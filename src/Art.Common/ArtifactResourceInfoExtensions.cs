@@ -14,7 +14,10 @@ public static class ArtifactResourceInfoExtensions
     public static bool IsMetadataDifferent(this ArtifactResourceInfo artifactResourceInfo, ArtifactResourceInfo? other)
     {
         ArgumentNullException.ThrowIfNull(artifactResourceInfo);
-        if (other == null) return true;
+        if (other == null)
+        {
+            return true;
+        }
         return artifactResourceInfo.ContentType != other.ContentType;
     }
 

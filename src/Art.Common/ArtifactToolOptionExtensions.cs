@@ -28,7 +28,10 @@ public static class ArtifactToolOptionExtensions
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved.")]
     public static T GetOption<T>(this IReadOnlyDictionary<string, JsonElement>? options, string optKey)
     {
-        if (!(options?.TryGetValue(optKey, out JsonElement vv) ?? false)) throw new ArtifactToolOptionNotFoundException(optKey);
+        if (!(options?.TryGetValue(optKey, out JsonElement vv) ?? false))
+        {
+            throw new ArtifactToolOptionNotFoundException(optKey);
+        }
         return vv.Deserialize<T>(SourceGenerationContext.SharedContext.Options) ?? throw new NullJsonDataException();
     }
 
@@ -46,7 +49,10 @@ public static class ArtifactToolOptionExtensions
     /// <exception cref="NullJsonDataException">Thrown for null JSON.</exception>
     public static T GetOption<T>(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, JsonTypeInfo<T> jsonTypeInfo)
     {
-        if (!(options?.TryGetValue(optKey, out JsonElement vv) ?? false)) throw new ArtifactToolOptionNotFoundException(optKey);
+        if (!(options?.TryGetValue(optKey, out JsonElement vv) ?? false))
+        {
+            throw new ArtifactToolOptionNotFoundException(optKey);
+        }
         return vv.Deserialize(jsonTypeInfo) ?? throw new NullJsonDataException();
     }
 
@@ -64,15 +70,24 @@ public static class ArtifactToolOptionExtensions
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved.")]
     public static void GetOption<T>(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, ref T value, bool throwIfIncorrectType = false)
     {
-        if (!(options?.TryGetValue(optKey, out JsonElement vv) ?? false)) return;
-        if (vv.ValueKind == JsonValueKind.Null) throw new NullJsonDataException();
+        if (!(options?.TryGetValue(optKey, out JsonElement vv) ?? false))
+        {
+            return;
+        }
+        if (vv.ValueKind == JsonValueKind.Null)
+        {
+            throw new NullJsonDataException();
+        }
         try
         {
             value = vv.Deserialize<T>(SourceGenerationContext.SharedContext.Options) ?? throw new NullJsonDataException();
         }
         catch (JsonException)
         {
-            if (throwIfIncorrectType) throw;
+            if (throwIfIncorrectType)
+            {
+                throw;
+            }
         }
     }
 
@@ -90,15 +105,24 @@ public static class ArtifactToolOptionExtensions
     /// <exception cref="NullJsonDataException">Thrown for null JSON.</exception>
     public static void GetOption<T>(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, ref T value, JsonTypeInfo<T> jsonTypeInfo, bool throwIfIncorrectType = false)
     {
-        if (!(options?.TryGetValue(optKey, out JsonElement vv) ?? false)) return;
-        if (vv.ValueKind == JsonValueKind.Null) throw new NullJsonDataException();
+        if (!(options?.TryGetValue(optKey, out JsonElement vv) ?? false))
+        {
+            return;
+        }
+        if (vv.ValueKind == JsonValueKind.Null)
+        {
+            throw new NullJsonDataException();
+        }
         try
         {
             value = vv.Deserialize(jsonTypeInfo) ?? throw new NullJsonDataException();
         }
         catch (JsonException)
         {
-            if (throwIfIncorrectType) throw;
+            if (throwIfIncorrectType)
+            {
+                throw;
+            }
         }
     }
 
@@ -123,7 +147,10 @@ public static class ArtifactToolOptionExtensions
             }
             catch (JsonException)
             {
-                if (throwIfIncorrectType) throw;
+                if (throwIfIncorrectType)
+                {
+                    throw;
+                }
             }
         }
         value = default;
@@ -151,7 +178,10 @@ public static class ArtifactToolOptionExtensions
             }
             catch (JsonException)
             {
-                if (throwIfIncorrectType) throw;
+                if (throwIfIncorrectType)
+                {
+                    throw;
+                }
             }
         }
         value = default;
@@ -171,7 +201,10 @@ public static class ArtifactToolOptionExtensions
     /// <exception cref="ArtifactToolOptionNotFoundException">Thrown when option is not found.</exception>
     public static string GetOptionToString(this IReadOnlyDictionary<string, JsonElement>? options, string optKey)
     {
-        if (!(options?.TryGetValue(optKey, out JsonElement vv) ?? false)) throw new ArtifactToolOptionNotFoundException(optKey);
+        if (!(options?.TryGetValue(optKey, out JsonElement vv) ?? false))
+        {
+            throw new ArtifactToolOptionNotFoundException(optKey);
+        }
         return vv.ToString();
     }
 
@@ -184,8 +217,14 @@ public static class ArtifactToolOptionExtensions
     /// <exception cref="NullJsonDataException">Thrown for null JSON.</exception>
     public static void GetOptionToString(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, ref string value)
     {
-        if (!(options?.TryGetValue(optKey, out JsonElement vv) ?? false)) return;
-        if (vv.ValueKind == JsonValueKind.Null) throw new NullJsonDataException();
+        if (!(options?.TryGetValue(optKey, out JsonElement vv) ?? false))
+        {
+            return;
+        }
+        if (vv.ValueKind == JsonValueKind.Null)
+        {
+            throw new NullJsonDataException();
+        }
         value = vv.ToString();
     }
 
@@ -258,8 +297,14 @@ public static class ArtifactToolOptionExtensions
     /// <exception cref="NotSupportedException">Thrown when type not supported.</exception>
     public static void GetFlag(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, ref bool flag, bool throwIfIncorrectType = false)
     {
-        if (TryGetOption(options, optKey, out bool value, SourceGenerationContext.SharedContext.Boolean)) flag = value;
-        if (TryGetOption(options, optKey, out string? valueStr, SourceGenerationContext.SharedContext.String, throwIfIncorrectType)) flag = s_yesLower.Contains(valueStr.ToLowerInvariant());
+        if (TryGetOption(options, optKey, out bool value, SourceGenerationContext.SharedContext.Boolean))
+        {
+            flag = value;
+        }
+        if (TryGetOption(options, optKey, out string? valueStr, SourceGenerationContext.SharedContext.String, throwIfIncorrectType))
+        {
+            flag = s_yesLower.Contains(valueStr.ToLowerInvariant());
+        }
     }
 
     /// <summary>
@@ -304,7 +349,10 @@ public static class ArtifactToolOptionExtensions
     /// <exception cref="NotSupportedException">Thrown when type not supported.</exception>
     public static long GetInt64Option(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, bool throwIfIncorrectType = false)
     {
-        if (!TryGetOption(options, optKey, out long valueL, SourceGenerationContext.SharedContext.Int64, throwIfIncorrectType)) throw new ArtifactToolOptionNotFoundException(optKey);
+        if (!TryGetOption(options, optKey, out long valueL, SourceGenerationContext.SharedContext.Int64, throwIfIncorrectType))
+        {
+            throw new ArtifactToolOptionNotFoundException(optKey);
+        }
         return valueL;
     }
 
@@ -320,8 +368,14 @@ public static class ArtifactToolOptionExtensions
     /// <exception cref="NotSupportedException">Thrown when type not supported.</exception>
     public static void GetInt64Option(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, ref long value, bool throwIfIncorrectType = false)
     {
-        if (TryGetOption(options, optKey, out long valueL, SourceGenerationContext.SharedContext.Int64)) value = valueL;
-        if (TryGetOption(options, optKey, out string? valueStr, SourceGenerationContext.SharedContext.String, throwIfIncorrectType) && long.TryParse(valueStr, out long valueParsed)) value = valueParsed;
+        if (TryGetOption(options, optKey, out long valueL, SourceGenerationContext.SharedContext.Int64))
+        {
+            value = valueL;
+        }
+        if (TryGetOption(options, optKey, out string? valueStr, SourceGenerationContext.SharedContext.String, throwIfIncorrectType) && long.TryParse(valueStr, out long valueParsed))
+        {
+            value = valueParsed;
+        }
     }
 
     /// <summary>
@@ -390,7 +444,10 @@ public static class ArtifactToolOptionExtensions
     /// <exception cref="NotSupportedException">Thrown when type not supported.</exception>
     public static ulong GetUInt64Option(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, bool throwIfIncorrectType = false)
     {
-        if (!TryGetOption(options, optKey, out ulong valueL, SourceGenerationContext.SharedContext.UInt64, throwIfIncorrectType)) throw new ArtifactToolOptionNotFoundException(optKey);
+        if (!TryGetOption(options, optKey, out ulong valueL, SourceGenerationContext.SharedContext.UInt64, throwIfIncorrectType))
+        {
+            throw new ArtifactToolOptionNotFoundException(optKey);
+        }
         return valueL;
     }
 
@@ -406,8 +463,14 @@ public static class ArtifactToolOptionExtensions
     /// <exception cref="NotSupportedException">Thrown when type not supported.</exception>
     public static void GetUInt64Option(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, ref ulong value, bool throwIfIncorrectType = false)
     {
-        if (TryGetOption(options, optKey, out ulong valueL, SourceGenerationContext.SharedContext.UInt64)) value = valueL;
-        if (TryGetOption(options, optKey, out string? valueStr, SourceGenerationContext.SharedContext.String, throwIfIncorrectType) && ulong.TryParse(valueStr, out ulong valueParsed)) value = valueParsed;
+        if (TryGetOption(options, optKey, out ulong valueL, SourceGenerationContext.SharedContext.UInt64))
+        {
+            value = valueL;
+        }
+        if (TryGetOption(options, optKey, out string? valueStr, SourceGenerationContext.SharedContext.String, throwIfIncorrectType) && ulong.TryParse(valueStr, out ulong valueParsed))
+        {
+            value = valueParsed;
+        }
     }
 
     /// <summary>

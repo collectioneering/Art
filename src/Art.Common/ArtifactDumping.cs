@@ -135,6 +135,7 @@ public static class ArtifactDumping
         using var srm = new DiskArtifactRegistrationManager(targetDirectory);
         using var sdm = new DiskArtifactDataManager(targetDirectory);
         foreach (ArtifactToolProfile profile in ArtifactToolProfileUtil.DeserializeProfilesFromFile(artifactToolProfilePath))
+        {
             await DumpAsync(
                     artifactToolRegistry,
                     profile,
@@ -148,6 +149,7 @@ public static class ArtifactDumping
                     toolLogHandler,
                     cancellationToken)
                 .ConfigureAwait(false);
+        }
     }
 
     /// <summary>
@@ -594,6 +596,8 @@ public static class ArtifactDumping
         }
         logHandler?.Log(artifactTool.Profile.Tool, artifactTool.Profile.GetGroupOrFallback(aris.ArtifactResourceInfo.Key.Artifact.Group), $"-- {((rF & ItemStateFlags.NewerIdentityMask) != 0 ? "[NEW] " : "")}{versionedResource.GetInfoPathString()}", versionedResource.GetInfoString(), LogLevel.Entry);
         if ((rF & ItemStateFlags.DifferentMask) != 0)
+        {
             await artifactTool.RegistrationManager.AddResourceAsync(versionedResource, cancellationToken).ConfigureAwait(false);
+        }
     }
 }

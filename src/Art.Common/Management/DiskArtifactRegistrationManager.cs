@@ -44,7 +44,10 @@ public class DiskArtifactRegistrationManager : IArtifactRegistrationManager
         EnsureNotDisposed();
         ThrowIfReadOnly();
         string dir = GetArtifactInfoDir(artifactInfo.Key);
-        if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+        if (!Directory.Exists(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
         string path = GetArtifactInfoFilePath(dir, artifactInfo.Key);
         await WriteToFileAsync(artifactInfo, SourceGenerationContext.SharedContext.ArtifactInfo, path, cancellationToken).ConfigureAwait(false);
     }
@@ -55,12 +58,19 @@ public class DiskArtifactRegistrationManager : IArtifactRegistrationManager
         EnsureNotDisposed();
         string dir = GetArtifactInfoDir();
         List<ArtifactInfo> results = [];
-        if (!Directory.Exists(dir)) return results;
+        if (!Directory.Exists(dir))
+        {
+            return results;
+        }
         foreach (string toolDir in Directory.EnumerateDirectories(dir))
         foreach (string groupDir in Directory.EnumerateDirectories(toolDir))
         foreach (string file in Directory.EnumerateFiles(groupDir).Where(v => v.EndsWith(ArtifactFileNameEnd)))
+        {
             if (await LoadFromFileAsync(file, SourceGenerationContext.SharedContext.ArtifactInfo, cancellationToken).ConfigureAwait(false) is { } v)
+            {
                 results.Add(v);
+            }
+        }
         return results;
     }
 
@@ -70,12 +80,19 @@ public class DiskArtifactRegistrationManager : IArtifactRegistrationManager
         EnsureNotDisposed();
         string dir = GetArtifactInfoDir();
         List<ArtifactInfo> results = [];
-        if (!Directory.Exists(dir)) return results;
+        if (!Directory.Exists(dir))
+        {
+            return results;
+        }
         foreach (string toolDir in Directory.EnumerateDirectories(dir))
         foreach (string groupDir in Directory.EnumerateDirectories(toolDir))
         foreach (string file in Directory.EnumerateFiles(groupDir).Where(v => v.EndsWith(ArtifactFileNameEnd)))
+        {
             if (await LoadFromFileAsync(file, SourceGenerationContext.SharedContext.ArtifactInfo, cancellationToken).ConfigureAwait(false) is { } v && predicate(v))
+            {
                 results.Add(v);
+            }
+        }
         return results;
     }
 
@@ -85,11 +102,18 @@ public class DiskArtifactRegistrationManager : IArtifactRegistrationManager
         EnsureNotDisposed();
         string toolDir = GetArtifactInfoDir(tool);
         List<ArtifactInfo> results = [];
-        if (!Directory.Exists(toolDir)) return results;
+        if (!Directory.Exists(toolDir))
+        {
+            return results;
+        }
         foreach (string groupDir in Directory.EnumerateDirectories(toolDir))
         foreach (string file in Directory.EnumerateFiles(groupDir).Where(v => v.EndsWith(ArtifactFileNameEnd)))
+        {
             if (await LoadFromFileAsync(file, SourceGenerationContext.SharedContext.ArtifactInfo, cancellationToken).ConfigureAwait(false) is { } v)
+            {
                 results.Add(v);
+            }
+        }
         return results;
     }
 
@@ -99,10 +123,17 @@ public class DiskArtifactRegistrationManager : IArtifactRegistrationManager
         EnsureNotDisposed();
         string groupDir = GetArtifactInfoDir(tool, group);
         List<ArtifactInfo> results = [];
-        if (!Directory.Exists(groupDir)) return results;
+        if (!Directory.Exists(groupDir))
+        {
+            return results;
+        }
         foreach (string file in Directory.EnumerateFiles(groupDir).Where(v => v.EndsWith(ArtifactFileNameEnd)))
+        {
             if (await LoadFromFileAsync(file, SourceGenerationContext.SharedContext.ArtifactInfo, cancellationToken).ConfigureAwait(false) is { } v)
+            {
                 results.Add(v);
+            }
+        }
         return results;
     }
 
@@ -112,7 +143,10 @@ public class DiskArtifactRegistrationManager : IArtifactRegistrationManager
         EnsureNotDisposed();
         ThrowIfReadOnly();
         string dir = GetResourceInfoDir(artifactResourceInfo.Key.Artifact, artifactResourceInfo.Key.Path);
-        if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+        if (!Directory.Exists(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
         string path = GetResourceInfoFilePath(dir, artifactResourceInfo.Key);
         await WriteToFileAsync(artifactResourceInfo, SourceGenerationContext.SharedContext.ArtifactResourceInfo, path, cancellationToken).ConfigureAwait(false);
     }
@@ -128,10 +162,16 @@ public class DiskArtifactRegistrationManager : IArtifactRegistrationManager
         while (dQueue.TryDequeue(out string? dd))
         {
             foreach (string f in Directory.EnumerateFiles(dd).Where(v => v.EndsWith(ResourceFileNameEnd)))
+            {
                 if (await LoadFromFileAsync(f, SourceGenerationContext.SharedContext.ArtifactResourceInfo, cancellationToken).ConfigureAwait(false) is { } v)
+                {
                     results.Add(v);
+                }
+            }
             foreach (string d in Directory.EnumerateDirectories(dd))
+            {
                 dQueue.Enqueue(d);
+            }
         }
         return results;
     }

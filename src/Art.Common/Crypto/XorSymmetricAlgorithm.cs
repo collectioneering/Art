@@ -38,7 +38,10 @@ internal class XorSymmetricAlgorithm : SymmetricAlgorithm
 
     private static void DoFill(byte[]? v)
     {
-        if (v == null) return;
+        if (v == null)
+        {
+            return;
+        }
         Array.Fill<byte>(v, 0);
     }
 
@@ -75,10 +78,18 @@ internal class XorSymmetricAlgorithm : SymmetricAlgorithm
 
         private void Decode(ReadOnlySpan<byte> srcBuffer, Span<byte> resBuffer)
         {
-            if (srcBuffer.Length > _key.Length) throw new ArgumentException("Cannot process block greater than key size");
-            if (resBuffer.Length != srcBuffer.Length) throw new ArgumentException("Result buffer size must be equal to source buffer size");
+            if (srcBuffer.Length > _key.Length)
+            {
+                throw new ArgumentException("Cannot process block greater than key size");
+            }
+            if (resBuffer.Length != srcBuffer.Length)
+            {
+                throw new ArgumentException("Result buffer size must be equal to source buffer size");
+            }
             for (int i = 0; i < resBuffer.Length; i++)
+            {
                 resBuffer[i] = (byte)(srcBuffer[i] ^ _key[i]);
+            }
         }
     }
 }

@@ -56,7 +56,9 @@ public partial class ArtifactTool
     public Task DelayAfterFirstAsync(double delaySeconds, CancellationToken cancellationToken = default)
     {
         if (_delayFirstCalled)
+        {
             return DelayAsync(delaySeconds, cancellationToken);
+        }
         _delayFirstCalled = true;
         return Task.CompletedTask;
     }
@@ -70,7 +72,9 @@ public partial class ArtifactTool
     public Task LoggedDelayAfterFirstAsync(double delaySeconds, CancellationToken cancellationToken = default)
     {
         if (_delayFirstCalled)
+        {
             return LoggedDelayAsync(delaySeconds, cancellationToken);
+        }
         _delayFirstCalled = true;
         return Task.CompletedTask;
     }
@@ -110,7 +114,9 @@ public partial class ArtifactTool
     public Task DelayAfterFirstAsync(TimeSpan delay, CancellationToken cancellationToken = default)
     {
         if (_delayFirstCalled)
+        {
             return DelayAsync(delay, cancellationToken);
+        }
         _delayFirstCalled = true;
         return Task.CompletedTask;
     }
@@ -124,7 +130,9 @@ public partial class ArtifactTool
     public Task LoggedDelayAfterFirstAsync(TimeSpan delay, CancellationToken cancellationToken = default)
     {
         if (_delayFirstCalled)
+        {
             return LoggedDelayAsync(delay, cancellationToken);
+        }
         _delayFirstCalled = true;
         return Task.CompletedTask;
     }

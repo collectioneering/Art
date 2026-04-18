@@ -27,9 +27,13 @@ public class ArtifactToolOptionNotFoundException : ArtUserException
     {
         StringBuilder sb = new();
         if (Options.Count == 1)
+        {
             sb.Append("Configuration was missing required option ");
+        }
         else
+        {
             sb.Append("Configuration was missing required options ");
+        }
         sb.AppendJoin(", ", Options);
         return sb.ToString();
     }

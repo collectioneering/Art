@@ -66,14 +66,21 @@ public class M3UEncryptionInfo
     /// <exception cref="InvalidDataException">Unexpected <see cref="Method"/> value.</exception>
     public EncryptionInfo ToEncryptionInfo(long? mediaSequenceNumber = null)
     {
-        if (Key == null) throw new InvalidOperationException($"Key not present in this instance of {nameof(M3UEncryptionInfo)}");
+        if (Key == null)
+        {
+            throw new InvalidOperationException($"Key not present in this instance of {nameof(M3UEncryptionInfo)}");
+        }
         byte[]? iv = Iv;
         if (iv == null)
         {
             if (mediaSequenceNumber is { } msn)
+            {
                 BinaryPrimitives.WriteInt64BigEndian(iv = new byte[16], msn);
+            }
             else
+            {
                 throw new InvalidOperationException($"IV not present in this instance of {nameof(M3UEncryptionInfo)}, and no media sequence number provided to synthesize IV");
+            }
         }
         return ToEncryptionInfo(Method, Key, iv);
     }

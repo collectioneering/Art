@@ -77,16 +77,26 @@ public record EncryptionInfo(CryptoAlgorithm Algorithm, ReadOnlyMemory<byte> Enc
             _ => throw new NotSupportedException(Algorithm.ToString()),
         };
         if (KeySize is { } keySize)
+        {
             alg.KeySize = keySize;
+        }
         if (BlockSize is { } blockSize)
+        {
             alg.BlockSize = blockSize;
+        }
         if (Mode is { } mode)
+        {
             alg.Mode = mode;
+        }
         alg.Key = EncKey.ToArray();
         if (EncIv is { } encIv)
+        {
             alg.IV = encIv.ToArray();
+        }
         if (PaddingMode is { } paddingMode)
+        {
             alg.Padding = paddingMode;
+        }
         return alg;
     }
 }

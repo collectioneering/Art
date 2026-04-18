@@ -16,12 +16,30 @@ public abstract class DepaddingHandler
     /// <exception cref="ArgumentException">Thrown for any illegally configured <paramref name="keySizes"/>.</exception>
     protected static bool ValidateBlockSize(KeySizes keySizes, int blockSize)
     {
-        if (keySizes.MinSize <= 0) throw new ArgumentException("Min block size must be positive", nameof(keySizes));
-        if (keySizes.MaxSize <= 0) throw new ArgumentException("Max block size must be positive", nameof(keySizes));
-        if (keySizes.SkipSize < 0) throw new ArgumentException("Block size skip cannot be negative", nameof(keySizes));
-        if (keySizes.MaxSize < keySizes.MinSize) throw new ArgumentException("Invalid block size range", nameof(keySizes));
-        if (keySizes.SkipSize != 0) return blockSize >= keySizes.MinSize && blockSize <= keySizes.MaxSize && (blockSize - keySizes.MinSize) % keySizes.SkipSize == 0;
-        if (keySizes.MinSize != keySizes.MaxSize) throw new ArgumentException("Block size skip cannot be 0 for non-matching min and max size", nameof(keySizes));
+        if (keySizes.MinSize <= 0)
+        {
+            throw new ArgumentException("Min block size must be positive", nameof(keySizes));
+        }
+        if (keySizes.MaxSize <= 0)
+        {
+            throw new ArgumentException("Max block size must be positive", nameof(keySizes));
+        }
+        if (keySizes.SkipSize < 0)
+        {
+            throw new ArgumentException("Block size skip cannot be negative", nameof(keySizes));
+        }
+        if (keySizes.MaxSize < keySizes.MinSize)
+        {
+            throw new ArgumentException("Invalid block size range", nameof(keySizes));
+        }
+        if (keySizes.SkipSize != 0)
+        {
+            return blockSize >= keySizes.MinSize && blockSize <= keySizes.MaxSize && (blockSize - keySizes.MinSize) % keySizes.SkipSize == 0;
+        }
+        if (keySizes.MinSize != keySizes.MaxSize)
+        {
+            throw new ArgumentException("Block size skip cannot be 0 for non-matching min and max size", nameof(keySizes));
+        }
         return blockSize == keySizes.MinSize;
     }
 

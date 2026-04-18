@@ -68,7 +68,10 @@ public static class M3UReader
     public static M3UFile Parse(TextReader reader)
     {
         string? line = reader.ReadLine();
-        if (!FILE_HEADER.Equals(line)) throw new InvalidDataException("Invalid header.");
+        if (!FILE_HEADER.Equals(line))
+        {
+            throw new InvalidDataException("Invalid header.");
+        }
 
         M3UFile result = new();
 
@@ -85,7 +88,9 @@ public static class M3UReader
                 result.Streams[^1].Path = line;
             }
             else if (!string.IsNullOrWhiteSpace(line) && !line.StartsWith('#'))
+            {
                 result.DataLines.Add(line);
+            }
 
             previousLine = line;
         }
@@ -100,13 +105,21 @@ public static class M3UReader
         {
             ParseKvsToDictionary(tag, line, TmpDict);
             if (TmpDict.TryGetValue(STREAM_INF_BANDWIDTH, out string? bandWidth))
+            {
                 stream.Bandwidth = long.Parse(bandWidth, s_culture);
+            }
             if (TmpDict.TryGetValue(STREAM_INF_AVERAGE_BANDWIDTH, out string? averageBandWidth))
+            {
                 stream.AverageBandwidth = long.Parse(averageBandWidth, s_culture);
+            }
             if (TmpDict.TryGetValue(STREAM_INF_NAME, out string? name))
+            {
                 stream.Name = name;
+            }
             if (TmpDict.TryGetValue(STREAM_INF_CODECS, out string? codecs))
+            {
                 stream.Codecs = codecs;
+            }
             if (TmpDict.TryGetValue(STREAM_INF_RESOLUTION, out string? resolution))
             {
                 string[] split = resolution.Split('x');
@@ -114,7 +127,9 @@ public static class M3UReader
                 stream.ResolutionHeight = int.Parse(split[1], s_culture);
             }
             if (TmpDict.TryGetValue(STREAM_INF_AUDIO, out string? audio))
+            {
                 stream.Audio = audio;
+            }
             file.AddStream(stream);
         }
         finally
@@ -130,19 +145,33 @@ public static class M3UReader
         {
             ParseKvsToDictionary(tag, line, TmpDict);
             if (TmpDict.TryGetValue(ALTERNATE_STREAM_INF_TYPE, out string? type))
+            {
                 stream.Type = type;
+            }
             if (TmpDict.TryGetValue(ALTERNATE_STREAM_INF_URI, out string? uri))
+            {
                 stream.Path = uri;
+            }
             if (TmpDict.TryGetValue(ALTERNATE_STREAM_INF_NAME, out string? name))
+            {
                 stream.Name = name;
+            }
             if (TmpDict.TryGetValue(ALTERNATE_STREAM_INF_LANGUAGE, out string? language))
+            {
                 stream.Language = language;
+            }
             if (TmpDict.TryGetValue(ALTERNATE_STREAM_INF_GROUP_ID, out string? groupId))
+            {
                 stream.GroupId = groupId;
+            }
             if (TmpDict.TryGetValue(ALTERNATE_STREAM_INF_DEFAULT, out string? isDefault))
+            {
                 stream.Default = isDefault == "YES";
+            }
             if (TmpDict.TryGetValue(ALTERNATE_STREAM_INF_AUTOSELECT, out string? isAutoselect))
+            {
                 stream.Autoselect = isAutoselect == "YES";
+            }
             file.AddAlternateStream(stream);
         }
         finally
@@ -160,17 +189,32 @@ public static class M3UReader
         try
         {
             ParseKvsToDictionary(tag, line, TmpDict);
-            if (TmpDict.TryGetValue(ENCRYPTION_INF_KEYFORMAT, out string? keyFormatT)) keyFormat = keyFormatT;
-            if (TmpDict.TryGetValue(ENCRYPTION_INF_METHOD, out string? methodT)) method = methodT;
-            if (TmpDict.TryGetValue(ENCRYPTION_INF_URI, out string? uriT)) uri = uriT;
+            if (TmpDict.TryGetValue(ENCRYPTION_INF_KEYFORMAT, out string? keyFormatT))
+            {
+                keyFormat = keyFormatT;
+            }
+            if (TmpDict.TryGetValue(ENCRYPTION_INF_METHOD, out string? methodT))
+            {
+                method = methodT;
+            }
+            if (TmpDict.TryGetValue(ENCRYPTION_INF_URI, out string? uriT))
+            {
+                uri = uriT;
+            }
             if (TmpDict.TryGetValue(ENCRYPTION_INF_IV, out string? ivT))
             {
                 ReadOnlySpan<char> ivS = ivT;
-                if (ivS.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase)) ivS = ivS[2..];
+                if (ivS.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    ivS = ivS[2..];
+                }
                 iv = Convert.FromHexString(ivS);
             }
             keyFormat ??= "identity";
-            if (method == null) throw new InvalidDataException("method not provided");
+            if (method == null)
+            {
+                throw new InvalidDataException("method not provided");
+            }
             file.EncryptionInfo = new M3UEncryptionInfo(keyFormat, method, uri, null, iv);
         }
         finally
@@ -203,7 +247,10 @@ public static class M3UReader
             {
                 string value = builder.ToString();
                 builder.Clear();
-                if (currentStreamTag == null) throw new InvalidDataException();
+                if (currentStreamTag == null)
+                {
+                    throw new InvalidDataException();
+                }
                 dict[currentStreamTag] = value;
             }
             else

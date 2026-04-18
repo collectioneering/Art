@@ -53,8 +53,14 @@ public class DepaddingWriteStream : Stream
     {
         if (_handler.TryUpdate(buffer.AsMemory(offset, count), out var a, out var b))
         {
-            if (a.Length != 0) _targetStream.Write(a.Span);
-            if (b.Length != 0) _targetStream.Write(b.Span);
+            if (a.Length != 0)
+            {
+                _targetStream.Write(a.Span);
+            }
+            if (b.Length != 0)
+            {
+                _targetStream.Write(b.Span);
+            }
         }
     }
 
@@ -63,8 +69,14 @@ public class DepaddingWriteStream : Stream
     {
         if (_handler.TryUpdate(buffer, out var a, out var b))
         {
-            if (a.Length != 0) _targetStream.Write(a);
-            if (b.Length != 0) _targetStream.Write(b);
+            if (a.Length != 0)
+            {
+                _targetStream.Write(a);
+            }
+            if (b.Length != 0)
+            {
+                _targetStream.Write(b);
+            }
         }
         base.Write(buffer);
     }
@@ -74,8 +86,14 @@ public class DepaddingWriteStream : Stream
     {
         if (_handler.TryUpdate(buffer.AsMemory(offset, count), out var a, out var b))
         {
-            if (a.Length != 0) await _targetStream.WriteAsync(a, cancellationToken).ConfigureAwait(false);
-            if (b.Length != 0) await _targetStream.WriteAsync(b, cancellationToken).ConfigureAwait(false);
+            if (a.Length != 0)
+            {
+                await _targetStream.WriteAsync(a, cancellationToken).ConfigureAwait(false);
+            }
+            if (b.Length != 0)
+            {
+                await _targetStream.WriteAsync(b, cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 
@@ -84,8 +102,14 @@ public class DepaddingWriteStream : Stream
     {
         if (_handler.TryUpdate(buffer, out var a, out var b))
         {
-            if (a.Length != 0) await _targetStream.WriteAsync(a, cancellationToken).ConfigureAwait(false);
-            if (b.Length != 0) await _targetStream.WriteAsync(b, cancellationToken).ConfigureAwait(false);
+            if (a.Length != 0)
+            {
+                await _targetStream.WriteAsync(a, cancellationToken).ConfigureAwait(false);
+            }
+            if (b.Length != 0)
+            {
+                await _targetStream.WriteAsync(b, cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 
@@ -94,11 +118,17 @@ public class DepaddingWriteStream : Stream
         try
         {
             _handler.DoFinal(out var buf);
-            if (buf.Length != 0) _targetStream.Write(buf.Span);
+            if (buf.Length != 0)
+            {
+                _targetStream.Write(buf.Span);
+            }
         }
         finally
         {
-            if (!_keepOpen) _targetStream.Dispose();
+            if (!_keepOpen)
+            {
+                _targetStream.Dispose();
+            }
         }
     }
 
@@ -107,11 +137,17 @@ public class DepaddingWriteStream : Stream
         try
         {
             _handler.DoFinal(out var buf);
-            if (buf.Length != 0) await _targetStream.WriteAsync(buf).ConfigureAwait(false);
+            if (buf.Length != 0)
+            {
+                await _targetStream.WriteAsync(buf).ConfigureAwait(false);
+            }
         }
         finally
         {
-            if (!_keepOpen) await _targetStream.DisposeAsync().ConfigureAwait(false);
+            if (!_keepOpen)
+            {
+                await _targetStream.DisposeAsync().ConfigureAwait(false);
+            }
         }
     }
 
@@ -120,7 +156,10 @@ public class DepaddingWriteStream : Stream
     {
         lock (__lock)
         {
-            if (_disposed) return;
+            if (_disposed)
+            {
+                return;
+            }
             _disposed = true;
         }
         DisposeCore();
@@ -131,7 +170,10 @@ public class DepaddingWriteStream : Stream
     {
         lock (__lock)
         {
-            if (_disposed) return ValueTask.CompletedTask;
+            if (_disposed)
+            {
+                return ValueTask.CompletedTask;
+            }
             _disposed = true;
         }
         return DisposeCoreAsync();

@@ -62,7 +62,10 @@ public static class ArtIOUtility
     public static string CreateRandomPath(string baseDirectory, string extension, int attempts = 10, PathCreationAction pathCreationAction = PathCreationAction.None)
     {
         ArgumentNullException.ThrowIfNull(baseDirectory);
-        if (attempts <= 0) throw new ArgumentException("Invalid max number of attempts", nameof(attempts));
+        if (attempts <= 0)
+        {
+            throw new ArgumentException("Invalid max number of attempts", nameof(attempts));
+        }
         for (int i = 0; i < attempts; i++)
         {
             string path = Path.Join(baseDirectory, $"{Guid.NewGuid():N}{extension}");

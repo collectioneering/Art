@@ -23,8 +23,12 @@ public class ZeroDepaddingHandler : BlockedDepaddingHandler
     {
         b = 0;
         for (int i = buffer.Length - 1; i >= 0; i--)
+        {
             if (buffer[i] == 0)
+            {
                 b++;
+            }
+        }
         return true;
     }
 }

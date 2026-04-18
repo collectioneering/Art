@@ -118,7 +118,9 @@ public partial class ArtifactTool : IArtifactTool
         ExtensionsContext = config.ExtensionsContext;
         Profile = profile ?? new ArtifactToolProfile(ArtifactToolIDUtil.CreateToolString(GetType()), null, null);
         if (Profile.Options != null)
+        {
             ConfigureOptions();
+        }
     }
 
     /// <summary>
@@ -204,7 +206,9 @@ public partial class ArtifactTool : IArtifactTool
         CancellationToken cancellationToken = default)
     {
         if (!ArtifactToolLoader.TryLoad(artifactToolProfile.Tool, out IArtifactTool? t))
+        {
             throw new ArtifactToolNotFoundException(artifactToolProfile.Tool);
+        }
         return PrepareToolInternalAsync(t, artifactToolProfile, artifactRegistrationManager, artifactDataManager, extensionsContext, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken);
     }
 
@@ -236,7 +240,9 @@ public partial class ArtifactTool : IArtifactTool
         CancellationToken cancellationToken = default)
     {
         if (!ArtifactToolLoader.TryLoad(assemblyLoadContext, artifactToolProfile.Tool, out IArtifactTool? t))
+        {
             throw new ArtifactToolNotFoundException(artifactToolProfile.Tool);
+        }
         return PrepareToolInternalAsync(t, artifactToolProfile, artifactRegistrationManager, artifactDataManager, extensionsContext, timeProvider, getArtifactRetrievalTimestamps, getResourceRetrievalTimestamps, cancellationToken);
     }
 
@@ -267,7 +273,9 @@ public partial class ArtifactTool : IArtifactTool
         CancellationToken cancellationToken = default)
     {
         if (!artifactToolRegistry.TryLoad(ArtifactToolIDUtil.ParseID(artifactToolProfile.Tool), out IArtifactTool? t))
+        {
             throw new ArtifactToolNotFoundException(artifactToolProfile.Tool);
+        }
         return PrepareToolInternalAsync(
             t,
             artifactToolProfile,

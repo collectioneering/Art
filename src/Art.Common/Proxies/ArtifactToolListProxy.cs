@@ -72,11 +72,17 @@ public record ArtifactToolListProxy
             {
                 artifactTool.LogHandler = LogHandler;
             }
-            if (LogHandler != null) artifactTool.LogHandler = LogHandler;
+            if (LogHandler != null)
+            {
+                artifactTool.LogHandler = LogHandler;
+            }
             if (artifactTool is IArtifactListTool listTool)
             {
                 IAsyncEnumerable<IArtifactData> enumerable = listTool.ListAsync(cancellationToken);
-                if ((Options.EagerFlags & artifactTool.AllowedEagerModes & EagerFlags.ArtifactList) != 0) enumerable = enumerable.EagerAsync();
+                if ((Options.EagerFlags & artifactTool.AllowedEagerModes & EagerFlags.ArtifactList) != 0)
+                {
+                    enumerable = enumerable.EagerAsync();
+                }
                 await foreach (IArtifactData data in enumerable.ConfigureAwait(false))
                 {
                     switch (Options.SkipMode)
@@ -87,32 +93,43 @@ public record ArtifactToolListProxy
                             {
                                 ArtifactInfo? info = await artifactTool.RegistrationManager.TryGetArtifactAsync(data.Info.Key, cancellationToken).ConfigureAwait(false);
                                 if (info != null)
+                                {
                                     yield break;
+                                }
                                 break;
                             }
                         case ArtifactSkipMode.FastExitFull:
                             {
                                 ArtifactInfo? info = await artifactTool.RegistrationManager.TryGetArtifactAsync(data.Info.Key, cancellationToken).ConfigureAwait(false);
                                 if (info != null && info.Full)
+                                {
                                     yield break;
+                                }
                                 break;
                             }
                         case ArtifactSkipMode.Known:
                             {
                                 ArtifactInfo? info = await artifactTool.RegistrationManager.TryGetArtifactAsync(data.Info.Key, cancellationToken).ConfigureAwait(false);
                                 if (info != null)
+                                {
                                     continue;
+                                }
                                 break;
                             }
                         case ArtifactSkipMode.KnownFull:
                             {
                                 ArtifactInfo? info = await artifactTool.RegistrationManager.TryGetArtifactAsync(data.Info.Key, cancellationToken).ConfigureAwait(false);
                                 if (info != null && info.Full)
+                                {
                                     continue;
+                                }
                                 break;
                             }
                     }
-                    if (!data.Info.Full && !Options.IncludeNonFull) continue;
+                    if (!data.Info.Full && !Options.IncludeNonFull)
+                    {
+                        continue;
+                    }
                     yield return data;
                 }
                 yield break;

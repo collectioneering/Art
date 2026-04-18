@@ -212,7 +212,10 @@ public class ArtifactContext : DbContext
         {
             (((string tool, string group, string id), string file, string path), string? contentType, DateTimeOffset? updated, DateTimeOffset? retrieved, string? version, Checksum? checksum) = artifactResourceInfo;
             ArtifactInfoModel? model = await ArtifactInfoModels.FindAsync([tool, group, id], cancellationToken).ConfigureAwait(false);
-            if (model == null) throw new InvalidOperationException("Can't add resource for missing artifact");
+            if (model == null)
+            {
+                throw new InvalidOperationException("Can't add resource for missing artifact");
+            }
             ArtifactResourceInfoModel? model2 = await ArtifactResourceInfoModels.FindAsync([tool, group, id, file, path], cancellationToken).ConfigureAwait(false);
             if (model2 == null)
             {
@@ -412,7 +415,10 @@ public class ArtifactContext : DbContext
         }
         WaitGuard.WaitOne();
         base.Dispose();
-        if (_disposed) return;
+        if (_disposed)
+        {
+            return;
+        }
         _disposed = true;
         WaitGuard.Dispose();
         GC.SuppressFinalize(this);
@@ -427,7 +433,10 @@ public class ArtifactContext : DbContext
         }
         WaitGuard.WaitOne();
         await base.DisposeAsync().ConfigureAwait(false);
-        if (_disposed) return;
+        if (_disposed)
+        {
+            return;
+        }
         _disposed = true;
         WaitGuard.Dispose();
         GC.SuppressFinalize(this);

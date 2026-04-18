@@ -23,7 +23,10 @@ public static class ArtHttpExtensions
             }
             SetOriginAndReferrer(request, new Uri(referrer));
         }
-        else if (origin != null) SetOriginAndReferrer(request, new Uri(origin));
+        else if (origin != null)
+        {
+            SetOriginAndReferrer(request, new Uri(origin));
+        }
     }
 
     private static void SetOriginAndReferrer(HttpRequestMessage request, Uri uri)

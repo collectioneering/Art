@@ -74,7 +74,10 @@ public partial record QueryBaseArtifactResourceInfo(
     /// <inheritdoc />
     public override void AugmentOutputStreamOptions(ref OutputStreamOptions options)
     {
-        if (ContentLength is { } contentLength) options = options with { PreallocationSize = Math.Clamp(contentLength, 0, MaxStreamDownloadPreallocationSize) };
+        if (ContentLength is { } contentLength)
+        {
+            options = options with { PreallocationSize = Math.Clamp(contentLength, 0, MaxStreamDownloadPreallocationSize) };
+        }
     }
 
     /// <summary>

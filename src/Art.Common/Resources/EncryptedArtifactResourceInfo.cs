@@ -30,7 +30,10 @@ public record EncryptedArtifactResourceInfo(EncryptionInfo EncryptionInfo, Artif
         await using CryptoStream cs = new(targetStream, algorithm.CreateDecryptor(), CryptoStreamMode.Write, true);
         await BaseArtifactResourceInfo.ExportStreamAsync(cs, exportOptions, cancellationToken).ConfigureAwait(false);
         // crypto stream flushes on dispose, but do this too to be like... more sure
-        if (!cs.HasFlushedFinalBlock) await cs.FlushFinalBlockAsync(cancellationToken).ConfigureAwait(false);
+        if (!cs.HasFlushedFinalBlock)
+        {
+            await cs.FlushFinalBlockAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc />

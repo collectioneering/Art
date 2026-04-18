@@ -87,13 +87,19 @@ public abstract class ArtifactDataManager : IArtifactDataManager
     public virtual async ValueTask<Checksum?> GetChecksumAsync(ArtifactResourceKey key, CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();
-        if (!await ExistsAsync(key, cancellationToken).ConfigureAwait(false)) throw new KeyNotFoundException();
+        if (!await ExistsAsync(key, cancellationToken).ConfigureAwait(false))
+        {
+            throw new KeyNotFoundException();
+        }
         return null;
     }
 
     private static void UpdateOptionsTextual(ref OutputStreamOptions? options)
     {
-        if (options is { } optionsActual) options = optionsActual with { PreallocationSize = 0 };
+        if (options is { } optionsActual)
+        {
+            options = optionsActual with { PreallocationSize = 0 };
+        }
     }
 
     private void EnsureNotDisposed()

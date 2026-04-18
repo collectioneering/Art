@@ -41,11 +41,16 @@ public class InMemoryArtifactDataManager : ArtifactDataManager, INamespacedArtif
         if (options != null)
         {
             long preallocationSize = options.PreallocationSize;
-            if (preallocationSize < 0 || preallocationSize > Array.MaxLength) throw new ArgumentException($"Invalid {nameof(OutputStreamOptions.PreallocationSize)} value", nameof(options));
+            if (preallocationSize < 0 || preallocationSize > Array.MaxLength)
+            {
+                throw new ArgumentException($"Invalid {nameof(OutputStreamOptions.PreallocationSize)} value", nameof(options));
+            }
             stream = preallocationSize != 0 ? new CommittableMemoryStream((int)options.PreallocationSize) : new CommittableMemoryStream();
         }
         else
+        {
             stream = new CommittableMemoryStream();
+        }
         ArtifactKey ak = key.Artifact;
         if (!_artifacts.TryGetValue(ak, out List<ArtifactResourceInfo>? list))
         {
@@ -86,9 +91,14 @@ public class InMemoryArtifactDataManager : ArtifactDataManager, INamespacedArtif
     {
         EnsureNotDisposed();
         // Use a stream wrapping original buffer, but hide away buffer and make stream read-only
-        if (!_entries.TryGetValue(key, out Stream? stream)) throw new KeyNotFoundException();
+        if (!_entries.TryGetValue(key, out Stream? stream))
+        {
+            throw new KeyNotFoundException();
+        }
         if (stream is not CommittableMemoryStream cms)
+        {
             throw new InvalidOperationException($"Expected {nameof(CommittableMemoryStream)} but got unexpected stream type {stream.GetType()}");
+        }
         MemoryStream oms = cms.MemoryStream;
         return ValueTask.FromResult<Stream>(new MemoryStream(oms.GetBuffer(), 0, (int)oms.Length, false, false));
     }

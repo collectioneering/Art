@@ -42,9 +42,13 @@ public record ArtifactToolDumpOptions(
                 break;
             default:
                 if (constructor)
+                {
                     throw new ArgumentException($"Invalid {nameof(ArtifactToolDumpOptions)}.{nameof(SkipMode)}");
+                }
                 else
+                {
                     throw new InvalidOperationException($"Invalid {nameof(ArtifactToolDumpOptions)}.{nameof(SkipMode)}");
+                }
         }
         switch (options.ResourceUpdate)
         {
@@ -55,9 +59,13 @@ public record ArtifactToolDumpOptions(
                 break;
             default:
                 if (constructor)
+                {
                     throw new ArgumentException($"Invalid {nameof(ArtifactToolDumpOptions)}.{nameof(ResourceUpdate)}");
+                }
                 else
+                {
                     throw new InvalidOperationException($"Invalid {nameof(ArtifactToolDumpOptions)}.{nameof(ResourceUpdate)}");
+                }
         }
     }
 }

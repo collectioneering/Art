@@ -26,8 +26,14 @@ public abstract class BlockedDepaddingHandler : DepaddingHandler
     /// <exception cref="ArgumentException">Thrown for invalid <paramref name="blockSize"/> or illegally configured <paramref name="supportedBlockSize"/>.</exception>
     protected BlockedDepaddingHandler(KeySizes supportedBlockSize, int blockSize)
     {
-        if (blockSize <= 0) throw new ArgumentException("Invalid block size", nameof(blockSize));
-        if (!ValidateBlockSize(supportedBlockSize, blockSize)) throw new ArgumentException("Invalid block size", nameof(blockSize));
+        if (blockSize <= 0)
+        {
+            throw new ArgumentException("Invalid block size", nameof(blockSize));
+        }
+        if (!ValidateBlockSize(supportedBlockSize, blockSize))
+        {
+            throw new ArgumentException("Invalid block size", nameof(blockSize));
+        }
         BlockSize = blockSize;
         _blockCaches = new byte[2][];
         _blockCaches[0] = new byte[blockSize];
@@ -40,7 +46,10 @@ public abstract class BlockedDepaddingHandler : DepaddingHandler
     /// <inheritdoc />
     public sealed override bool TryUpdate(ReadOnlySpan<byte> data, out ReadOnlySpan<byte> a, out ReadOnlySpan<byte> b)
     {
-        if (_didFinal) throw new InvalidOperationException("Already performed final padding");
+        if (_didFinal)
+        {
+            throw new InvalidOperationException("Already performed final padding");
+        }
         if (data.Length == 0)
         {
             a = ReadOnlySpan<byte>.Empty;
@@ -98,7 +107,10 @@ public abstract class BlockedDepaddingHandler : DepaddingHandler
     /// <inheritdoc />
     public sealed override bool TryUpdate(ReadOnlyMemory<byte> data, out ReadOnlyMemory<byte> a, out ReadOnlyMemory<byte> b)
     {
-        if (_didFinal) throw new InvalidOperationException("Already performed final padding");
+        if (_didFinal)
+        {
+            throw new InvalidOperationException("Already performed final padding");
+        }
         if (data.Length == 0)
         {
             a = ReadOnlyMemory<byte>.Empty;
@@ -164,7 +176,10 @@ public abstract class BlockedDepaddingHandler : DepaddingHandler
     /// <inheritdoc />
     public sealed override void DoFinal(out ReadOnlyMemory<byte> buf)
     {
-        if (_didFinal) throw new InvalidOperationException("Already performed final padding");
+        if (_didFinal)
+        {
+            throw new InvalidOperationException("Already performed final padding");
+        }
         // Should be the case that no data at all was written, so just ignore
         if (_currentWritten == 0)
         {
@@ -173,8 +188,13 @@ public abstract class BlockedDepaddingHandler : DepaddingHandler
         else
         {
             if (_currentWritten != BlockSize)
+            {
                 throw new InvalidDataException("Cannot perform final padding: current state indicates non-block-aligned data");
-            if (!ValidateLastBlock(_blockCache, out byte b)) throw new InvalidDataException("Failed to depad final block: invalid padding");
+            }
+            if (!ValidateLastBlock(_blockCache, out byte b))
+            {
+                throw new InvalidDataException("Failed to depad final block: invalid padding");
+            }
             buf = new ReadOnlyMemory<byte>(_blockCache, 0, BlockSize - b);
         }
         _didFinal = true;
@@ -182,7 +202,10 @@ public abstract class BlockedDepaddingHandler : DepaddingHandler
 
     private void FlipBuffer()
     {
-        if (_currentWritten != BlockSize) throw new InvalidOperationException("Failed vibe check, current written != block size");
+        if (_currentWritten != BlockSize)
+        {
+            throw new InvalidOperationException("Failed vibe check, current written != block size");
+        }
         _blockCache = _blockCaches[_blockCacheIdx ^= 1];
         _currentWritten = 0;
     }

@@ -59,7 +59,9 @@ public static class ArtCommonExtensions
     {
         Dictionary<string, IArtifactData> res = new();
         await foreach (IArtifactData artifactData in artifactListTool.ListAsync(cancellationToken).ConfigureAwait(false))
+        {
             res[artifactData.Info.Key.Id] = artifactData;
+        }
         return res;
     }
 
@@ -100,7 +102,9 @@ public static class ArtCommonExtensions
     public static async ValueTask<bool> AnyAsync<T>(this IAsyncEnumerable<T> enumerable)
     {
         await foreach (var _ in enumerable.ConfigureAwait(false))
+        {
             return true;
+        }
         return false;
     }
 
@@ -113,7 +117,10 @@ public static class ArtCommonExtensions
     public static async ValueTask<int> CountAsync<T>(this IAsyncEnumerable<T> enumerable)
     {
         int sum = 0;
-        await foreach (var _ in enumerable.ConfigureAwait(false)) sum++;
+        await foreach (var _ in enumerable.ConfigureAwait(false))
+        {
+            sum++;
+        }
         return sum;
     }
 
@@ -127,8 +134,12 @@ public static class ArtCommonExtensions
     public static async IAsyncEnumerable<T> WhereAsync<T>(this IAsyncEnumerable<T> enumerable, Predicate<T> predicate)
     {
         await foreach (T v in enumerable.ConfigureAwait(false))
+        {
             if (predicate(v))
+            {
                 yield return v;
+            }
+        }
     }
 
     /// <summary>
@@ -142,7 +153,9 @@ public static class ArtCommonExtensions
     public static async IAsyncEnumerable<TTo> SelectAsync<TFrom, TTo>(this IAsyncEnumerable<TFrom> enumerable, Func<TFrom, TTo> func)
     {
         await foreach (TFrom from in enumerable.ConfigureAwait(false))
+        {
             yield return func(from);
+        }
     }
 
     /// <summary>
@@ -157,7 +170,10 @@ public static class ArtCommonExtensions
         if (await enumerator.MoveNextAsync())
         {
             T value = enumerator.Current;
-            if (await enumerator.MoveNextAsync()) throw new InvalidOperationException("More than one element contained in sequence");
+            if (await enumerator.MoveNextAsync())
+            {
+                throw new InvalidOperationException("More than one element contained in sequence");
+            }
             return value;
         }
 
@@ -177,7 +193,10 @@ public static class ArtCommonExtensions
         if (await enumerator.MoveNextAsync())
         {
             T value = enumerator.Current;
-            if (await enumerator.MoveNextAsync()) throw new InvalidOperationException("More than one element contained in sequence");
+            if (await enumerator.MoveNextAsync())
+            {
+                throw new InvalidOperationException("More than one element contained in sequence");
+            }
             return value;
         }
 
@@ -193,7 +212,9 @@ public static class ArtCommonExtensions
     public static async ValueTask<T?> FirstOrDefaultAsync<T>(this IAsyncEnumerable<T> enumerable)
     {
         await foreach (T v in enumerable.ConfigureAwait(false))
+        {
             return v;
+        }
         return default;
     }
 
@@ -207,7 +228,9 @@ public static class ArtCommonExtensions
     public static async ValueTask<T?> FirstOrDefaultAsync<T>(this IAsyncEnumerable<T> enumerable, T @default)
     {
         await foreach (T v in enumerable.ConfigureAwait(false))
+        {
             return v;
+        }
         return @default;
     }
 

@@ -35,7 +35,10 @@ public class SqliteArtifactContext : ArtifactContext
     public override void Dispose()
     {
         base.Dispose();
-        if (_disposed) return;
+        if (_disposed)
+        {
+            return;
+        }
         _disposed = true;
         GC.SuppressFinalize(this);
     }
@@ -44,7 +47,10 @@ public class SqliteArtifactContext : ArtifactContext
     public override async ValueTask DisposeAsync()
     {
         await base.DisposeAsync().ConfigureAwait(false);
-        if (_disposed) return;
+        if (_disposed)
+        {
+            return;
+        }
         _disposed = true;
         GC.SuppressFinalize(this);
     }

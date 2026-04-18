@@ -44,8 +44,14 @@ public static class CookieFile
     private static void AddLine(CookieContainer cc, string line, int i)
     {
         string[] elem = line.Split(['\t'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        if (elem.Length == 0 || elem[0].StartsWith('#')) return;
-        if (elem.Length < 6 || elem.Length > 7) throw new InvalidDataException($"Line {i} had invalid number of elements {elem.Length}");
+        if (elem.Length == 0 || elem[0].StartsWith('#'))
+        {
+            return;
+        }
+        if (elem.Length < 6 || elem.Length > 7)
+        {
+            throw new InvalidDataException($"Line {i} had invalid number of elements {elem.Length}");
+        }
         string domain = elem[0];
         //bool access = elem[1].Equals("true", StringComparison.InvariantCultureIgnoreCase);
         string path = elem[2];

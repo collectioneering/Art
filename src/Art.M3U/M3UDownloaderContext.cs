@@ -218,8 +218,14 @@ public partial class M3UDownloaderContext
             m3 = M3UReader.Parse(await res.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
             ei = m3.EncryptionInfo;
         }
-        if (ei != null) tool.LogInformation($"Encrypted with {ei.Method}");
-        if (ei?.Iv is not null) tool.LogInformation($"IV {Convert.ToHexString(ei.Iv)}");
+        if (ei != null)
+        {
+            tool.LogInformation($"Encrypted with {ei.Method}");
+        }
+        if (ei?.Iv is not null)
+        {
+            tool.LogInformation($"IV {Convert.ToHexString(ei.Iv)}");
+        }
         if (ei is { Uri: { } })
         {
             if (ei.Uri.StartsWith("skd://"))
@@ -244,11 +250,20 @@ public partial class M3UDownloaderContext
     /// <param name="cancellationToken">Cancellation token.</param>
     public async Task WriteKeyMaterialAsync(CancellationToken cancellationToken = default)
     {
-        if (StreamInfo.EncryptionInfo is not { } ei) return;
+        if (StreamInfo.EncryptionInfo is not { } ei)
+        {
+            return;
+        }
         await WriteAncillaryFileAsync("keyformat.txt", Encoding.UTF8.GetBytes(ei.KeyFormat), cancellationToken).ConfigureAwait(false);
         await WriteAncillaryFileAsync("method.txt", Encoding.UTF8.GetBytes(ei.Method), cancellationToken).ConfigureAwait(false);
-        if (ei.Key is not null) await WriteAncillaryFileAsync("key.bin", ei.Key, cancellationToken).ConfigureAwait(false);
-        if (ei.Iv is not null) await WriteAncillaryFileAsync("iv.bin", ei.Iv, cancellationToken).ConfigureAwait(false);
+        if (ei.Key is not null)
+        {
+            await WriteAncillaryFileAsync("key.bin", ei.Key, cancellationToken).ConfigureAwait(false);
+        }
+        if (ei.Iv is not null)
+        {
+            await WriteAncillaryFileAsync("iv.bin", ei.Iv, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     internal Task WriteAncillaryFileAsync(string file, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
@@ -370,7 +385,10 @@ public partial class M3UDownloaderContext
         {
             if (await Tool.RegistrationManager.TryGetResourceAsync(ark, cancellationToken).ConfigureAwait(false) != null)
             {
-                if (Config.SkipExistingSegments) return;
+                if (Config.SkipExistingSegments)
+                {
+                    return;
+                }
                 await Tool.RegistrationManager.RemoveResourceAsync(ark, cancellationToken).ConfigureAwait(false);
             }
         }
@@ -522,13 +540,17 @@ public partial class M3UDownloaderContext
     private static StreamInfo SelectPrimarySubStream(M3UFile ff, M3UDownloaderConfig config)
     {
         if (ff.Streams.All(v => v.AverageBandwidth != 0))
+        {
             return config.PrioritizeResolution
                 ? ff.Streams.OrderByDescending(v => (v.ResolutionWidth * v.ResolutionHeight, v.AverageBandwidth)).First()
                 : ff.Streams.OrderByDescending(v => (v.AverageBandwidth, v.ResolutionWidth * v.ResolutionHeight)).First();
+        }
         if (ff.Streams.All(v => v.Bandwidth != 0))
+        {
             return config.PrioritizeResolution
                 ? ff.Streams.OrderByDescending(v => (v.ResolutionWidth * v.ResolutionHeight, v.Bandwidth)).First()
                 : ff.Streams.OrderByDescending(v => (v.Bandwidth, v.ResolutionWidth * v.ResolutionHeight)).First();
+        }
         throw new InvalidDataException("Failed to choose best stream");
     }
 }

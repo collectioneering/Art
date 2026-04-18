@@ -93,7 +93,10 @@ public class NullArtifactDataManager : IArtifactDataManager
     public async ValueTask<Checksum?> GetChecksumAsync(ArtifactResourceKey key, CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();
-        if (!await ExistsAsync(key, cancellationToken).ConfigureAwait(false)) throw new KeyNotFoundException();
+        if (!await ExistsAsync(key, cancellationToken).ConfigureAwait(false))
+        {
+            throw new KeyNotFoundException();
+        }
         return null;
     }
 

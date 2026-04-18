@@ -159,7 +159,10 @@ public class ArtifactData : IArtifactData
     /// <param name="resource">Resource to add.</param>
     public void Add(ArtifactDataResource resource)
     {
-        if (resource.Data != this) throw new ArgumentException("Cannot add a data resource with different source data object");
+        if (resource.Data != this)
+        {
+            throw new ArgumentException("Cannot add a data resource with different source data object");
+        }
         Resources[resource.Info.Key] = resource.Info;
     }
 
@@ -170,7 +173,9 @@ public class ArtifactData : IArtifactData
     public void AddRange(IEnumerable<ArtifactResourceInfo> resources)
     {
         foreach (ArtifactResourceInfo resource in resources)
+        {
             Add(resource);
+        }
     }
 
     /// <summary>

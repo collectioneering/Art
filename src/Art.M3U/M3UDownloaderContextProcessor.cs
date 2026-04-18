@@ -99,7 +99,10 @@ public abstract class M3UDownloaderContextProcessor
     private void ThrowForExceedTotalRetries(Exception exception)
     {
         int? maxTotalRetries = Context.Config.MaxTotalRetries;
-        if (TotalFailCounter > maxTotalRetries) throw new AggregateException($"Encountered {TotalFailCounter} total failures (threshold is {maxTotalRetries})", exception);
+        if (TotalFailCounter > maxTotalRetries)
+        {
+            throw new AggregateException($"Encountered {TotalFailCounter} total failures (threshold is {maxTotalRetries})", exception);
+        }
         if (maxTotalRetries is { } maxTotalRetriesValue)
         {
             Context.Tool.LogInformation($"Now at {TotalFailCounter} total failures of {maxTotalRetriesValue} allowed");
@@ -109,7 +112,10 @@ public abstract class M3UDownloaderContextProcessor
     private void ThrowForExceedConsecutiveRetries(Exception exception)
     {
         int? maxConsecutiveRetries = Context.Config.MaxConsecutiveRetries;
-        if (ConsecutiveFailCounter > maxConsecutiveRetries) throw new AggregateException($"Encountered {ConsecutiveFailCounter} consecutive failures (threshold is {maxConsecutiveRetries})", exception);
+        if (ConsecutiveFailCounter > maxConsecutiveRetries)
+        {
+            throw new AggregateException($"Encountered {ConsecutiveFailCounter} consecutive failures (threshold is {maxConsecutiveRetries})", exception);
+        }
         if (maxConsecutiveRetries is { } maxConsecutiveRetriesValue)
         {
             Context.Tool.LogInformation($"Now at {ConsecutiveFailCounter} consecutive failures of {maxConsecutiveRetriesValue} allowed");
@@ -118,14 +124,20 @@ public abstract class M3UDownloaderContextProcessor
 
     private Func<Exception, Task> GetRecoveryCallbackOrThrow(Exception exception)
     {
-        if (RecoveryCallback == null) throw new AggregateException("No recovery callback implemented", exception);
+        if (RecoveryCallback == null)
+        {
+            throw new AggregateException("No recovery callback implemented", exception);
+        }
         return RecoveryCallback;
     }
 
     private static async Task DelayOrThrowAsync(ArtHttpResponseMessageException exception, TimeSpan? delay, ArtHttpResponseMessageException? responseMessageException, CancellationToken cancellationToken)
     {
         TimeSpan? delayMake = delay ?? responseMessageException?.RetryCondition?.Delta;
-        if (delayMake is not { } delayActual) throw new AggregateException($"No retry delay specified for HTTP response {exception.StatusCode?.ToString() ?? "<unknown>"} and no default value provided", exception);
+        if (delayMake is not { } delayActual)
+        {
+            throw new AggregateException($"No retry delay specified for HTTP response {exception.StatusCode?.ToString() ?? "<unknown>"} and no default value provided", exception);
+        }
         await Task.Delay(delayActual, cancellationToken).ConfigureAwait(false);
     }
 
@@ -329,7 +341,10 @@ public abstract class M3UDownloaderContextProcessor
                     Context.Tool.LogError("Timer stopped running (error?)");
                     return;
                 }
-                if (oneOff) break;
+                if (oneOff)
+                {
+                    break;
+                }
                 await Task.Delay(s_playlistDelay, cancellationToken).ConfigureAwait(false);
             }
         }

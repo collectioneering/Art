@@ -74,15 +74,23 @@ public static class ChecksumUtility
     /// <returns>True if equal.</returns>
     public static bool DatawiseEquals(Checksum? first, Checksum? second)
     {
-        if (first != null && second == null || first == null && second != null) return false;
+        if (first != null && second == null || first == null && second != null)
+        {
+            return false;
+        }
         if (first != null && second != null)
+        {
             return string.Equals(first.Id, second.Id, StringComparison.InvariantCultureIgnoreCase) && first.Value.AsSpan().SequenceEqual(second.Value);
+        }
         return true;
     }
 
     private static byte[] Dehex(ReadOnlySpan<char> hex)
     {
-        if (hex.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase)) hex = hex[2..];
+        if (hex.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase))
+        {
+            hex = hex[2..];
+        }
         return Convert.FromHexString(hex);
     }
 }

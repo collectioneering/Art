@@ -35,6 +35,7 @@ public sealed class HashProxyStream : Stream
         _stream = stream ?? throw new ArgumentNullException(nameof(stream));
         _hashAlgorithm = hashAlgorithm ?? throw new ArgumentNullException(nameof(hashAlgorithm));
         if (_stream.CanSeek)
+        {
             try
             {
                 _initPos = _stream.Position;
@@ -43,6 +44,7 @@ public sealed class HashProxyStream : Stream
             {
                 // ignored
             }
+        }
         _leaveStreamOpen = leaveStreamOpen;
         _leaveHashAlgorithmOpen = leaveHashAlgorithmOpen;
     }
@@ -55,13 +57,19 @@ public sealed class HashProxyStream : Stream
 
     private void UpdateHash(byte[] buffer, int offset, int count)
     {
-        if (_hashComputed) return;
+        if (_hashComputed)
+        {
+            return;
+        }
         _hashAlgorithm.TransformBlock(buffer, offset, count, null, 0);
     }
 
     private void FinishHash()
     {
-        if (_hashComputed) return;
+        if (_hashComputed)
+        {
+            return;
+        }
         // ensure TransformBlock is called at least once
         _hashAlgorithm.TransformBlock([], 0, 0, null, 0);
         _hashAlgorithm.TransformFinalBlock([], 0, 0);
@@ -75,9 +83,18 @@ public sealed class HashProxyStream : Stream
         AssignMode(HashMode.Read);
         int read = _stream.Read(buffer, offset, count);
         _pos += read;
-        if (_hashComputed) return read;
-        if (read != 0) UpdateHash(buffer, offset, read);
-        else FinishHash();
+        if (_hashComputed)
+        {
+            return read;
+        }
+        if (read != 0)
+        {
+            UpdateHash(buffer, offset, read);
+        }
+        else
+        {
+            FinishHash();
+        }
         return read;
     }
 
@@ -87,9 +104,18 @@ public sealed class HashProxyStream : Stream
         AssignMode(HashMode.Read);
         int read = await _stream.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
         _pos += read;
-        if (_hashComputed) return read;
-        if (read != 0) UpdateHash(buffer, offset, read);
-        else FinishHash();
+        if (_hashComputed)
+        {
+            return read;
+        }
+        if (read != 0)
+        {
+            UpdateHash(buffer, offset, read);
+        }
+        else
+        {
+            FinishHash();
+        }
         return read;
     }
 
@@ -137,12 +163,21 @@ public sealed class HashProxyStream : Stream
     /// <inheritdoc />
     protected override void Dispose(bool disposing)
     {
-        if (_disposed) return;
+        if (_disposed)
+        {
+            return;
+        }
         FinishHash();
         if (disposing)
         {
-            if (!_leaveStreamOpen) _stream.Dispose();
-            if (!_leaveHashAlgorithmOpen) _hashAlgorithm.Dispose();
+            if (!_leaveStreamOpen)
+            {
+                _stream.Dispose();
+            }
+            if (!_leaveHashAlgorithmOpen)
+            {
+                _hashAlgorithm.Dispose();
+            }
         }
         _disposed = true;
     }
@@ -169,8 +204,14 @@ public sealed class HashProxyStream : Stream
     /// <exception cref="InvalidOperationException">Thrown when mixing read/write operations, which is not supported.</exception>
     private void AssignMode(HashMode mode)
     {
-        if (_mode == HashMode.Unassigned) _mode = mode;
-        else if (_mode != mode) throw new InvalidOperationException("Cannot mix read and write operations on this stream.");
+        if (_mode == HashMode.Unassigned)
+        {
+            _mode = mode;
+        }
+        else if (_mode != mode)
+        {
+            throw new InvalidOperationException("Cannot mix read and write operations on this stream.");
+        }
     }
 
     private enum HashMode

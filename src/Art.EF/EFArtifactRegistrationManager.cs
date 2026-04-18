@@ -168,7 +168,10 @@ public class EFArtifactRegistrationManager<TContext> : IArtifactRegistrationMana
     /// <param name="disposing">True if disposing, false if running through finalizer.</param>
     protected virtual void Dispose(bool disposing)
     {
-        if (_disposed) return;
+        if (_disposed)
+        {
+            return;
+        }
         _disposed = true;
         if (disposing)
         {
@@ -187,7 +190,10 @@ public class EFArtifactRegistrationManager<TContext> : IArtifactRegistrationMana
     /// </summary>
     protected virtual async ValueTask DisposeAsyncCore()
     {
-        if (_disposed) return;
+        if (_disposed)
+        {
+            return;
+        }
         _disposed = true;
         var context = Context;
         if (ReferenceEquals(context, null))

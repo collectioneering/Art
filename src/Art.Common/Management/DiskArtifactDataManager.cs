@@ -105,7 +105,10 @@ public class DiskArtifactDataManager : ArtifactDataManager, INamespacedArtifactD
     private bool Delete(string basePath, string file, string path)
     {
         string filePath = _baseDirectoryContext.JoinValidated(basePath, path, file.SafeifyFileName());
-        if (!File.Exists(filePath)) return false;
+        if (!File.Exists(filePath))
+        {
+            return false;
+        }
         File.Delete(filePath);
         return !File.Exists(filePath);
     }
@@ -114,14 +117,23 @@ public class DiskArtifactDataManager : ArtifactDataManager, INamespacedArtifactD
     {
         string dir = _baseDirectoryContext.JoinValidated(basePath, path);
         string filePath = _baseDirectoryContext.JoinValidated(dir, file.SafeifyFileName());
-        if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+        if (!Directory.Exists(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
         FileStreamOptions fso = new() { Mode = FileMode.Create, Access = FileAccess.ReadWrite };
         bool preferTemporaryLocation = true;
         if (options != null)
         {
             long preallocationSize = options.PreallocationSize;
-            if (preallocationSize < 0) throw new ArgumentException($"Invalid {nameof(OutputStreamOptions.PreallocationSize)} value", nameof(options));
-            if (preallocationSize != 0) fso.PreallocationSize = preallocationSize;
+            if (preallocationSize < 0)
+            {
+                throw new ArgumentException($"Invalid {nameof(OutputStreamOptions.PreallocationSize)} value", nameof(options));
+            }
+            if (preallocationSize != 0)
+            {
+                fso.PreallocationSize = preallocationSize;
+            }
             preferTemporaryLocation = options.PreferTemporaryLocation;
         }
         return new CommittableFileStream(filePath, fso, preferTemporaryLocation: preferTemporaryLocation);

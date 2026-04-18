@@ -90,13 +90,19 @@ public abstract class NamespacedArtifactDataManager : INamespacedArtifactDataMan
     public virtual async ValueTask<Checksum?> GetChecksumAsync(string file, string path = "", CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();
-        if (!await ExistsAsync(file, path, cancellationToken).ConfigureAwait(false)) throw new KeyNotFoundException();
+        if (!await ExistsAsync(file, path, cancellationToken).ConfigureAwait(false))
+        {
+            throw new KeyNotFoundException();
+        }
         return null;
     }
 
     private static void UpdateOptionsTextual(ref OutputStreamOptions? options)
     {
-        if (options is { } optionsActual) options = optionsActual with { PreallocationSize = 0 };
+        if (options is { } optionsActual)
+        {
+            options = optionsActual with { PreallocationSize = 0 };
+        }
     }
 
     private void EnsureNotDisposed()

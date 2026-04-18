@@ -24,14 +24,20 @@ public abstract class CommonCommittableStream : CommittableStream
 
     private void CommitInternal(bool shouldCommit)
     {
-        if (Committed) return;
+        if (Committed)
+        {
+            return;
+        }
         Committed = true;
         Commit(shouldCommit);
     }
 
     private async ValueTask CommitInternalAsync(bool shouldCommit)
     {
-        if (Committed) return;
+        if (Committed)
+        {
+            return;
+        }
         Committed = true;
         await CommitAsync(shouldCommit).ConfigureAwait(false);
     }
@@ -42,7 +48,10 @@ public abstract class CommonCommittableStream : CommittableStream
     /// <exception cref="InvalidOperationException">Stream has been committed.</exception>
     protected void EnsureNotCommitted()
     {
-        if (Committed) throw new InvalidOperationException("Stream has already been committed");
+        if (Committed)
+        {
+            throw new InvalidOperationException("Stream has already been committed");
+        }
     }
 
     /// <summary>

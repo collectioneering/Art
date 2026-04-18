@@ -156,7 +156,10 @@ public partial class M3UDownloaderContextTopDownSaver : M3UDownloaderContextSave
         Reset();
         while (true)
         {
-            if (HeartbeatCallback != null) await HeartbeatCallback().ConfigureAwait(false);
+            if (HeartbeatCallback != null)
+            {
+                await HeartbeatCallback().ConfigureAwait(false);
+            }
             M3UFile m3;
             Context.Tool.LogInformation("Reading main...");
             try
@@ -209,7 +212,10 @@ public partial class M3UDownloaderContextTopDownSaver : M3UDownloaderContextSave
         string str = m3.DataLines.First();
         Uri origUri = new(Context.MainUri, str);
         int idx = str.IndexOf('?');
-        if (idx >= 0) str = str[..idx];
+        if (idx >= 0)
+        {
+            str = str[..idx];
+        }
         Uri uri = new UriBuilder(new Uri(Context.MainUri, _nameTransform(str, number))) { Query = origUri.Query }.Uri;
         string action = isTopDown ? "Top-downloading segment" : "Downloading missing segment";
         Context.Tool.LogInformation($"[{Context.Name}] {action} {uri.Segments[^1]}...");

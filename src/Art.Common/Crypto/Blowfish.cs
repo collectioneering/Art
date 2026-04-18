@@ -97,9 +97,13 @@ public struct Blowfish
     public unsafe void DecryptCbc(Span<byte> cipherText)
     {
         if (!_init)
+        {
             throw new Exception("Key not set.");
+        }
         if (!_ivSet)
+        {
             throw new Exception("IV not set.");
+        }
         fixed (byte* ct = &cipherText.GetPinnableReference(), b = _stateBuffer)
         {
             int len = cipherText.Length;
@@ -110,6 +114,7 @@ public struct Blowfish
                 s3 = (uint*)(b + S3Off);
             ulong iv = *(ulong*)(b + IvOff);
             if (BitConverter.IsLittleEndian)
+            {
                 for (int i = 0; i < len; i += 8)
                 {
                     byte* block = ct + i;
@@ -118,7 +123,9 @@ public struct Blowfish
                     *(ulong*)block ^= iv;
                     iv = tmp;
                 }
+            }
             else
+            {
                 for (int i = 0; i < len; i += 8)
                 {
                     byte* block = ct + i;
@@ -127,6 +134,7 @@ public struct Blowfish
                     *(ulong*)block ^= iv;
                     iv = tmp;
                 }
+            }
         }
     }
 
@@ -138,7 +146,9 @@ public struct Blowfish
     public unsafe void DecryptEcb(Span<byte> cipherText)
     {
         if (!_init)
+        {
             throw new Exception("Key not set.");
+        }
         fixed (byte* ct = &cipherText.GetPinnableReference(), b = _stateBuffer)
         {
             int len = cipherText.Length;
@@ -148,11 +158,19 @@ public struct Blowfish
                 s2 = (uint*)(b + S2Off),
                 s3 = (uint*)(b + S3Off);
             if (BitConverter.IsLittleEndian)
+            {
                 for (int i = 0; i < len; i += 8)
+                {
                     BlockDecryptLe(ct + i, p, s0, s1, s2, s3);
+                }
+            }
             else
+            {
                 for (int i = 0; i < len; i += 8)
+                {
                     BlockDecryptBe(ct + i, p, s0, s1, s2, s3);
+                }
+            }
         }
     }
 
@@ -164,9 +182,13 @@ public struct Blowfish
     public unsafe void EncryptCbc(Span<byte> plainText)
     {
         if (!_init)
+        {
             throw new Exception("Key not set.");
+        }
         if (!_ivSet)
+        {
             throw new Exception("IV not set.");
+        }
         fixed (byte* pt = &plainText.GetPinnableReference(), b = _stateBuffer)
         {
             int len = plainText.Length;
@@ -177,6 +199,7 @@ public struct Blowfish
                 s3 = (uint*)(b + S3Off);
             ulong iv = *(ulong*)(b + IvOff);
             if (BitConverter.IsLittleEndian)
+            {
                 for (int i = 0; i < len; i += 8)
                 {
                     byte* block = pt + i;
@@ -184,7 +207,9 @@ public struct Blowfish
                     BlockEncryptLe(block, p, s0, s1, s2, s3);
                     iv = *(ulong*)block;
                 }
+            }
             else
+            {
                 for (int i = 0; i < len; i += 8)
                 {
                     byte* block = pt + i;
@@ -192,6 +217,7 @@ public struct Blowfish
                     BlockEncryptBe(block, p, s0, s1, s2, s3);
                     iv = *(ulong*)block;
                 }
+            }
         }
     }
 
@@ -203,7 +229,9 @@ public struct Blowfish
     public unsafe void EncryptEcb(Span<byte> plainText)
     {
         if (!_init)
+        {
             throw new Exception("Key not set.");
+        }
         fixed (byte* pt = &plainText.GetPinnableReference(), b = _stateBuffer)
         {
             int len = plainText.Length;
@@ -213,11 +241,19 @@ public struct Blowfish
                 s2 = (uint*)(b + S2Off),
                 s3 = (uint*)(b + S3Off);
             if (BitConverter.IsLittleEndian)
+            {
                 for (int i = 0; i < len; i += 8)
+                {
                     BlockEncryptLe(pt + i, p, s0, s1, s2, s3);
+                }
+            }
             else
+            {
                 for (int i = 0; i < len; i += 8)
+                {
                     BlockEncryptBe(pt + i, p, s0, s1, s2, s3);
+                }
+            }
         }
     }
 
@@ -227,7 +263,9 @@ public struct Blowfish
     public unsafe void SetBlankIv()
     {
         fixed (byte* b = _stateBuffer)
+        {
             new Span<byte>(b + IvOff, IvLen).Fill(0);
+        }
         _ivSet = true;
     }
 
@@ -241,11 +279,15 @@ public struct Blowfish
         if (iv.Length == 8)
         {
             fixed (byte* b = _stateBuffer)
+            {
                 iv.CopyTo(new Span<byte>(b + IvOff, IvLen));
+            }
             _ivSet = true;
         }
         else
+        {
             throw new Exception("Invalid IV size.");
+        }
     }
 
     /// <summary>
@@ -255,7 +297,9 @@ public struct Blowfish
     public unsafe void SetKey(ReadOnlySpan<byte> cipherKey)
     {
         if (cipherKey.Length > 56)
+        {
             throw new Exception($"Key too long. Key is {cipherKey.Length} bytes long, 56 bytes maximum.");
+        }
         int keyLen = cipherKey.Length;
 
         SetupP();
@@ -550,7 +594,9 @@ public struct Blowfish
     private unsafe void SetupP()
     {
         fixed (void* dP = s_defaultP, b = _stateBuffer)
+        {
             Buffer.MemoryCopy(dP, (byte*)b + POff, PLen, PLen);
+        }
     }
 
     private static readonly uint[] s_defaultP =
@@ -563,7 +609,9 @@ public struct Blowfish
     private unsafe void SetupS0()
     {
         fixed (void* dS0 = s_defaultS0, b = _stateBuffer)
+        {
             Buffer.MemoryCopy(dS0, (byte*)b + S0Off, S0Len, S0Len);
+        }
     }
 
     private static readonly uint[] s_defaultS0 =
@@ -605,7 +653,9 @@ public struct Blowfish
     private unsafe void SetupS1()
     {
         fixed (void* dS1 = s_defaultS1, b = _stateBuffer)
+        {
             Buffer.MemoryCopy(dS1, (byte*)b + S1Off, S1Len, S1Len);
+        }
     }
 
     private static readonly uint[] s_defaultS1 =
@@ -647,7 +697,9 @@ public struct Blowfish
     private unsafe void SetupS2()
     {
         fixed (void* dS2 = s_defaultS2, b = _stateBuffer)
+        {
             Buffer.MemoryCopy(dS2, (byte*)b + S2Off, S2Len, S2Len);
+        }
     }
 
     private static readonly uint[] s_defaultS2 =
@@ -689,7 +741,9 @@ public struct Blowfish
     private unsafe void SetupS3()
     {
         fixed (void* dS3 = s_defaultS3, b = _stateBuffer)
+        {
             Buffer.MemoryCopy(dS3, (byte*)b + S3Off, S3Len, S3Len);
+        }
     }
 
     private static readonly uint[] s_defaultS3 =

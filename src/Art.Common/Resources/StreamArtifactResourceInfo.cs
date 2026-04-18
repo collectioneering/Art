@@ -45,7 +45,10 @@ public record StreamArtifactResourceInfo(
         }
         finally
         {
-            if (position is { } p) Resource.Position = p;
+            if (position is { } p)
+            {
+                Resource.Position = p;
+            }
         }
     }
 
@@ -61,7 +64,10 @@ public record StreamArtifactResourceInfo(
     /// <inheritdoc />
     public override void AugmentOutputStreamOptions(ref OutputStreamOptions options)
     {
-        if (Resource.CanSeek) options = options with { PreallocationSize = Resource.Length };
+        if (Resource.CanSeek)
+        {
+            options = options with { PreallocationSize = Resource.Length };
+        }
     }
 }
 

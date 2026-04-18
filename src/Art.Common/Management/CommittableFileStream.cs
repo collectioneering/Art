@@ -159,16 +159,25 @@ public class CommittableFileStream : CommittableDelegatingStream
         FileInfo fi = new(path);
         if (fi.Exists)
         {
-            if (fi.IsReadOnly) throw new IOException($"File [{path}] exists and is read-only");
+            if (fi.IsReadOnly)
+            {
+                throw new IOException($"File [{path}] exists and is read-only");
+            }
             tempPath = ArtIOUtility.CreateRandomPathForSibling(path, ".tmp");
             pathForStream = tempPath;
         }
         else
         {
             string? dir = Path.GetDirectoryName(path);
-            if (dir == null) throw new ArgumentException($"Target path [{path}] is not a valid file path", arg);
+            if (dir == null)
+            {
+                throw new ArgumentException($"Target path [{path}] is not a valid file path", arg);
+            }
             DirectoryInfo di = new(dir);
-            if (!di.Exists) throw new ArgumentException($"Directory [{dir}] for file [{path}] does not exist");
+            if (!di.Exists)
+            {
+                throw new ArgumentException($"Directory [{dir}] for file [{path}] does not exist");
+            }
             if (preferTemporaryLocation)
             {
                 tempPath = ArtIOUtility.CreateRandomPathForSibling(path, ".tmp");
@@ -232,7 +241,9 @@ public class CommittableFileStream : CommittableDelegatingStream
         else
         {
             if (File.Exists(_pathForStream))
+            {
                 File.Delete(_pathForStream);
+            }
         }
     }
 }

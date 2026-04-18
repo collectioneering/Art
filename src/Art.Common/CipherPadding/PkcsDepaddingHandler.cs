@@ -26,10 +26,17 @@ public abstract class PkcsDepaddingHandler : BlockedDepaddingHandler
             return true;
         }
         b = buffer[^1];
-        if (b > buffer.Length) return false;
+        if (b > buffer.Length)
+        {
+            return false;
+        }
         for (int i = buffer.Length - 1, c = 0; i >= 0 && c < b; i--, c++)
+        {
             if (buffer[i] != b)
+            {
                 return false;
+            }
+        }
         return true;
     }
 }
