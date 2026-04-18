@@ -171,9 +171,7 @@ public static class ItemStateFlagsUtility
             if (artifactInfo.UpdateDate != null && previousArtifactInfo.UpdateDate != null)
             {
                 if (artifactInfo.UpdateDate > previousArtifactInfo.UpdateDate)
-                {
                     state |= ItemStateFlags.NewerDate;
-                }
                 else if (artifactInfo.UpdateDate < previousArtifactInfo.UpdateDate)
                 {
                     state |= ItemStateFlags.OlderDate;
