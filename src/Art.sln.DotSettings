@@ -15,7 +15,7 @@
 	<s:String x:Key="/Default/CodeInspection/Highlighting/InspectionSeverities/=RedundantExtendsListEntry/@EntryIndexedValue">SUGGESTION</s:String>
 	<s:String x:Key="/Default/CodeInspection/Highlighting/InspectionSeverities/=RedundantSwitchExpressionArms/@EntryIndexedValue">SUGGESTION</s:String>
 	<s:String x:Key="/Default/CodeInspection/Highlighting/InspectionSeverities/=RedundantUsingDirective/@EntryIndexedValue">SUGGESTION</s:String>
-	<!-- <s:String x:Key="/Default/CodeInspection/Highlighting/InspectionSeverities/=UnusedAutoPropertyAccessor_002EGlobal/@EntryIndexedValue">SUGGESTION</s:String> -->
+	<s:String x:Key="/Default/CodeInspection/Highlighting/InspectionSeverities/=UnusedAutoPropertyAccessor_002EGlobal/@EntryIndexedValue">SUGGESTION</s:String>
 	<s:String x:Key="/Default/CodeInspection/Roslyn/RoslynCustomSeverities/=EA0001/@EntryIndexedValue">SET_BY_ROSLYN</s:String>
 	<s:String x:Key="/Default/CodeInspection/Roslyn/RoslynCustomSeverities/=EA0002/@EntryIndexedValue">SET_BY_ROSLYN</s:String>
 	<s:String x:Key="/Default/CodeInspection/Roslyn/RoslynCustomSeverities/=EA0003/@EntryIndexedValue">SET_BY_ROSLYN</s:String>

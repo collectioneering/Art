@@ -1,4 +1,4 @@
-name: InspectCode
+name: Check PR
 
 on:
   push:
