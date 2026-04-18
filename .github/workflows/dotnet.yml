@@ -31,7 +31,7 @@ jobs:
         dotnet tool install JetBrains.ReSharper.GlobalTools
         dotnet tool restore
     - name: Generate SARIF file from JetBrains-InspectCode
-      run: jb inspectcode src/Art.slnx -o=inspection_results -f="sarif" --settings="src/Art.sln.DotSettings" -e=WARNING
+      run: dotnet tool run jb inspectcode src/Art.slnx -o=inspection_results -f="sarif" --settings="src/Art.sln.DotSettings" -e=WARNING
     - name: Upload SARIF file
       uses: github/codeql-action/upload-sarif@v4
       with:
