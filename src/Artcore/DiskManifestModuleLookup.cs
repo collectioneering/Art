@@ -129,7 +129,7 @@ public class DiskManifestModuleLookup : IModuleLookup<ModuleManifest>
     {
         try
         {
-            content = JsonSerializer.Deserialize(File.ReadAllText(file), SourceGenerationContext.s_context.ModuleManifestContent) ?? throw new IOException($"Failed to deserialize manifest file {file}");
+            content = JsonSerializer.Deserialize(File.ReadAllText(file), SourceGenerationContext.SharedContext.ModuleManifestContent) ?? throw new IOException($"Failed to deserialize manifest file {file}");
             return true;
         }
         catch

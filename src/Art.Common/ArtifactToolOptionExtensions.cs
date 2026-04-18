@@ -29,7 +29,7 @@ public static class ArtifactToolOptionExtensions
     public static T GetOption<T>(this IReadOnlyDictionary<string, JsonElement>? options, string optKey)
     {
         if (!(options?.TryGetValue(optKey, out JsonElement vv) ?? false)) throw new ArtifactToolOptionNotFoundException(optKey);
-        return vv.Deserialize<T>(SourceGenerationContext.s_context.Options) ?? throw new NullJsonDataException();
+        return vv.Deserialize<T>(SourceGenerationContext.SharedContext.Options) ?? throw new NullJsonDataException();
     }
 
     /// <summary>
@@ -68,7 +68,7 @@ public static class ArtifactToolOptionExtensions
         if (vv.ValueKind == JsonValueKind.Null) throw new NullJsonDataException();
         try
         {
-            value = vv.Deserialize<T>(SourceGenerationContext.s_context.Options) ?? throw new NullJsonDataException();
+            value = vv.Deserialize<T>(SourceGenerationContext.SharedContext.Options) ?? throw new NullJsonDataException();
         }
         catch (JsonException)
         {
@@ -118,7 +118,7 @@ public static class ArtifactToolOptionExtensions
         {
             try
             {
-                value = vv.Deserialize<T>(SourceGenerationContext.s_context.Options);
+                value = vv.Deserialize<T>(SourceGenerationContext.SharedContext.Options);
                 return value != null;
             }
             catch (JsonException)
@@ -243,8 +243,8 @@ public static class ArtifactToolOptionExtensions
     /// <exception cref="NotSupportedException">Thrown when type not supported.</exception>
     public static bool GetFlag(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, bool throwIfIncorrectType = false)
     {
-        return TryGetOption(options, optKey, out bool value, SourceGenerationContext.s_context.Boolean) && value
-               || TryGetOption(options, optKey, out string? valueStr, SourceGenerationContext.s_context.String, throwIfIncorrectType) && s_yesLower.Contains(valueStr.ToLowerInvariant());
+        return TryGetOption(options, optKey, out bool value, SourceGenerationContext.SharedContext.Boolean) && value
+               || TryGetOption(options, optKey, out string? valueStr, SourceGenerationContext.SharedContext.String, throwIfIncorrectType) && s_yesLower.Contains(valueStr.ToLowerInvariant());
     }
 
     /// <summary>
@@ -258,8 +258,8 @@ public static class ArtifactToolOptionExtensions
     /// <exception cref="NotSupportedException">Thrown when type not supported.</exception>
     public static void GetFlag(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, ref bool flag, bool throwIfIncorrectType = false)
     {
-        if (TryGetOption(options, optKey, out bool value, SourceGenerationContext.s_context.Boolean)) flag = value;
-        if (TryGetOption(options, optKey, out string? valueStr, SourceGenerationContext.s_context.String, throwIfIncorrectType)) flag = s_yesLower.Contains(valueStr.ToLowerInvariant());
+        if (TryGetOption(options, optKey, out bool value, SourceGenerationContext.SharedContext.Boolean)) flag = value;
+        if (TryGetOption(options, optKey, out string? valueStr, SourceGenerationContext.SharedContext.String, throwIfIncorrectType)) flag = s_yesLower.Contains(valueStr.ToLowerInvariant());
     }
 
     /// <summary>
@@ -274,12 +274,12 @@ public static class ArtifactToolOptionExtensions
     /// <exception cref="NotSupportedException">Thrown when type not supported.</exception>
     public static bool TryGetFlag(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, out bool flag, bool throwIfIncorrectType = false)
     {
-        if (TryGetOption(options, optKey, out bool value, SourceGenerationContext.s_context.Boolean))
+        if (TryGetOption(options, optKey, out bool value, SourceGenerationContext.SharedContext.Boolean))
         {
             flag = value;
             return true;
         }
-        if (TryGetOption(options, optKey, out string? valueStr, SourceGenerationContext.s_context.String, throwIfIncorrectType))
+        if (TryGetOption(options, optKey, out string? valueStr, SourceGenerationContext.SharedContext.String, throwIfIncorrectType))
         {
             flag = s_yesLower.Contains(valueStr.ToLowerInvariant());
             return true;
@@ -304,7 +304,7 @@ public static class ArtifactToolOptionExtensions
     /// <exception cref="NotSupportedException">Thrown when type not supported.</exception>
     public static long GetInt64Option(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, bool throwIfIncorrectType = false)
     {
-        if (!TryGetOption(options, optKey, out long valueL, SourceGenerationContext.s_context.Int64, throwIfIncorrectType)) throw new ArtifactToolOptionNotFoundException(optKey);
+        if (!TryGetOption(options, optKey, out long valueL, SourceGenerationContext.SharedContext.Int64, throwIfIncorrectType)) throw new ArtifactToolOptionNotFoundException(optKey);
         return valueL;
     }
 
@@ -320,8 +320,8 @@ public static class ArtifactToolOptionExtensions
     /// <exception cref="NotSupportedException">Thrown when type not supported.</exception>
     public static void GetInt64Option(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, ref long value, bool throwIfIncorrectType = false)
     {
-        if (TryGetOption(options, optKey, out long valueL, SourceGenerationContext.s_context.Int64)) value = valueL;
-        if (TryGetOption(options, optKey, out string? valueStr, SourceGenerationContext.s_context.String, throwIfIncorrectType) && long.TryParse(valueStr, out long valueParsed)) value = valueParsed;
+        if (TryGetOption(options, optKey, out long valueL, SourceGenerationContext.SharedContext.Int64)) value = valueL;
+        if (TryGetOption(options, optKey, out string? valueStr, SourceGenerationContext.SharedContext.String, throwIfIncorrectType) && long.TryParse(valueStr, out long valueParsed)) value = valueParsed;
     }
 
     /// <summary>
@@ -336,12 +336,12 @@ public static class ArtifactToolOptionExtensions
     /// <exception cref="NotSupportedException">Thrown when type not supported.</exception>
     public static bool TryGetInt64Option(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, [NotNullWhen(true)] out long? value, bool throwIfIncorrectType = false)
     {
-        if (TryGetOption(options, optKey, out long value2, SourceGenerationContext.s_context.Int64))
+        if (TryGetOption(options, optKey, out long value2, SourceGenerationContext.SharedContext.Int64))
         {
             value = value2;
             return true;
         }
-        if (TryGetOption(options, optKey, out string? valueStr, SourceGenerationContext.s_context.String, throwIfIncorrectType) && long.TryParse(valueStr, out long valueParsed))
+        if (TryGetOption(options, optKey, out string? valueStr, SourceGenerationContext.SharedContext.String, throwIfIncorrectType) && long.TryParse(valueStr, out long valueParsed))
         {
             value = valueParsed;
             return true;
@@ -390,7 +390,7 @@ public static class ArtifactToolOptionExtensions
     /// <exception cref="NotSupportedException">Thrown when type not supported.</exception>
     public static ulong GetUInt64Option(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, bool throwIfIncorrectType = false)
     {
-        if (!TryGetOption(options, optKey, out ulong valueL, SourceGenerationContext.s_context.UInt64, throwIfIncorrectType)) throw new ArtifactToolOptionNotFoundException(optKey);
+        if (!TryGetOption(options, optKey, out ulong valueL, SourceGenerationContext.SharedContext.UInt64, throwIfIncorrectType)) throw new ArtifactToolOptionNotFoundException(optKey);
         return valueL;
     }
 
@@ -406,8 +406,8 @@ public static class ArtifactToolOptionExtensions
     /// <exception cref="NotSupportedException">Thrown when type not supported.</exception>
     public static void GetUInt64Option(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, ref ulong value, bool throwIfIncorrectType = false)
     {
-        if (TryGetOption(options, optKey, out ulong valueL, SourceGenerationContext.s_context.UInt64)) value = valueL;
-        if (TryGetOption(options, optKey, out string? valueStr, SourceGenerationContext.s_context.String, throwIfIncorrectType) && ulong.TryParse(valueStr, out ulong valueParsed)) value = valueParsed;
+        if (TryGetOption(options, optKey, out ulong valueL, SourceGenerationContext.SharedContext.UInt64)) value = valueL;
+        if (TryGetOption(options, optKey, out string? valueStr, SourceGenerationContext.SharedContext.String, throwIfIncorrectType) && ulong.TryParse(valueStr, out ulong valueParsed)) value = valueParsed;
     }
 
     /// <summary>
@@ -422,12 +422,12 @@ public static class ArtifactToolOptionExtensions
     /// <exception cref="NotSupportedException">Thrown when type not supported.</exception>
     public static bool TryGetUInt64Option(this IReadOnlyDictionary<string, JsonElement>? options, string optKey, [NotNullWhen(true)] out ulong? value, bool throwIfIncorrectType = false)
     {
-        if (TryGetOption(options, optKey, out ulong value2, SourceGenerationContext.s_context.UInt64))
+        if (TryGetOption(options, optKey, out ulong value2, SourceGenerationContext.SharedContext.UInt64))
         {
             value = value2;
             return true;
         }
-        if (TryGetOption(options, optKey, out string? valueStr, SourceGenerationContext.s_context.String, throwIfIncorrectType) && ulong.TryParse(valueStr, out ulong valueParsed))
+        if (TryGetOption(options, optKey, out string? valueStr, SourceGenerationContext.SharedContext.String, throwIfIncorrectType) && ulong.TryParse(valueStr, out ulong valueParsed))
         {
             value = valueParsed;
             return true;

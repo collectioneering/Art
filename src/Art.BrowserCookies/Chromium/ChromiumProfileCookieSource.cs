@@ -30,7 +30,7 @@ public abstract record ChromiumProfileCookieSource(string Profile = "Default") :
                 if (File.Exists(preferences))
                 {
                     using var fs = File.OpenRead(preferences);
-                    string name = (JsonSerializer.Deserialize(fs, SourceGenerationContext.s_context.ChromiumPreferences) ?? throw new InvalidDataException()).Profile.Name;
+                    string name = (JsonSerializer.Deserialize(fs, SourceGenerationContext.SharedContext.ChromiumPreferences) ?? throw new InvalidDataException()).Profile.Name;
                     if (name.Equals(Profile, StringComparison.InvariantCultureIgnoreCase))
                     {
                         return this with { Profile = newProfile };
@@ -53,7 +53,7 @@ public abstract record ChromiumProfileCookieSource(string Profile = "Default") :
                 try
                 {
                     using var fs = File.OpenRead(preferences);
-                    string name = (JsonSerializer.Deserialize(fs, SourceGenerationContext.s_context.ChromiumPreferences) ?? throw new InvalidDataException()).Profile.Name;
+                    string name = (JsonSerializer.Deserialize(fs, SourceGenerationContext.SharedContext.ChromiumPreferences) ?? throw new InvalidDataException()).Profile.Name;
                     potentialProfileNames.Add(newProfile);
                     potentialProfileNames.Add(name);
                 }

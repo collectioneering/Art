@@ -6,7 +6,7 @@ namespace Art.Common;
 
 internal partial class SourceGenerationContext
 {
-    internal static SourceGenerationContextImpl s_context => SourceGenerationContextImpl.s_context;
+    internal static SourceGenerationContextImpl SharedContext => SourceGenerationContextImpl.s_context;
 
     /*[JsonSourceGenerationOptions(
         PropertyNameCaseInsensitive = true,

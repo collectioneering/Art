@@ -79,7 +79,7 @@ public record ArtifactToolDumpProxy
     {
         Validate(this, false);
         IArtifactTool artifactTool = ArtifactTool;
-        if (artifactTool.Profile.Options.TryGetOption(OptArtifactList, out string[]? artifactList, SourceGenerationContext.s_context.StringArray) && artifactTool is IArtifactFindTool findTool)
+        if (artifactTool.Profile.Options.TryGetOption(OptArtifactList, out string[]? artifactList, SourceGenerationContext.SharedContext.StringArray) && artifactTool is IArtifactFindTool findTool)
         {
             artifactTool = new FindAsListTool(findTool, artifactList);
         }

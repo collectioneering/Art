@@ -19,7 +19,7 @@ public static class ArtifactToolProfileUtil
     public static ArtifactToolProfile[] DeserializeProfilesFromFile(string path)
     {
         ArgumentNullException.ThrowIfNull(path);
-        return DeserializeProfilesFromFileInternal(path, SourceGenerationContext.s_context, out _);
+        return DeserializeProfilesFromFileInternal(path, SourceGenerationContext.SharedContext, out _);
     }
 
     /// <summary>
@@ -48,7 +48,7 @@ public static class ArtifactToolProfileUtil
     public static ArtifactToolProfile[] DeserializeProfilesFromFile(string path, out bool isSingleObject)
     {
         ArgumentNullException.ThrowIfNull(path);
-        return DeserializeProfilesFromFileInternal(path, SourceGenerationContext.s_context, out isSingleObject);
+        return DeserializeProfilesFromFileInternal(path, SourceGenerationContext.SharedContext, out isSingleObject);
     }
 
     /// <summary>
@@ -85,7 +85,7 @@ public static class ArtifactToolProfileUtil
     public static void SerializeProfilesToFile(string path, params ArtifactToolProfile[] profiles)
     {
         ArgumentNullException.ThrowIfNull(profiles);
-        SerializeProfilesToFileInternal(path, SourceGenerationContext.s_context, profiles);
+        SerializeProfilesToFileInternal(path, SourceGenerationContext.SharedContext, profiles);
     }
 
     /// <summary>
@@ -113,7 +113,7 @@ public static class ArtifactToolProfileUtil
     public static void SerializeProfilesToFile(string path, IReadOnlyList<ArtifactToolProfile> profiles)
     {
         ArgumentNullException.ThrowIfNull(profiles);
-        SerializeProfilesToFileInternal(path, SourceGenerationContext.s_context, profiles);
+        SerializeProfilesToFileInternal(path, SourceGenerationContext.SharedContext, profiles);
     }
 
     /// <summary>
@@ -141,7 +141,7 @@ public static class ArtifactToolProfileUtil
     public static void SerializeProfileToFile(string path, ArtifactToolProfile profile)
     {
         ArgumentNullException.ThrowIfNull(profile);
-        SerializeProfileToFileInternal(path, SourceGenerationContext.s_context, profile);
+        SerializeProfileToFileInternal(path, SourceGenerationContext.SharedContext, profile);
     }
 
     /// <summary>
@@ -192,7 +192,7 @@ public static class ArtifactToolProfileUtil
     public static ArtifactToolProfile[] DeserializeProfiles(Stream utf8Stream)
     {
         ArgumentNullException.ThrowIfNull(utf8Stream);
-        return DeserializeProfilesInternal(utf8Stream, SourceGenerationContext.s_context, out _);
+        return DeserializeProfilesInternal(utf8Stream, SourceGenerationContext.SharedContext, out _);
     }
 
     /// <summary>
@@ -220,7 +220,7 @@ public static class ArtifactToolProfileUtil
     public static ArtifactToolProfile[] DeserializeProfiles(Stream utf8Stream, out bool isSingleObject)
     {
         ArgumentNullException.ThrowIfNull(utf8Stream);
-        return DeserializeProfilesInternal(utf8Stream, SourceGenerationContext.s_context, out isSingleObject);
+        return DeserializeProfilesInternal(utf8Stream, SourceGenerationContext.SharedContext, out isSingleObject);
     }
 
     /// <summary>
@@ -250,7 +250,7 @@ public static class ArtifactToolProfileUtil
     {
         ArgumentNullException.ThrowIfNull(utf8Stream);
         ArgumentNullException.ThrowIfNull(profiles);
-        SerializeProfilesInternal(utf8Stream, SourceGenerationContext.s_context, profiles);
+        SerializeProfilesInternal(utf8Stream, SourceGenerationContext.SharedContext, profiles);
     }
 
     /// <summary>
@@ -280,7 +280,7 @@ public static class ArtifactToolProfileUtil
     {
         ArgumentNullException.ThrowIfNull(utf8Stream);
         ArgumentNullException.ThrowIfNull(profiles);
-        SerializeProfilesInternal(utf8Stream, SourceGenerationContext.s_context, profiles);
+        SerializeProfilesInternal(utf8Stream, SourceGenerationContext.SharedContext, profiles);
     }
 
     /// <summary>
@@ -319,7 +319,7 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="InvalidDataException">Thrown if null value encountered.</exception>
     public static ArtifactToolProfile[] DeserializeProfiles(JsonElement element)
     {
-        return DeserializeProfilesInternal(element, SourceGenerationContext.s_context, out _);
+        return DeserializeProfilesInternal(element, SourceGenerationContext.SharedContext, out _);
     }
 
     /// <summary>
@@ -345,7 +345,7 @@ public static class ArtifactToolProfileUtil
     /// <exception cref="InvalidDataException">Thrown if null value encountered.</exception>
     public static ArtifactToolProfile[] DeserializeProfiles(JsonElement element, out bool isSingleObject)
     {
-        return DeserializeProfilesInternal(element, SourceGenerationContext.s_context, out isSingleObject);
+        return DeserializeProfilesInternal(element, SourceGenerationContext.SharedContext, out isSingleObject);
     }
 
     /// <summary>
@@ -394,7 +394,7 @@ public static class ArtifactToolProfileUtil
     public static JsonElement SerializeProfiles(params ArtifactToolProfile[] profiles)
     {
         ArgumentNullException.ThrowIfNull(profiles);
-        return SerializeProfilesInternal(SourceGenerationContext.s_context, profiles);
+        return SerializeProfilesInternal(SourceGenerationContext.SharedContext, profiles);
     }
 
     /// <summary>
@@ -420,7 +420,7 @@ public static class ArtifactToolProfileUtil
     public static JsonElement SerializeProfiles(IReadOnlyList<ArtifactToolProfile> profiles)
     {
         ArgumentNullException.ThrowIfNull(profiles);
-        return SerializeProfilesInternal(SourceGenerationContext.s_context, profiles);
+        return SerializeProfilesInternal(SourceGenerationContext.SharedContext, profiles);
     }
 
     /// <summary>
