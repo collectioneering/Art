@@ -148,10 +148,17 @@ public abstract class M3UDownloaderContextProcessor
     /// <param name="timeout">Timeout to use to determine when a stream seems to have ended.</param>
     /// <param name="playlistElementProcessor">Processor to handle playlist elements.</param>
     /// <param name="segmentFilter">Optional segment filter.</param>
-    /// <param name="extraOperation">Optional extra operation.</param>
+    /// <param name="extraOperationSource">Optional extra operation.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    protected async Task ProcessPlaylistAsync(bool oneOff, TimeSpan timeout, IPlaylistElementProcessor playlistElementProcessor, Func<Uri, SegmentSettings>? segmentFilter, IExtraSaverOperation? extraOperation = null, CancellationToken cancellationToken = default)
+    protected async Task ProcessPlaylistAsync(
+        bool oneOff,
+        TimeSpan timeout,
+        IPlaylistElementProcessor playlistElementProcessor,
+        Func<Uri, SegmentSettings>? segmentFilter,
+        Func<IExtraSaverOperation?>? extraOperationSource = null,
+        CancellationToken cancellationToken = default)
     {
+        var extraOperation = extraOperationSource?.Invoke();
         extraOperation?.Reset();
         IOperationProgressContext? operationProgressContext = null;
         try
@@ -291,6 +298,15 @@ public abstract class M3UDownloaderContextProcessor
                 }
                 else if (sw.IsRunning)
                 {
+                    if (extraOperationSource != null)
+                    {
+                        var currentExtraOperation = extraOperationSource();
+                        if (extraOperation == null || !ReferenceEquals(currentExtraOperation, extraOperation))
+                        {
+                            extraOperation = currentExtraOperation;
+                            extraOperation?.Reset();
+                        }
+                    }
                     if (extraOperation != null)
                     {
                         try
