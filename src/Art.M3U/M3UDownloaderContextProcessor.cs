@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Net;
 using Art.Http;
+using M3USharper;
 
 namespace Art.M3U;
 

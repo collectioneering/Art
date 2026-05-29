@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using Art.Common.Resources;
 using Art.Http;
 using Art.Http.Resources;
+using M3USharper;
 
 namespace Art.M3U;
 

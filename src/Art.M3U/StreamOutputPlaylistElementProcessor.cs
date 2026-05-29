@@ -1,4 +1,6 @@
-﻿namespace Art.M3U;
+﻿using M3USharper;
+
+namespace Art.M3U;
 
 internal class StreamOutputPlaylistElementProcessor : IPlaylistElementProcessor
 {

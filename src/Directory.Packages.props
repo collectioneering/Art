@@ -4,19 +4,20 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- Local dependencies -->
-    <PackageVersion Include="Artcore" Version="0.51.0" />
-    <PackageVersion Include="Art" Version="0.51.0" />
-    <PackageVersion Include="Art.BrowserCookies" Version="0.51.0" />
-    <PackageVersion Include="Art.Common" Version="0.51.0" />
-    <PackageVersion Include="Art.EF" Version="0.51.0" />
-    <PackageVersion Include="Art.EF.Sqlite" Version="0.51.0" />
-    <PackageVersion Include="Art.Extensions.BrowserCookies" Version="0.51.0" />
-    <PackageVersion Include="Art.Html" Version="0.51.0" />
-    <PackageVersion Include="Art.Http" Version="0.51.0" />
-    <PackageVersion Include="Art.M3U" Version="0.51.0" />
-    <PackageVersion Include="Art.Modular" Version="0.51.0" />
+    <PackageVersion Include="Artcore" Version="0.52.0" />
+    <PackageVersion Include="Art" Version="0.52.0" />
+    <PackageVersion Include="Art.BrowserCookies" Version="0.52.0" />
+    <PackageVersion Include="Art.Common" Version="0.52.0" />
+    <PackageVersion Include="Art.EF" Version="0.52.0" />
+    <PackageVersion Include="Art.EF.Sqlite" Version="0.52.0" />
+    <PackageVersion Include="Art.Extensions.BrowserCookies" Version="0.52.0" />
+    <PackageVersion Include="Art.Html" Version="0.52.0" />
+    <PackageVersion Include="Art.Http" Version="0.52.0" />
+    <PackageVersion Include="Art.M3U" Version="0.52.0" />
+    <PackageVersion Include="Art.Modular" Version="0.52.0" />
     <!-- Package dependencies -->
     <PackageVersion Include="AngleSharp" Version="1.4.0" />
+    <PackageVersion Include="M3USharper" Version="0.1.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.5" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.14" Condition="$(TargetFramework) == 'net8.0'" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.5" Condition="$(TargetFramework) == 'net10.0'" />

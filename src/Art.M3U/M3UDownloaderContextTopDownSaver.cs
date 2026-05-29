@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
 using Art.Http;
+using M3USharper;
 
 namespace Art.M3U;
 

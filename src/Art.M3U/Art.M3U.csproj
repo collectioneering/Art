@@ -1,11 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageVersion>0.51.0</PackageVersion>
+    <PackageVersion>0.52.0</PackageVersion>
     <InformationalVersion>$(PackageVersion)</InformationalVersion>
     <AssemblyVersion>1.0.0</AssemblyVersion>
   </PropertyGroup>
-
 
   <PropertyGroup>
     <ReferenceLocalProject_Art_Http>true</ReferenceLocalProject_Art_Http>
@@ -14,6 +13,10 @@
   <ItemGroup>
     <PackageReference Include="Art.Http" Condition="'$(ReferenceLocalProject_Art_Http)'!='true'" />
     <ProjectReference Include="..\Art.Http\Art.Http.csproj" Condition="'$(ReferenceLocalProject_Art_Http)'=='true'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="M3USharper" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -49,14 +52,6 @@
 
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="NOTICE.Art.M3U.md">
-      <Link>NOTICE.Art.M3U.md</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackagePath>contentFiles/any/any/</PackagePath>
-    </Content>
   </ItemGroup>
 
 </Project>

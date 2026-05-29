@@ -1,4 +1,6 @@
-﻿namespace Art.M3U;
+﻿using M3USharper;
+
+namespace Art.M3U;
 
 /// <summary>
 /// Represents an extra operation that should be used when no new segments are immediately available in <see cref="M3UDownloaderContextProcessor"/>.
