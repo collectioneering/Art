@@ -52,7 +52,7 @@ public abstract class EFTests_Migrations : ArtifactRegistrationManagerTestsBase
         }
 
         {
-            var config = new TestDatabaseConfig(ApplyMigrationsOnStartup: true, IsReadOnly: false, DisablePendingMigrationsCheck: false);
+            var config = new TestDatabaseConfig(ApplyMigrationsOnStartup: false, IsReadOnly: false, DisablePendingMigrationsCheck: false);
             using IArtifactRegistrationManager r = dbSource.CreateArtifactRegistrationManager(config, GetInitialCreateMigrationsAssembly());
             await VerifyWrittenDatabase(r, testCancellationToken);
         }
