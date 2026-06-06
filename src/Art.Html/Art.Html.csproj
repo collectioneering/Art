@@ -54,12 +54,4 @@
     <None Include="../../README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="NOTICE.Art.Html.md">
-      <Link>NOTICE.Art.Html.md</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackagePath>contentFiles/any/any/</PackagePath>
-    </Content>
-  </ItemGroup>
-
 </Project>
