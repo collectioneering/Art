@@ -8,18 +8,6 @@ namespace Art.Extensions.BrowserCookies;
 public record struct CookieFilter(string Domain, bool IncludeSubdomains = true)
 {
     /// <summary>
-    /// Validates this instance.
-    /// </summary>
-    /// <exception cref="ArgumentException">Thrown for invalid value.</exception>
-    public void Validate()
-    {
-        if (Domain.StartsWith('.'))
-        {
-            throw new ArgumentException("Domain for cookie filter should not start with leading '.'");
-        }
-    }
-
-    /// <summary>
     /// Provides implicit conversion from <see cref="System.String"/> to <see cref="CookieFilter"/>.
     /// </summary>
     /// <param name="domain">Primary domain.</param>
