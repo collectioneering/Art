@@ -1,10 +1,15 @@
 ﻿namespace Art.Common.Management;
 
 /// <summary>
-/// Represents a stream that will be committed upon disposal if <see cref="CommittableStream.ShouldCommit"/> is set.
+/// Represents a stream that will be committed upon disposal if <see cref="ICommittable.ShouldCommit"/> is set.
 /// </summary>
-public abstract class CommonCommittableStream : CommittableStream
+public abstract class CommonCommittableStream : Stream
 {
+    /// <summary>
+    /// Instance of <see cref="Committable"/> to use.
+    /// </summary>
+    public ICommittable? Committable { get; init; }
+
     /// <summary>
     /// If true, this stream has been committed.
     /// </summary>
@@ -13,13 +18,13 @@ public abstract class CommonCommittableStream : CommittableStream
     /// <inheritdoc />
     protected override void Dispose(bool disposing)
     {
-        CommitInternal(ShouldCommit);
+        CommitInternal(Committable?.ShouldCommit ?? false);
     }
 
     /// <inheritdoc />
     public override async ValueTask DisposeAsync()
     {
-        await CommitInternalAsync(ShouldCommit).ConfigureAwait(false);
+        await CommitInternalAsync(Committable?.ShouldCommit ?? false).ConfigureAwait(false);
     }
 
     private void CommitInternal(bool shouldCommit)

@@ -5,10 +5,13 @@ namespace Art.Common.Management;
 /// </summary>
 public class CommittableMemoryStream : CommittableDelegatingStream
 {
+    /// <inheritdoc />
+    protected override Stream InnerStream => MemoryStream;
+
     /// <summary>
     /// Target memory stream.
     /// </summary>
-    public MemoryStream MemoryStream;
+    public readonly MemoryStream MemoryStream;
 
     /// <summary>
     /// Creates a new instance of <see cref="CommittableMemoryStream"/>.
@@ -29,7 +32,7 @@ public class CommittableMemoryStream : CommittableDelegatingStream
     /// Creates a new instance of <see cref="CommittableMemoryStream"/>.
     /// </summary>
     /// <param name="memoryStream">Stream to wrap.</param>
-    public CommittableMemoryStream(MemoryStream memoryStream) : base(memoryStream)
+    public CommittableMemoryStream(MemoryStream memoryStream)
     {
         MemoryStream = memoryStream;
     }

@@ -12,7 +12,7 @@ public abstract class ArtifactDataManager : IArtifactDataManager
     private bool _disposed;
 
     /// <inheritdoc />
-    public abstract ValueTask<CommittableStream> CreateOutputStreamAsync(ArtifactResourceKey key, OutputStreamOptions? options = null, CancellationToken cancellationToken = default);
+    public abstract ValueTask<ICommittable<Stream>> CreateOutputStreamAsync(ArtifactResourceKey key, OutputStreamOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <inheritdoc />
     public abstract ValueTask<bool> ExistsAsync(ArtifactResourceKey key, CancellationToken cancellationToken = default);
@@ -28,8 +28,8 @@ public abstract class ArtifactDataManager : IArtifactDataManager
     {
         EnsureNotDisposed();
         options = (options ?? OutputStreamOptions.Default) with { PreallocationSize = buffer.Length };
-        await using CommittableStream stream = await CreateOutputStreamAsync(key, options, cancellationToken).ConfigureAwait(false);
-        await stream.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
+        await using ICommittable<Stream> stream = await CreateOutputStreamAsync(key, options, cancellationToken).ConfigureAwait(false);
+        await stream.Value.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
         stream.ShouldCommit = true;
     }
 
@@ -38,8 +38,8 @@ public abstract class ArtifactDataManager : IArtifactDataManager
     {
         EnsureNotDisposed();
         UpdateOptionsTextual(ref options);
-        await using CommittableStream stream = await CreateOutputStreamAsync(key, options, cancellationToken).ConfigureAwait(false);
-        await using var sw = new StreamWriter(stream);
+        await using ICommittable<Stream> stream = await CreateOutputStreamAsync(key, options, cancellationToken).ConfigureAwait(false);
+        await using var sw = new StreamWriter(stream.Value);
         await sw.WriteAsync(text).ConfigureAwait(false);
         stream.ShouldCommit = true;
     }
@@ -50,8 +50,8 @@ public abstract class ArtifactDataManager : IArtifactDataManager
     {
         EnsureNotDisposed();
         UpdateOptionsTextual(ref options);
-        await using CommittableStream stream = await CreateOutputStreamAsync(key, options, cancellationToken).ConfigureAwait(false);
-        await JsonSerializer.SerializeAsync(stream, data, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await using ICommittable<Stream> stream = await CreateOutputStreamAsync(key, options, cancellationToken).ConfigureAwait(false);
+        await JsonSerializer.SerializeAsync(stream.Value, data, cancellationToken: cancellationToken).ConfigureAwait(false);
         stream.ShouldCommit = true;
     }
 
@@ -60,8 +60,8 @@ public abstract class ArtifactDataManager : IArtifactDataManager
     {
         EnsureNotDisposed();
         UpdateOptionsTextual(ref options);
-        await using CommittableStream stream = await CreateOutputStreamAsync(key, options, cancellationToken).ConfigureAwait(false);
-        await JsonSerializer.SerializeAsync(stream, data, jsonTypeInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await using ICommittable<Stream> stream = await CreateOutputStreamAsync(key, options, cancellationToken).ConfigureAwait(false);
+        await JsonSerializer.SerializeAsync(stream.Value, data, jsonTypeInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
         stream.ShouldCommit = true;
     }
 
@@ -71,8 +71,8 @@ public abstract class ArtifactDataManager : IArtifactDataManager
     {
         EnsureNotDisposed();
         UpdateOptionsTextual(ref options);
-        await using CommittableStream stream = await CreateOutputStreamAsync(key, options, cancellationToken).ConfigureAwait(false);
-        await JsonSerializer.SerializeAsync(stream, data, jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
+        await using ICommittable<Stream> stream = await CreateOutputStreamAsync(key, options, cancellationToken).ConfigureAwait(false);
+        await JsonSerializer.SerializeAsync(stream.Value, data, jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
         stream.ShouldCommit = true;
     }
 

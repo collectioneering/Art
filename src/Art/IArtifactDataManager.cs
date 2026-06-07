@@ -16,7 +16,7 @@ public interface IArtifactDataManager : IDisposable
     /// <param name="options">Creation options.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task returning a writeable stream to write output to.</returns>
-    ValueTask<CommittableStream> CreateOutputStreamAsync(ArtifactResourceKey key, OutputStreamOptions? options = null, CancellationToken cancellationToken = default);
+    ValueTask<ICommittable<Stream>> CreateOutputStreamAsync(ArtifactResourceKey key, OutputStreamOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Checks if data for the specified resource exists.

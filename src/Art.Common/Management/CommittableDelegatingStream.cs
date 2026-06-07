@@ -1,88 +1,21 @@
+using Art.Common.IO;
+
 namespace Art.Common.Management;
 
 /// <summary>
-/// Base type for <see cref="CommonCommittableStream"/>s that wrap another.
+/// Base type for <see cref="DelegatingStream"/> implementations that support <see cref="ICommittable"/> to manage committing data.
 /// </summary>
-// https://github.com/dotnet/runtime/blob/71034dd2fbbd2304fac5c24d3a9f764a3c65f781/src/libraries/Common/src/System/IO/DelegatingStream.cs
-public abstract class CommittableDelegatingStream : CommonCommittableStream
+public abstract class CommittableDelegatingStream : DelegatingStream
 {
     /// <summary>
-    /// Wrapped stream.
+    /// Instance of <see cref="Committable"/> to use.
     /// </summary>
-    protected Stream InnerStream;
-
-    #region Properties
-
-    /// <inheritdoc />
-    public override bool CanRead
-    {
-        get { return InnerStream.CanRead; }
-    }
-
-    /// <inheritdoc />
-    public override bool CanSeek
-    {
-        get { return InnerStream.CanSeek; }
-    }
-
-    /// <inheritdoc />
-    public override bool CanWrite
-    {
-        get { return InnerStream.CanWrite; }
-    }
-
-    /// <inheritdoc />
-    public override long Length
-    {
-        get { return InnerStream.Length; }
-    }
-
-    /// <inheritdoc />
-    public override long Position
-    {
-        get { return InnerStream.Position; }
-        set { InnerStream.Position = value; }
-    }
-
-    /// <inheritdoc />
-    public override int ReadTimeout
-    {
-        get { return InnerStream.ReadTimeout; }
-        set { InnerStream.ReadTimeout = value; }
-    }
-
-    /// <inheritdoc />
-    public override bool CanTimeout
-    {
-        get { return InnerStream.CanTimeout; }
-    }
-
-    /// <inheritdoc />
-    public override int WriteTimeout
-    {
-        get { return InnerStream.WriteTimeout; }
-        set { InnerStream.WriteTimeout = value; }
-    }
-
-    #endregion Properties
+    public ICommittable? Committable { get; init; }
 
     /// <summary>
-    /// Initializes an instance of <see cref="CommittableDelegatingStream"/> without a configured stream.
+    /// If true, this stream has been committed.
     /// </summary>
-    protected CommittableDelegatingStream()
-    {
-        InnerStream = null!;
-    }
-
-    /// <summary>
-    /// Initializes an instance of <see cref="CommittableDelegatingStream"/>.
-    /// </summary>
-    /// <param name="innerStream">Inner stream.</param>
-    /// <exception cref="ArgumentNullException">Thrown for null <paramref name="innerStream"/>.</exception>
-    protected CommittableDelegatingStream(Stream innerStream)
-    {
-        InnerStream = innerStream ?? throw new ArgumentNullException(nameof(innerStream));
-    }
+    protected bool Committed { get; private set; }
 
     /// <inheritdoc />
     protected override void Dispose(bool disposing)
@@ -90,162 +23,92 @@ public abstract class CommittableDelegatingStream : CommonCommittableStream
         if (disposing)
         {
             InnerStream.Dispose();
+            CommitInternal(Committable?.ShouldCommit ?? false);
         }
-        base.Dispose(disposing);
     }
 
     /// <inheritdoc />
     public override async ValueTask DisposeAsync()
     {
         await InnerStream.DisposeAsync().ConfigureAwait(false);
-        await base.DisposeAsync().ConfigureAwait(false);
+        await CommitInternalAsync(Committable?.ShouldCommit ?? false).ConfigureAwait(false);
     }
 
-    #region Read
-
-    /// <inheritdoc />
-    public override long Seek(long offset, SeekOrigin origin)
+    private void CommitInternal(bool shouldCommit)
     {
-        EnsureNotCommitted();
-        return InnerStream.Seek(offset, origin);
+        if (Committed)
+        {
+            return;
+        }
+        Committed = true;
+        Commit(shouldCommit);
     }
 
-    /// <inheritdoc />
-    public override int Read(byte[] buffer, int offset, int count)
+    private async ValueTask CommitInternalAsync(bool shouldCommit)
     {
-        EnsureNotCommitted();
-        return InnerStream.Read(buffer, offset, count);
+        if (Committed)
+        {
+            return;
+        }
+        Committed = true;
+        await CommitAsync(shouldCommit).ConfigureAwait(false);
     }
 
-    /// <inheritdoc />
-    public override int Read(Span<byte> buffer)
+    /// <summary>
+    /// Ensures this instance has not yet been committed.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Stream has been committed.</exception>
+    protected void EnsureNotCommitted()
     {
-        EnsureNotCommitted();
-        return InnerStream.Read(buffer);
+        if (Committed)
+        {
+            throw new InvalidOperationException("Stream has already been committed");
+        }
     }
 
-    /// <inheritdoc />
-    public override int ReadByte()
-    {
-        EnsureNotCommitted();
-        return InnerStream.ReadByte();
-    }
+    /// <summary>
+    /// Performs data commit.
+    /// </summary>
+    /// <param name="shouldCommit">If true, perform commit. Otherwise, perform appropriate cleanup.</param>
+    protected abstract void Commit(bool shouldCommit);
 
-    /// <inheritdoc />
-    public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+    /// <summary>
+    /// Performs data commit.
+    /// </summary>
+    /// <param name="shouldCommit">If true, perform commit. Otherwise, perform appropriate cleanup.</param>
+    protected virtual ValueTask CommitAsync(bool shouldCommit)
     {
-        EnsureNotCommitted();
-        return InnerStream.ReadAsync(buffer, offset, count, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
-    {
-        EnsureNotCommitted();
-        return InnerStream.ReadAsync(buffer, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
-    {
-        EnsureNotCommitted();
-        return InnerStream.BeginRead(buffer, offset, count, callback, state);
+        Commit(shouldCommit);
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc />
-    public override int EndRead(IAsyncResult asyncResult)
+    protected override void ValidateSeekState()
     {
         EnsureNotCommitted();
-        return InnerStream.EndRead(asyncResult);
     }
 
     /// <inheritdoc />
-    public override void CopyTo(Stream destination, int bufferSize)
+    protected override void ValidateFlushState()
     {
         EnsureNotCommitted();
-        InnerStream.CopyTo(destination, bufferSize);
     }
 
     /// <inheritdoc />
-    public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+    protected override void ValidateSetLengthState()
     {
         EnsureNotCommitted();
-        return InnerStream.CopyToAsync(destination, bufferSize, cancellationToken);
-    }
-
-    #endregion Read
-
-    #region Write
-
-    /// <inheritdoc />
-    public override void Flush()
-    {
-        EnsureNotCommitted();
-        InnerStream.Flush();
     }
 
     /// <inheritdoc />
-    public override Task FlushAsync(CancellationToken cancellationToken)
+    protected override void ValidateReadState()
     {
         EnsureNotCommitted();
-        return InnerStream.FlushAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public override void SetLength(long value)
+    protected override void ValidateWriteState()
     {
         EnsureNotCommitted();
-        InnerStream.SetLength(value);
     }
-
-    /// <inheritdoc />
-    public override void Write(byte[] buffer, int offset, int count)
-    {
-        EnsureNotCommitted();
-        InnerStream.Write(buffer, offset, count);
-    }
-
-    /// <inheritdoc />
-    public override void Write(ReadOnlySpan<byte> buffer)
-    {
-        EnsureNotCommitted();
-        InnerStream.Write(buffer);
-    }
-
-    /// <inheritdoc />
-    public override void WriteByte(byte value)
-    {
-        EnsureNotCommitted();
-        InnerStream.WriteByte(value);
-    }
-
-    /// <inheritdoc />
-    public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-    {
-        EnsureNotCommitted();
-        return InnerStream.WriteAsync(buffer, offset, count, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
-    {
-        EnsureNotCommitted();
-        return InnerStream.WriteAsync(buffer, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
-    {
-        EnsureNotCommitted();
-        return InnerStream.BeginWrite(buffer, offset, count, callback, state);
-    }
-
-    /// <inheritdoc />
-    public override void EndWrite(IAsyncResult asyncResult)
-    {
-        EnsureNotCommitted();
-        InnerStream.EndWrite(asyncResult);
-    }
-
-    #endregion Write
 }

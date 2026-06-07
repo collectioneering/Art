@@ -22,8 +22,8 @@ public record OutputStreamOptions
     /// If true, prefer using temporary location when possible.
     /// </summary>
     /// <remarks>
-    /// This option enables behaviour such that (if possible for the <see cref="IArtifactDataManager"/>
-    /// / <see cref="CommittableStream"/>) content is written to a temporary location (e.g. a file
+    /// This option enables behaviour such that, if possible for the <see cref="IArtifactDataManager"/>
+    /// and <see cref="ICommittable"/>, content is written to a temporary location (e.g. a file
     /// with a non-colliding name) and is moved to the final location on commit.
     /// </remarks>
     public bool PreferTemporaryLocation { get; init; }

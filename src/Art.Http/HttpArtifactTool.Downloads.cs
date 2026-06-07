@@ -302,8 +302,8 @@ public partial class HttpArtifactTool
         {
             options = options with { PreallocationSize = Math.Clamp(contentLength, 0, QueryBaseArtifactResourceInfo.MaxStreamDownloadPreallocationSize) };
         }
-        await using CommittableStream stream = await CreateOutputStreamAsync(key, options, cancellationToken).ConfigureAwait(false);
-        await CopyStreamAsync(response, stream, exportOptions, cancellationToken).ConfigureAwait(false);
+        await using ICommittable<Stream> stream = await CreateOutputStreamAsync(key, options, cancellationToken).ConfigureAwait(false);
+        await CopyStreamAsync(response, stream.Value, exportOptions, cancellationToken).ConfigureAwait(false);
         stream.ShouldCommit = true;
     }
 

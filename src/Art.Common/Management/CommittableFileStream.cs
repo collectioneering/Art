@@ -16,6 +16,9 @@ public class CommittableFileStream : CommittableDelegatingStream
     /// </summary>
     public string DestinationPath => _path;
 
+    /// <inheritdoc />
+    protected override Stream InnerStream { get; }
+
     private readonly string _path;
     private readonly string _pathForStream;
     private readonly string? _tempPath;

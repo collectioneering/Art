@@ -26,11 +26,13 @@ public class CommittableFileStreamTests
             Assert.Equal(Path.GetFileName(temp), Path.GetRelativePath(tempDir, temp));
             string mess = $"ya like jazz? {Random.Shared.Next()}";
             byte[] data = Encoding.UTF8.GetBytes(mess);
-            using (CommittableFileStream cfs = new(temp, FileMode.Create, preferTemporaryLocation: false))
+            using (var committable = new StreamCommitManager())
             {
+                CommittableFileStream cfs = new(temp, FileMode.Create, preferTemporaryLocation: false) { Committable = committable };
+                committable._stream = cfs;
                 Assert.True(File.Exists(temp));
                 cfs.Write(data);
-                cfs.ShouldCommit = true;
+                committable.ShouldCommit = true;
             }
             Assert.True(File.Exists(temp));
             Assert.True(File.ReadAllBytes(temp).AsSpan().SequenceEqual(data));
@@ -51,11 +53,13 @@ public class CommittableFileStreamTests
             Assert.Equal(Path.GetFileName(temp), Path.GetRelativePath(tempDir, temp));
             string mess = $"ya like jazz? {Random.Shared.Next()}";
             byte[] data = Encoding.UTF8.GetBytes(mess);
-            using (CommittableFileStream cfs = new(temp, FileMode.Create, preferTemporaryLocation: true))
+            using (var committable = new StreamCommitManager())
             {
+                CommittableFileStream cfs = new(temp, FileMode.Create, preferTemporaryLocation: true) { Committable = committable };
+                committable._stream = cfs;
                 Assert.False(File.Exists(temp));
                 cfs.Write(data);
-                cfs.ShouldCommit = true;
+                committable.ShouldCommit = true;
             }
             Assert.True(File.Exists(temp));
             Assert.True(File.ReadAllBytes(temp).AsSpan().SequenceEqual(data));
@@ -76,11 +80,35 @@ public class CommittableFileStreamTests
             Assert.Equal(Path.GetFileName(temp), Path.GetRelativePath(tempDir, temp));
             string mess = $"ya like jazz? {Random.Shared.Next()}";
             byte[] data = Encoding.UTF8.GetBytes(mess);
+            using (var committable = new StreamCommitManager())
+            {
+                CommittableFileStream cfs = new(temp, FileMode.Create, preferTemporaryLocation: false) { Committable = committable };
+                committable._stream = cfs;
+                Assert.True(File.Exists(temp));
+                cfs.Write(data);
+            }
+            Assert.False(File.Exists(temp));
+        }
+        finally
+        {
+            File.Delete(temp);
+        }
+    }
+
+    [Fact]
+    public void ShouldCommit_FalseWithNewFile_NoCommittable_FileNotExist()
+    {
+        string temp = CreateTempFile(out string tempDir);
+        Assert.True(Directory.Exists(tempDir));
+        try
+        {
+            Assert.Equal(Path.GetFileName(temp), Path.GetRelativePath(tempDir, temp));
+            string mess = $"ya like jazz? {Random.Shared.Next()}";
+            byte[] data = Encoding.UTF8.GetBytes(mess);
             using (CommittableFileStream cfs = new(temp, FileMode.Create, preferTemporaryLocation: false))
             {
                 Assert.True(File.Exists(temp));
                 cfs.Write(data);
-                //cfs.ShouldCommit = false;
             }
             Assert.False(File.Exists(temp));
         }
@@ -100,11 +128,34 @@ public class CommittableFileStreamTests
             Assert.Equal(Path.GetFileName(temp), Path.GetRelativePath(tempDir, temp));
             string mess = $"ya like jazz? {Random.Shared.Next()}";
             byte[] data = Encoding.UTF8.GetBytes(mess);
+            using (var committable = new StreamCommitManager())
+            {
+                CommittableFileStream cfs = new(temp, FileMode.Create, preferTemporaryLocation: true) { Committable = committable };
+                Assert.False(File.Exists(temp));
+                cfs.Write(data);
+            }
+            Assert.False(File.Exists(temp));
+        }
+        finally
+        {
+            File.Delete(temp);
+        }
+    }
+
+    [Fact]
+    public void ShouldCommit_FalseWithNewFile_WithPreferTemporaryLocation_NoCommittable_FileNotExist()
+    {
+        string temp = CreateTempFile(out string tempDir);
+        Assert.True(Directory.Exists(tempDir));
+        try
+        {
+            Assert.Equal(Path.GetFileName(temp), Path.GetRelativePath(tempDir, temp));
+            string mess = $"ya like jazz? {Random.Shared.Next()}";
+            byte[] data = Encoding.UTF8.GetBytes(mess);
             using (CommittableFileStream cfs = new(temp, FileMode.Create, preferTemporaryLocation: true))
             {
                 Assert.False(File.Exists(temp));
                 cfs.Write(data);
-                //cfs.ShouldCommit = false;
             }
             Assert.False(File.Exists(temp));
         }
@@ -126,10 +177,12 @@ public class CommittableFileStreamTests
             Assert.True(File.Exists(temp));
             string mess1 = $"ya like jazz? {Random.Shared.Next()}";
             byte[] data1 = Encoding.UTF8.GetBytes(mess1);
-            using (CommittableFileStream cfs = new(temp, FileMode.Create, preferTemporaryLocation: false))
+            using (var committable = new StreamCommitManager())
             {
+                CommittableFileStream cfs = new(temp, FileMode.Create, preferTemporaryLocation: false) { Committable = committable };
+                committable._stream = cfs;
                 cfs.Write(data1);
-                cfs.ShouldCommit = true;
+                committable.ShouldCommit = true;
             }
             Assert.True(File.Exists(temp));
             Assert.True(File.ReadAllBytes(temp).AsSpan().SequenceEqual(data1));
@@ -139,7 +192,6 @@ public class CommittableFileStreamTests
             File.Delete(temp);
         }
     }
-
 
     [Fact]
     public void ShouldCommit_TrueWithExisting_WithPreferTemporaryLocation_NewFileKeptWithContents()
@@ -153,10 +205,12 @@ public class CommittableFileStreamTests
             Assert.True(File.Exists(temp));
             string mess1 = $"ya like jazz? {Random.Shared.Next()}";
             byte[] data1 = Encoding.UTF8.GetBytes(mess1);
-            using (CommittableFileStream cfs = new(temp, FileMode.Create, preferTemporaryLocation: true))
+            using (var committable = new StreamCommitManager())
             {
+                CommittableFileStream cfs = new(temp, FileMode.Create, preferTemporaryLocation: true) { Committable = committable };
+                committable._stream = cfs;
                 cfs.Write(data1);
-                cfs.ShouldCommit = true;
+                committable.ShouldCommit = true;
             }
             Assert.True(File.Exists(temp));
             Assert.True(File.ReadAllBytes(temp).AsSpan().SequenceEqual(data1));
@@ -179,10 +233,36 @@ public class CommittableFileStreamTests
             Assert.True(File.Exists(temp));
             string mess1 = $"ya like jazz? {Random.Shared.Next()}";
             byte[] data1 = Encoding.UTF8.GetBytes(mess1);
+            using (var committable = new StreamCommitManager())
+            {
+                CommittableFileStream cfs = new(temp, FileMode.Create, preferTemporaryLocation: false) { Committable = committable };
+                committable._stream = cfs;
+                cfs.Write(data1);
+            }
+            Assert.True(File.Exists(temp));
+            Assert.True(File.ReadAllBytes(temp).AsSpan().SequenceEqual(data0));
+        }
+        finally
+        {
+            File.Delete(temp);
+        }
+    }
+
+    [Fact]
+    public void ShouldCommit_FalseWithExisting_NoCommittable_OldFileKeptWithContents()
+    {
+        string temp = Path.GetTempFileName();
+        try
+        {
+            string mess0 = $"ya like jazz? {Random.Shared.Next()}";
+            byte[] data0 = Encoding.UTF8.GetBytes(mess0);
+            File.WriteAllBytes(temp, data0);
+            Assert.True(File.Exists(temp));
+            string mess1 = $"ya like jazz? {Random.Shared.Next()}";
+            byte[] data1 = Encoding.UTF8.GetBytes(mess1);
             using (CommittableFileStream cfs = new(temp, FileMode.Create, preferTemporaryLocation: false))
             {
                 cfs.Write(data1);
-                //cfs.ShouldCommit = false;
             }
             Assert.True(File.Exists(temp));
             Assert.True(File.ReadAllBytes(temp).AsSpan().SequenceEqual(data0));
@@ -208,7 +288,6 @@ public class CommittableFileStreamTests
             using (CommittableFileStream cfs = new(temp, FileMode.Create, preferTemporaryLocation: true))
             {
                 cfs.Write(data1);
-                //cfs.ShouldCommit = false;
             }
             Assert.True(File.Exists(temp));
             Assert.True(File.ReadAllBytes(temp).AsSpan().SequenceEqual(data0));

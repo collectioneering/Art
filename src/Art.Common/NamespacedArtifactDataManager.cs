@@ -12,7 +12,7 @@ public abstract class NamespacedArtifactDataManager : INamespacedArtifactDataMan
     private bool _disposed;
 
     /// <inheritdoc />
-    public abstract ValueTask<CommittableStream> CreateOutputStreamAsync(string file, string path = "", OutputStreamOptions? options = null, CancellationToken cancellationToken = default);
+    public abstract ValueTask<ICommittable<Stream>> CreateOutputStreamAsync(string file, string path = "", OutputStreamOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <inheritdoc />
     public abstract ValueTask<bool> ExistsAsync(string file, string path = "", CancellationToken cancellationToken = default);
@@ -31,8 +31,8 @@ public abstract class NamespacedArtifactDataManager : INamespacedArtifactDataMan
     {
         EnsureNotDisposed();
         options = (options ?? OutputStreamOptions.Default) with { PreallocationSize = buffer.Length };
-        await using CommittableStream stream = await CreateOutputStreamAsync(file, path, options, cancellationToken).ConfigureAwait(false);
-        await stream.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
+        await using ICommittable<Stream> stream = await CreateOutputStreamAsync(file, path, options, cancellationToken).ConfigureAwait(false);
+        await stream.Value.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
         stream.ShouldCommit = true;
     }
 
@@ -41,8 +41,8 @@ public abstract class NamespacedArtifactDataManager : INamespacedArtifactDataMan
     {
         EnsureNotDisposed();
         UpdateOptionsTextual(ref options);
-        await using CommittableStream stream = await CreateOutputStreamAsync(file, path, options, cancellationToken).ConfigureAwait(false);
-        await using var sw = new StreamWriter(stream);
+        await using ICommittable<Stream> stream = await CreateOutputStreamAsync(file, path, options, cancellationToken).ConfigureAwait(false);
+        await using var sw = new StreamWriter(stream.Value);
         await sw.WriteAsync(text).ConfigureAwait(false);
         stream.ShouldCommit = true;
     }
@@ -53,8 +53,8 @@ public abstract class NamespacedArtifactDataManager : INamespacedArtifactDataMan
     {
         EnsureNotDisposed();
         UpdateOptionsTextual(ref options);
-        await using CommittableStream stream = await CreateOutputStreamAsync(file, path, options, cancellationToken).ConfigureAwait(false);
-        await JsonSerializer.SerializeAsync(stream, data, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await using ICommittable<Stream> stream = await CreateOutputStreamAsync(file, path, options, cancellationToken).ConfigureAwait(false);
+        await JsonSerializer.SerializeAsync(stream.Value, data, cancellationToken: cancellationToken).ConfigureAwait(false);
         stream.ShouldCommit = true;
     }
 
@@ -63,8 +63,8 @@ public abstract class NamespacedArtifactDataManager : INamespacedArtifactDataMan
     {
         EnsureNotDisposed();
         UpdateOptionsTextual(ref options);
-        await using CommittableStream stream = await CreateOutputStreamAsync(file, path, options, cancellationToken).ConfigureAwait(false);
-        await JsonSerializer.SerializeAsync(stream, data, jsonTypeInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await using ICommittable<Stream> stream = await CreateOutputStreamAsync(file, path, options, cancellationToken).ConfigureAwait(false);
+        await JsonSerializer.SerializeAsync(stream.Value, data, jsonTypeInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
         stream.ShouldCommit = true;
     }
 
@@ -74,8 +74,8 @@ public abstract class NamespacedArtifactDataManager : INamespacedArtifactDataMan
     {
         EnsureNotDisposed();
         UpdateOptionsTextual(ref options);
-        await using CommittableStream stream = await CreateOutputStreamAsync(file, path, options, cancellationToken).ConfigureAwait(false);
-        await JsonSerializer.SerializeAsync(stream, data, jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
+        await using ICommittable<Stream> stream = await CreateOutputStreamAsync(file, path, options, cancellationToken).ConfigureAwait(false);
+        await JsonSerializer.SerializeAsync(stream.Value, data, jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
         stream.ShouldCommit = true;
     }
 

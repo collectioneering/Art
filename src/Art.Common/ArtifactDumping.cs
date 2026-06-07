@@ -573,12 +573,12 @@ public static class ArtifactDumping
                 versionedResource = versionedResource with { Retrieved = timeProvider.GetUtcNow() };
             }
             versionedResource.AugmentOutputStreamOptions(ref options);
-            await using CommittableStream stream = await artifactTool.DataManager.CreateOutputStreamAsync(versionedResource.Key, options, cancellationToken).ConfigureAwait(false);
+            await using ICommittable<Stream> stream = await artifactTool.DataManager.CreateOutputStreamAsync(versionedResource.Key, options, cancellationToken).ConfigureAwait(false);
             if (checksumSource != null)
             {
                 using var algorithm = checksumSource.CreateHashAlgorithm();
                 // Take this opportunity to hash the resource.
-                await using HashProxyStream hps = new(stream, algorithm, true, true);
+                await using HashProxyStream hps = new(stream.Value, algorithm, true, true);
                 await CopyResourceAsync(versionedResource, hps, isConcurrent, cancellationToken).ConfigureAwait(false);
                 stream.ShouldCommit = true;
                 Checksum newChecksum = new(checksumSource.Id, hps.GetHash());
@@ -588,9 +588,9 @@ public static class ArtifactDumping
                     versionedResource = versionedResource with { Checksum = newChecksum };
                 }
             }
-            else if (stream is not ISinkStream) // if target output were a sink stream and hash isn't needed, then just don't bother exporting
+            else if (stream.Value is not ISinkStream) // if target output were a sink stream and hash isn't needed, then just don't bother exporting
             {
-                await CopyResourceAsync(versionedResource, stream, isConcurrent, cancellationToken).ConfigureAwait(false);
+                await CopyResourceAsync(versionedResource, stream.Value, isConcurrent, cancellationToken).ConfigureAwait(false);
                 stream.ShouldCommit = true;
             }
         }

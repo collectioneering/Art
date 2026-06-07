@@ -399,9 +399,9 @@ public partial class M3UDownloaderContext
             await WriteAncillaryFileAsync($"{fn}.msn.txt", "msn", Encoding.UTF8.GetBytes(msn.ToString(CultureInfo.InvariantCulture)), cancellationToken).ConfigureAwait(false);
         }
         ArtifactResourceInfo ari = GetResourceInternal(ark, uri, file, mediaSequenceNumber, segmentSettings);
-        await using (CommittableStream oStream = await Tool.DataManager.CreateOutputStreamAsync(ari.Key, OutputStreamOptions.Default, cancellationToken).ConfigureAwait(false))
+        await using (ICommittable<Stream> oStream = await Tool.DataManager.CreateOutputStreamAsync(ari.Key, OutputStreamOptions.Default, cancellationToken).ConfigureAwait(false))
         {
-            await StreamSegmentInternalAsync(ari, oStream, cancellationToken).ConfigureAwait(false);
+            await StreamSegmentInternalAsync(ari, oStream.Value, cancellationToken).ConfigureAwait(false);
             oStream.ShouldCommit = true;
         }
         if (useRegistrationManager)

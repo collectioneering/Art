@@ -143,7 +143,7 @@ public partial class ArtifactTool
     /// <param name="options">Output options.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task returning a writeable stream to write an output to.</returns>
-    public async Task<CommittableStream> CreateOutputStreamAsync(ArtifactResourceKey key, OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<ICommittable<Stream>> CreateOutputStreamAsync(ArtifactResourceKey key, OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
         => await DataManager.CreateOutputStreamAsync(key, options, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
@@ -155,7 +155,7 @@ public partial class ArtifactTool
     /// <param name="options">Output options.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task returning a writeable stream to write an output to.</returns>
-    public Task<CommittableStream> CreateOutputStreamAsync(ArtifactKey key, string file, string path = "", OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<ICommittable<Stream>> CreateOutputStreamAsync(ArtifactKey key, string file, string path = "", OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
         => CreateOutputStreamAsync(new ArtifactResourceKey(key, file, path), options, cancellationToken);
 
     #endregion

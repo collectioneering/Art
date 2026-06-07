@@ -4,10 +4,14 @@ namespace Art.Http;
 
 internal class DelegatingStreamWithDisposableContext : DelegatingStream
 {
+    /// <inheritdoc />
+    protected override Stream InnerStream { get; }
+
     private readonly IDisposable _disposable;
 
-    public DelegatingStreamWithDisposableContext(Stream innerStream, IDisposable disposable) : base(innerStream)
+    public DelegatingStreamWithDisposableContext(Stream innerStream, IDisposable disposable)
     {
+        InnerStream = innerStream;
         _disposable = disposable ?? throw new ArgumentNullException(nameof(disposable));
     }
 

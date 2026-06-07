@@ -13,10 +13,12 @@ public class NullArtifactDataManager : IArtifactDataManager
     private bool _disposed;
 
     /// <inheritdoc />
-    public ValueTask<CommittableStream> CreateOutputStreamAsync(ArtifactResourceKey key, OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
+    public ValueTask<ICommittable<Stream>> CreateOutputStreamAsync(ArtifactResourceKey key, OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();
-        return new ValueTask<CommittableStream>(new CommittableSinkStream());
+        var committable = new StreamCommitManager();
+        committable._stream = new SinkStream();
+        return new ValueTask<ICommittable<Stream>>(committable);
     }
 
     /// <inheritdoc />

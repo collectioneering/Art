@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Art.Common.IO;
 using Art.Common.Resources;
 
 namespace Art.Common.Management;
@@ -15,29 +16,25 @@ public class InMemoryArtifactDataManager : ArtifactDataManager, INamespacedArtif
 
     private readonly Dictionary<ArtifactKey, List<ArtifactResourceInfo>> _artifacts = new();
 
-    /// <summary>
-    /// Mapping of resource keys to data.
-    /// </summary>
-    public IReadOnlyDictionary<ArtifactResourceKey, Stream> Entries => _entries;
-
     private readonly Dictionary<ArtifactKey, InMemoryArtifactDataManagerArtifactKey> _namespacedToolGroup = new();
-    private readonly Dictionary<ArtifactResourceKey, Stream> _entries = new();
+    private readonly Dictionary<ArtifactResourceKey, ICommittable<Stream>> _entries = new();
     private bool _disposed;
 
     /// <inheritdoc />
-    public override ValueTask<CommittableStream> CreateOutputStreamAsync(ArtifactResourceKey key, OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
+    public override ValueTask<ICommittable<Stream>> CreateOutputStreamAsync(ArtifactResourceKey key, OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();
         // Create a new output stream. If one already exists for mapping, get rid of it.
         // Since everything uses CommittableMemoryStream, underlying memory stream isn't disposed, so
         // previous buffer is still accessible. Doesn't need to be, but that's how it is right now.
-        if (_entries.TryGetValue(key, out Stream? s))
+        if (_entries.TryGetValue(key, out ICommittable<Stream>? s))
         {
             // Invalidate existing.
             s.Dispose();
             _entries.Remove(key);
         }
-        CommittableStream stream;
+        var committable = new StreamCommitManager();
+        ICommittable<Stream> stream;
         if (options != null)
         {
             long preallocationSize = options.PreallocationSize;
@@ -45,21 +42,22 @@ public class InMemoryArtifactDataManager : ArtifactDataManager, INamespacedArtif
             {
                 throw new ArgumentException($"Invalid {nameof(OutputStreamOptions.PreallocationSize)} value", nameof(options));
             }
-            stream = preallocationSize != 0 ? new CommittableMemoryStream((int)options.PreallocationSize) : new CommittableMemoryStream();
+            committable._stream = preallocationSize != 0 ? new CommittableMemoryStream((int)options.PreallocationSize) : new CommittableMemoryStream();
         }
         else
         {
-            stream = new CommittableMemoryStream();
+            committable._stream = new CommittableMemoryStream();
         }
+        stream = committable;
         ArtifactKey ak = key.Artifact;
         if (!_artifacts.TryGetValue(ak, out List<ArtifactResourceInfo>? list))
         {
             _artifacts.Add(ak, list = []);
         }
         _ = GetOrCreateNamespacedArtifactDataManager(ak);
-        list.Add(new ResultStreamArtifactResourceInfo(stream, key, null, null, null, null));
+        list.Add(new ResultStreamArtifactResourceInfo(stream.Value, key, null, null, null, null));
         _entries[key] = stream;
-        return new ValueTask<CommittableStream>(stream);
+        return new ValueTask<ICommittable<Stream>>(stream);
     }
 
     /// <inheritdoc />
@@ -91,11 +89,11 @@ public class InMemoryArtifactDataManager : ArtifactDataManager, INamespacedArtif
     {
         EnsureNotDisposed();
         // Use a stream wrapping original buffer, but hide away buffer and make stream read-only
-        if (!_entries.TryGetValue(key, out Stream? stream))
+        if (!_entries.TryGetValue(key, out ICommittable<Stream>? stream))
         {
             throw new KeyNotFoundException();
         }
-        if (stream is not CommittableMemoryStream cms)
+        if (stream.Value is not CommittableMemoryStream cms)
         {
             throw new InvalidOperationException($"Expected {nameof(CommittableMemoryStream)} but got unexpected stream type {stream.GetType()}");
         }
@@ -162,7 +160,7 @@ public class InMemoryArtifactDataManager : ArtifactDataManager, INamespacedArtif
             _targetNamespace = targetNamespace;
         }
 
-        public override ValueTask<CommittableStream> CreateOutputStreamAsync(string file, string path = "", OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
+        public override ValueTask<ICommittable<Stream>> CreateOutputStreamAsync(string file, string path = "", OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
         {
             EnsureNotDisposed();
             return _manager.CreateOutputStreamAsync(new ArtifactResourceKey(_targetNamespace, file, path), options, cancellationToken);

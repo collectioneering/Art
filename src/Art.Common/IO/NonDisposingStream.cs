@@ -2,8 +2,11 @@
 
 internal class NonDisposingStream : DelegatingStream
 {
-    public NonDisposingStream(Stream innerStream) : base(innerStream)
+    protected override Stream InnerStream { get; }
+
+    public NonDisposingStream(Stream innerStream)
     {
+        InnerStream = innerStream;
     }
 
     protected override void Dispose(bool disposing)

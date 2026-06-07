@@ -3,74 +3,66 @@ namespace Art.Common.IO;
 /// <summary>
 /// Base type for <see cref="Stream"/>s that wrap another.
 /// </summary>
-// https://github.com/dotnet/runtime/blob/71034dd2fbbd2304fac5c24d3a9f764a3c65f781/src/libraries/Common/src/System/IO/DelegatingStream.cs
 public abstract class DelegatingStream : Stream
 {
-    private readonly Stream _innerStream;
-
-    #region Properties
+    /// <summary>
+    /// Wrapped stream.
+    /// </summary>
+    protected abstract Stream InnerStream { get; }
 
     /// <inheritdoc />
     public override bool CanRead
     {
-        get { return _innerStream.CanRead; }
+        get { return InnerStream.CanRead; }
     }
 
     /// <inheritdoc />
     public override bool CanSeek
     {
-        get { return _innerStream.CanSeek; }
+        get { return InnerStream.CanSeek; }
     }
 
     /// <inheritdoc />
     public override bool CanWrite
     {
-        get { return _innerStream.CanWrite; }
+        get { return InnerStream.CanWrite; }
     }
 
     /// <inheritdoc />
     public override long Length
     {
-        get { return _innerStream.Length; }
+        get { return InnerStream.Length; }
     }
 
     /// <inheritdoc />
     public override long Position
     {
-        get { return _innerStream.Position; }
-        set { _innerStream.Position = value; }
+        get { return InnerStream.Position; }
+        set
+        {
+            ValidateSeekState();
+            InnerStream.Position = value;
+        }
     }
 
     /// <inheritdoc />
     public override int ReadTimeout
     {
-        get { return _innerStream.ReadTimeout; }
-        set { _innerStream.ReadTimeout = value; }
+        get { return InnerStream.ReadTimeout; }
+        set { InnerStream.ReadTimeout = value; }
     }
 
     /// <inheritdoc />
     public override bool CanTimeout
     {
-        get { return _innerStream.CanTimeout; }
+        get { return InnerStream.CanTimeout; }
     }
 
     /// <inheritdoc />
     public override int WriteTimeout
     {
-        get { return _innerStream.WriteTimeout; }
-        set { _innerStream.WriteTimeout = value; }
-    }
-
-    #endregion Properties
-
-    /// <summary>
-    /// Initializes an instance of <see cref="DelegatingStream"/>.
-    /// </summary>
-    /// <param name="innerStream">Inner stream.</param>
-    /// <exception cref="ArgumentNullException">Thrown for null <paramref name="innerStream"/>.</exception>
-    protected DelegatingStream(Stream innerStream)
-    {
-        _innerStream = innerStream ?? throw new ArgumentNullException(nameof(innerStream));
+        get { return InnerStream.WriteTimeout; }
+        set { InnerStream.WriteTimeout = value; }
     }
 
     /// <inheritdoc />
@@ -78,7 +70,7 @@ public abstract class DelegatingStream : Stream
     {
         if (disposing)
         {
-            _innerStream.Dispose();
+            InnerStream.Dispose();
         }
         base.Dispose(disposing);
     }
@@ -86,134 +78,181 @@ public abstract class DelegatingStream : Stream
     /// <inheritdoc />
     public override ValueTask DisposeAsync()
     {
-        return _innerStream.DisposeAsync();
+        return InnerStream.DisposeAsync();
     }
 
-    #region Read
+    /// <summary>
+    /// Checks that this instance is allowed to seek the underlying stream.
+    /// </summary>
+    protected virtual void ValidateSeekState()
+    {
+    }
+
+    /// <summary>
+    /// Checks that this instance is allowed to flush the underlying stream.
+    /// </summary>
+    protected virtual void ValidateFlushState()
+    {
+    }
+
+    /// <summary>
+    /// Checks that this instance is allowed to set the length of the underlying stream.
+    /// </summary>
+    protected virtual void ValidateSetLengthState()
+    {
+    }
+
+    /// <summary>
+    /// Checks that this instance is allowed to read from the underlying stream.
+    /// </summary>
+    protected virtual void ValidateReadState()
+    {
+    }
+
+    /// <summary>
+    /// Checks that this instance is allowed to write to the underlying stream.
+    /// </summary>
+    protected virtual void ValidateWriteState()
+    {
+    }
 
     /// <inheritdoc />
     public override long Seek(long offset, SeekOrigin origin)
     {
-        return _innerStream.Seek(offset, origin);
+        ValidateSeekState();
+        return InnerStream.Seek(offset, origin);
     }
 
     /// <inheritdoc />
     public override int Read(byte[] buffer, int offset, int count)
     {
-        return _innerStream.Read(buffer, offset, count);
+        ValidateReadState();
+        return InnerStream.Read(buffer, offset, count);
     }
 
     /// <inheritdoc />
     public override int Read(Span<byte> buffer)
     {
-        return _innerStream.Read(buffer);
+        ValidateReadState();
+        return InnerStream.Read(buffer);
     }
 
     /// <inheritdoc />
     public override int ReadByte()
     {
-        return _innerStream.ReadByte();
+        ValidateReadState();
+        return InnerStream.ReadByte();
     }
 
     /// <inheritdoc />
     public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        return _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
+        ValidateReadState();
+        return InnerStream.ReadAsync(buffer, offset, count, cancellationToken);
     }
 
     /// <inheritdoc />
     public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
     {
-        return _innerStream.ReadAsync(buffer, cancellationToken);
+        ValidateReadState();
+        return InnerStream.ReadAsync(buffer, cancellationToken);
     }
 
     /// <inheritdoc />
     public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
     {
-        return _innerStream.BeginRead(buffer, offset, count, callback, state);
+        ValidateReadState();
+        return InnerStream.BeginRead(buffer, offset, count, callback, state);
     }
 
     /// <inheritdoc />
     public override int EndRead(IAsyncResult asyncResult)
     {
-        return _innerStream.EndRead(asyncResult);
+        ValidateReadState();
+        return InnerStream.EndRead(asyncResult);
     }
 
     /// <inheritdoc />
     public override void CopyTo(Stream destination, int bufferSize)
     {
-        _innerStream.CopyTo(destination, bufferSize);
+        ValidateReadState();
+        InnerStream.CopyTo(destination, bufferSize);
     }
 
     /// <inheritdoc />
     public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
     {
-        return _innerStream.CopyToAsync(destination, bufferSize, cancellationToken);
+        ValidateReadState();
+        return InnerStream.CopyToAsync(destination, bufferSize, cancellationToken);
     }
-
-    #endregion Read
-
-    #region Write
 
     /// <inheritdoc />
     public override void Flush()
     {
-        _innerStream.Flush();
+        ValidateFlushState();
+        InnerStream.Flush();
     }
 
     /// <inheritdoc />
     public override Task FlushAsync(CancellationToken cancellationToken)
     {
-        return _innerStream.FlushAsync(cancellationToken);
+        ValidateFlushState();
+        return InnerStream.FlushAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public override void SetLength(long value)
     {
-        _innerStream.SetLength(value);
+        ValidateSetLengthState();
+        InnerStream.SetLength(value);
     }
 
     /// <inheritdoc />
     public override void Write(byte[] buffer, int offset, int count)
     {
-        _innerStream.Write(buffer, offset, count);
+        ValidateWriteState();
+        InnerStream.Write(buffer, offset, count);
     }
 
     /// <inheritdoc />
     public override void Write(ReadOnlySpan<byte> buffer)
     {
-        _innerStream.Write(buffer);
+        ValidateWriteState();
+        InnerStream.Write(buffer);
     }
 
     /// <inheritdoc />
     public override void WriteByte(byte value)
     {
-        _innerStream.WriteByte(value);
+        ValidateWriteState();
+        InnerStream.WriteByte(value);
     }
 
     /// <inheritdoc />
     public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        return _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
+        ValidateWriteState();
+        return InnerStream.WriteAsync(buffer, offset, count, cancellationToken);
     }
 
     /// <inheritdoc />
     public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
     {
-        return _innerStream.WriteAsync(buffer, cancellationToken);
+        ValidateWriteState();
+        return InnerStream.WriteAsync(buffer, cancellationToken);
     }
 
     /// <inheritdoc />
     public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
     {
-        return _innerStream.BeginWrite(buffer, offset, count, callback, state);
+        ValidateWriteState();
+        return InnerStream.BeginWrite(buffer, offset, count, callback, state);
     }
 
     /// <inheritdoc />
     public override void EndWrite(IAsyncResult asyncResult)
     {
-        _innerStream.EndWrite(asyncResult);
+        ValidateWriteState();
+        InnerStream.EndWrite(asyncResult);
     }
-
-    #endregion Write
 }

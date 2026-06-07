@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Art.Common.IO;
 
 namespace Art.Common.Management;
 
@@ -47,10 +48,10 @@ public class DiskArtifactDataManager : ArtifactDataManager, INamespacedArtifactD
     }
 
     /// <inheritdoc/>
-    public override ValueTask<CommittableStream> CreateOutputStreamAsync(ArtifactResourceKey key, OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
+    public override ValueTask<ICommittable<Stream>> CreateOutputStreamAsync(ArtifactResourceKey key, OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
     {
         EnsureNotDisposed();
-        return ValueTask.FromResult<CommittableStream>(CreateOutputStream(GetBasePathForArtifact(key.Artifact), key.File, key.Path, options));
+        return ValueTask.FromResult(CreateOutputStream(GetBasePathForArtifact(key.Artifact), key.File, key.Path, options));
     }
 
     private string GetBasePathForArtifact(ArtifactKey key)
@@ -113,7 +114,7 @@ public class DiskArtifactDataManager : ArtifactDataManager, INamespacedArtifactD
         return !File.Exists(filePath);
     }
 
-    private CommittableFileStream CreateOutputStream(string basePath, string file, string path, OutputStreamOptions? options)
+    private ICommittable<Stream> CreateOutputStream(string basePath, string file, string path, OutputStreamOptions? options)
     {
         string dir = _baseDirectoryContext.JoinValidated(basePath, path);
         string filePath = _baseDirectoryContext.JoinValidated(dir, file.SafeifyFileName());
@@ -136,7 +137,10 @@ public class DiskArtifactDataManager : ArtifactDataManager, INamespacedArtifactD
             }
             preferTemporaryLocation = options.PreferTemporaryLocation;
         }
-        return new CommittableFileStream(filePath, fso, preferTemporaryLocation: preferTemporaryLocation);
+        var committable = new StreamCommitManager();
+        var stream = new CommittableFileStream(filePath, fso, preferTemporaryLocation: preferTemporaryLocation) { Committable = committable };
+        committable._stream = stream;
+        return committable;
     }
 
     private string[] ListFiles(string basePath, string path)
@@ -211,10 +215,10 @@ public class DiskArtifactDataManager : ArtifactDataManager, INamespacedArtifactD
         }
 
         /// <inheritdoc/>
-        public override ValueTask<CommittableStream> CreateOutputStreamAsync(string file, string path = "", OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
+        public override ValueTask<ICommittable<Stream>> CreateOutputStreamAsync(string file, string path = "", OutputStreamOptions? options = null, CancellationToken cancellationToken = default)
         {
             EnsureNotDisposed();
-            return ValueTask.FromResult<CommittableStream>(_parent.CreateOutputStream(_basePath, file, path, options));
+            return ValueTask.FromResult(_parent.CreateOutputStream(_basePath, file, path, options));
         }
 
         public override ValueTask<string[]> ListFilesAsync(string path, CancellationToken cancellationToken = default)
