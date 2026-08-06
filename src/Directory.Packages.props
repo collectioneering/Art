@@ -16,21 +16,21 @@
     <PackageVersion Include="Art.M3U" Version="0.52.0" />
     <PackageVersion Include="Art.Modular" Version="0.52.0" />
     <!-- Package dependencies -->
-    <PackageVersion Include="AngleSharp" Version="1.5.0" />
-    <PackageVersion Include="M3USharper" Version="0.1.0" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.8" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.16" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Proxies" Version="9.0.16" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.16" />
-    <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.275" />
+    <PackageVersion Include="AngleSharp" Version="1.7.1" />
+    <PackageVersion Include="M3USharper" Version="0.2.0" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.18" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Proxies" Version="9.0.18" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.18" />
+    <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.298" />
     <!-- Test dependencies -->
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.6.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
     <PackageVersion Include="xunit.v3" Version="3.2.2" />
     <PackageVersion Include="xunit.v3.assert" Version="3.2.2" />
     <PackageVersion Include="xunit.v3.extensibility.core" Version="3.2.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
     <PackageVersion Include="RichardSzalay.MockHttp" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.6.0" />
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.8.0" />
   </ItemGroup>
 </Project>

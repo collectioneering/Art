@@ -28,12 +28,17 @@ public partial class M3UDownloaderContext
     /// <summary>
     /// Main stream URI.
     /// </summary>
-    public Uri MainUri { get; private set; }
+    public Func<Uri> MainUri { get; private set; }
 
     /// <summary>
     /// Stream info.
     /// </summary>
     public M3UFile StreamInfo { get; }
+
+    /// <summary>
+    /// Data from EXT-X-MAP.
+    /// </summary>
+    public XMapFile? XMap { get; }
 
     /// <summary>
     /// Configuration.
@@ -78,12 +83,13 @@ public partial class M3UDownloaderContext
     /// </summary>
     public bool WriteVxFiles { get; set; } = false;
 
-    private M3UDownloaderContext(HttpArtifactTool tool, M3UDownloaderConfig config, Uri mainUri, M3UFile streamInfo)
+    private M3UDownloaderContext(HttpArtifactTool tool, M3UDownloaderConfig config, Func<Uri> mainUri, M3UFile streamInfo, XMapFile? xMap)
     {
         Tool = tool;
         Config = config;
         MainUri = mainUri;
         StreamInfo = streamInfo;
+        XMap = xMap;
         ValidateConfig();
     }
 
@@ -93,19 +99,20 @@ public partial class M3UDownloaderContext
         var highestStream = selectedStreams.PrimaryStream;
         long bw = highestStream.AverageBandwidth == 0 ? highestStream.Bandwidth : highestStream.AverageBandwidth;
         tool.LogInformation($"Selected {highestStream.Path} ({bw} b/s, {highestStream.ResolutionWidth}x{highestStream.ResolutionHeight})");
-        Uri primaryStream = new(new Uri(config.URL), highestStream.Path);
-        var alternateStreams = new List<Uri>();
+        var alternateStreams = new List<Func<Uri>>();
         foreach (var alternateStream in selectedStreams.AlternateStreams)
         {
             tool.LogInformation($"Selected alternate {alternateStream.Path} ({alternateStream.Type}, {alternateStream.Language}, {alternateStream.Name})");
-            alternateStreams.Add(new Uri(new Uri(config.URL), alternateStream.Path));
+            alternateStreams.Add(() => UriUtil.CombineUri(new Uri(config.UrlDelegate()), alternateStream.Path));
         }
-        return new SubStreamConfig(selectedStreams.M3UFile, primaryStream, [..alternateStreams]);
+        return new SubStreamConfig(selectedStreams.M3UFile, ComposePrimaryStreamUri, [.. alternateStreams]);
+
+        Uri ComposePrimaryStreamUri() => UriUtil.CombineUri(new Uri(config.UrlDelegate()), highestStream.Path);
     }
 
     private record SubStreamInfo(M3UFile M3UFile, StreamInfo PrimaryStream, ImmutableArray<AlternateStreamInfo> AlternateStreams);
 
-    private record SubStreamConfig(M3UFile M3UFile, Uri PrimaryStream, ImmutableArray<Uri> AlternateStreams);
+    private record SubStreamConfig(M3UFile M3UFile, Func<Uri> PrimaryStream, ImmutableArray<Func<Uri>> AlternateStreams);
 
     /// <summary>
     /// Sets configuration.
@@ -186,13 +193,13 @@ public partial class M3UDownloaderContext
     {
         tool.LogInformation($"Performing operation with consecutive retry limit {config.MaxConsecutiveRetries?.ToString() ?? "<unspecified>"}, total retry limit {config.MaxTotalRetries?.ToString() ?? "<unspecified>"}");
         tool.LogInformation("Getting stream info...");
-        (M3UFile m3UFile, Uri primaryStream, ImmutableArray<Uri> alternateStreamsInput) = await SelectSubStreamAsync(tool, config, cancellationToken).ConfigureAwait(false);
+        (M3UFile m3UFile, Func<Uri> primaryStream, ImmutableArray<Func<Uri>> alternateStreamsInput) = await SelectSubStreamAsync(tool, config, cancellationToken).ConfigureAwait(false);
         tool.LogInformation("Getting sub stream info...");
         var mainConfig = await CreateContextAsync(tool, config, primaryStream, cancellationToken).ConfigureAwait(false);
         var alternateStreams = new List<M3UDownloaderContext>();
         for (int i = 0; i < alternateStreamsInput.Length; i++)
         {
-            Uri alternateStream = alternateStreamsInput[i];
+            var alternateStream = alternateStreamsInput[i];
             var alternateStreamContext = await CreateContextAsync(tool, config, alternateStream, cancellationToken).ConfigureAwait(false);
             alternateStreamContext.IsConcurrent = true;
             alternateStreamContext.Name = $"M3U-Alt-{i}";
@@ -203,20 +210,21 @@ public partial class M3UDownloaderContext
             mainConfig.IsConcurrent = true;
             mainConfig.Name = "M3U-Primary";
         }
-        return new M3UDownloaderContextGroup(mainConfig, [..alternateStreams], m3UFile);
+        return new M3UDownloaderContextGroup(mainConfig, [.. alternateStreams], m3UFile);
     }
 
-    private static async Task<M3UDownloaderContext> CreateContextAsync(HttpArtifactTool tool, M3UDownloaderConfig config, Uri mainUri, CancellationToken cancellationToken = default)
+    private static async Task<M3UDownloaderContext> CreateContextAsync(HttpArtifactTool tool, M3UDownloaderConfig config, Func<Uri> mainUri, CancellationToken cancellationToken = default)
     {
         string? referrer = config.Referrer;
         string? origin = config.Origin;
         M3UFile m3;
         M3UEncryptionInfo? ei;
         var httpRequestConfig = new HttpRequestConfig(Referrer: referrer, Origin: origin, RequestAction: CreateRequestAction(config));
-        using (var res = await tool.GetAsync(mainUri, httpRequestConfig, cancellationToken: cancellationToken).ConfigureAwait(false))
+        using (var res = await tool.GetAsync(mainUri(), httpRequestConfig, cancellationToken: cancellationToken).ConfigureAwait(false))
         {
             ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
-            m3 = M3UReader.Parse(await res.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
+            string content = await res.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            m3 = M3UReader.Parse(content);
             ei = m3.EncryptionInfo;
         }
         if (ei != null)
@@ -236,13 +244,21 @@ public partial class M3UDownloaderContext
             else
             {
                 tool.LogInformation("Downloading enc key...");
-                using var res = await tool.GetAsync(new Uri(mainUri, ei.Uri), new HttpRequestConfig(Referrer: referrer, Origin: origin, RequestAction: CreateRequestAction(config)), cancellationToken: cancellationToken).ConfigureAwait(false);
+                using var res = await tool.GetAsync(UriUtil.CombineUri(mainUri(), ei.Uri), new HttpRequestConfig(Referrer: referrer, Origin: origin, RequestAction: CreateRequestAction(config)), cancellationToken: cancellationToken).ConfigureAwait(false);
                 ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
                 ei.Key = await res.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
                 tool.LogInformation($"KEY {Convert.ToHexString(ei.Key)}");
             }
         }
-        return new M3UDownloaderContext(tool, config, mainUri, m3);
+        XMapFile? xMap = null;
+        if (m3.XMapUri is { } xMapUri)
+        {
+            Uri xMapUriValue = UriUtil.CombineUri(mainUri(), xMapUri);
+            using var res = await tool.GetAsync(xMapUriValue, new HttpRequestConfig(Referrer: referrer, Origin: origin, RequestAction: CreateRequestAction(config)), cancellationToken: cancellationToken).ConfigureAwait(false);
+            ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
+            xMap = new XMapFile(xMapUriValue.Segments[^1], await res.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false));
+        }
+        return new M3UDownloaderContext(tool, config, mainUri, m3, xMap);
     }
 
     /// <summary>
@@ -251,6 +267,10 @@ public partial class M3UDownloaderContext
     /// <param name="cancellationToken">Cancellation token.</param>
     public async Task WriteKeyMaterialAsync(CancellationToken cancellationToken = default)
     {
+        if (XMap != null)
+        {
+            await WriteAncillaryFileAsync(XMap.Name, "xmap", XMap.Data, cancellationToken).ConfigureAwait(false);
+        }
         if (StreamInfo.EncryptionInfo is not { } ei)
         {
             return;
@@ -499,15 +519,14 @@ public partial class M3UDownloaderContext
     /// <exception cref="ArtHttpResponseMessageException">Thrown on HTTP response indicating non-successful response.</exception>
     public async Task<M3UFile> GetAsync(CancellationToken cancellationToken = default)
     {
-        using var res = await Tool.GetAsync(MainUri, new HttpRequestConfig(Referrer: Config.Referrer, Origin: Config.Origin, RequestAction: CreateRequestAction(Config)), cancellationToken: cancellationToken).ConfigureAwait(false);
+        using var res = await Tool.GetAsync(MainUri(), new HttpRequestConfig(Referrer: Config.Referrer, Origin: Config.Origin, RequestAction: CreateRequestAction(Config)), cancellationToken: cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
         return M3UReader.Parse(await res.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
     }
 
     private static async Task<SubStreamInfo> SelectStreamAsync(HttpArtifactTool tool, M3UDownloaderConfig config, CancellationToken cancellationToken = default)
     {
-        Uri liveUrlUri = new(config.URL);
-        using var res = await tool.GetAsync(liveUrlUri, new HttpRequestConfig(Referrer: config.Referrer, Origin: config.Origin, RequestAction: CreateRequestAction(config)), cancellationToken: cancellationToken).ConfigureAwait(false);
+        using var res = await tool.GetAsync(new Uri(config.UrlDelegate()), new HttpRequestConfig(Referrer: config.Referrer, Origin: config.Origin, RequestAction: CreateRequestAction(config)), cancellationToken: cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
         var ff = M3UReader.Parse(await res.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
         var primarySubStream = SelectPrimarySubStream(ff, config);
@@ -535,7 +554,7 @@ public partial class M3UDownloaderContext
                 }
             }
         }
-        return new SubStreamInfo(ff, primarySubStream, [..alternateSubStreams]);
+        return new SubStreamInfo(ff, primarySubStream, [.. alternateSubStreams]);
     }
 
     private static StreamInfo SelectPrimarySubStream(M3UFile ff, M3UDownloaderConfig config)

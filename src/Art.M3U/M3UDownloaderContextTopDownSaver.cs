@@ -211,13 +211,13 @@ public partial class M3UDownloaderContextTopDownSaver : M3UDownloaderContextSave
     private async Task<bool> ProcessElementAsync(M3UFile m3, long number, long? msn, bool isTopDown, CancellationToken cancellationToken)
     {
         string str = m3.DataLines.First();
-        Uri origUri = new(Context.MainUri, str);
+        Uri origUri = UriUtil.CombineUri(Context.MainUri(), str);
         int idx = str.IndexOf('?');
         if (idx >= 0)
         {
             str = str[..idx];
         }
-        Uri uri = new UriBuilder(new Uri(Context.MainUri, _nameTransform(str, number))) { Query = origUri.Query }.Uri;
+        Uri uri = new UriBuilder(new Uri(Context.MainUri(), _nameTransform(str, number))) { Query = origUri.Query }.Uri;
         string action = isTopDown ? "Top-downloading segment" : "Downloading missing segment";
         Context.Tool.LogInformation($"[{Context.Name}] {action} {uri.Segments[^1]}...");
         try

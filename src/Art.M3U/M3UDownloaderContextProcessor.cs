@@ -24,6 +24,11 @@ public abstract class M3UDownloaderContextProcessor
     public Func<Exception, Task>? RecoveryCallback { get; set; }
 
     /// <summary>
+    /// Callback to identify actions to take before handling segment.
+    /// </summary>
+    public Func<PreSegmentAction>? PreSegmentActionCallback { get; set; }
+
+    /// <summary>
     /// Parent context.
     /// </summary>
     protected readonly M3UDownloaderContext Context;
@@ -230,8 +235,19 @@ public abstract class M3UDownloaderContextProcessor
                 int i = 0, j = 0;
                 foreach (string entry in m3.DataLines)
                 {
+                    if (PreSegmentActionCallback is { } preSegmentActionCallback)
+                    {
+                        var actions = preSegmentActionCallback();
+                        if (actions.RunHeartbeat)
+                        {
+                            if (HeartbeatCallback != null)
+                            {
+                                await HeartbeatCallback().ConfigureAwait(false);
+                            }
+                        }
+                    }
                     long msn = m3.FirstMediaSequenceNumber + i++;
-                    var entryUri = new Uri(Context.MainUri, entry);
+                    var entryUri = UriUtil.CombineUri(Context.MainUri(), entry);
                     SegmentSettings? segmentSettings = null;
                     if (segmentFilter != null)
                     {

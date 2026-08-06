@@ -3,7 +3,7 @@ namespace Art.M3U;
 /// <summary>
 /// Represents configuration for downloader.
 /// </summary>
-/// <param name="URL">Base stream URL.</param>
+/// <param name="UrlDelegate">Base stream URL.</param>
 /// <param name="ArtifactKey">Base artifact key.</param>
 /// <param name="SkipExistingSegments">Skip registered segments.</param>
 /// <param name="Decrypt">Decrypt data inline.</param>
@@ -15,7 +15,7 @@ namespace Art.M3U;
 /// <param name="Headers">Headers to add to each request.</param>
 /// <param name="Timing">Timing values.</param>
 public record M3UDownloaderConfig(
-    string URL,
+    Func<string> UrlDelegate,
     ArtifactKey ArtifactKey,
     bool SkipExistingSegments = true,
     bool Decrypt = false,
