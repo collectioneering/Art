@@ -152,7 +152,7 @@ public record ArtifactToolDumpProxy
         public async ValueTask<ListFilterCommand> FilterKnownFullAsync(ArtifactKey artifactKey, CancellationToken cancellationToken = default)
         {
             ArtifactInfo? info = await _artifactTool.RegistrationManager.TryGetArtifactAsync(artifactKey, cancellationToken).ConfigureAwait(false);
-            if (info != null)
+            if (info != null && info.Full)
             {
                 return ListFilterCommand.Reject;
             }
