@@ -1,9 +1,12 @@
-﻿namespace Art.Http;
+﻿using System.Net;
+
+namespace Art.Http;
 
 internal static class HttpClientExtensions
 {
     internal static async Task<HttpResponseMessage> SendAsync(this HttpClient httpClient, HttpRequestMessage httpRequestMessage, HttpCompletionOption defaultCompletionOption, HttpRequestConfig? httpRequestConfig, CancellationToken cancellationToken = default)
     {
+        RetryConfig retryConfig = httpRequestConfig != null ? new RetryConfig(RetryCount: httpRequestConfig.RetryCount, RetryTime: httpRequestConfig.RetryTime, OverrideRetryTime: httpRequestConfig.OverrideRetryTime) : new RetryConfig();
         if (httpRequestConfig != null)
         {
             httpRequestMessage.SetOriginAndReferrer(httpRequestConfig.Origin, httpRequestConfig.Referrer);
@@ -15,7 +18,7 @@ internal static class HttpClientExtensions
                 var localCancellationToken = lcts.Token;
                 try
                 {
-                    return await httpClient.SendAsync(httpRequestMessage, httpRequestConfig.HttpCompletionOption ?? defaultCompletionOption, localCancellationToken).ConfigureAwait(false);
+                    return await SendWithRetryAsync(httpClient, httpRequestMessage, httpRequestConfig.HttpCompletionOption ?? defaultCompletionOption, retryConfig, localCancellationToken).ConfigureAwait(false);
                 }
                 catch (TaskCanceledException)
                 {
@@ -35,9 +38,40 @@ internal static class HttpClientExtensions
                     throw;
                 }
             }
-            return await httpClient.SendAsync(httpRequestMessage, httpRequestConfig.HttpCompletionOption ?? defaultCompletionOption, cancellationToken).ConfigureAwait(false);
+            return await SendWithRetryAsync(httpClient, httpRequestMessage, httpRequestConfig.HttpCompletionOption ?? defaultCompletionOption, retryConfig, cancellationToken).ConfigureAwait(false);
         }
-        return await httpClient.SendAsync(httpRequestMessage, defaultCompletionOption, cancellationToken).ConfigureAwait(false);
+        return await SendWithRetryAsync(httpClient, httpRequestMessage, defaultCompletionOption, retryConfig, cancellationToken).ConfigureAwait(false);
+    }
+
+    private record struct RetryConfig(int? RetryCount = null, TimeSpan? RetryTime = null, bool OverrideRetryTime = false);
+
+    private static async Task<HttpResponseMessage> SendWithRetryAsync(
+        HttpClient httpClient,
+        HttpRequestMessage request,
+        HttpCompletionOption completionOption,
+        RetryConfig retryConfig,
+        CancellationToken cancellationToken)
+    {
+        int? remainingRetries = retryConfig.RetryCount;
+        while (true)
+        {
+            var response = await httpClient.SendAsync(request, completionOption, cancellationToken).ConfigureAwait(false);
+            if (response.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                if (remainingRetries is not ({ } remainingRetriesValue and > 0))
+                {
+                    string message = retryConfig.RetryCount is { } originalRetryCount
+                        ? $"Response indicates too many requests, and {originalRetryCount} retries were exhausted"
+                        : "Response indicates too many requests, and no retries are configured";
+                    throw new ArtHttpResponseMessageException(message, response);
+                }
+                TimeSpan timeSpan = (retryConfig.OverrideRetryTime ? retryConfig.RetryTime : null) ?? response.Headers.RetryAfter?.Delta ?? retryConfig.RetryTime ?? TimeSpan.FromSeconds(1);
+                await Task.Delay(timeSpan, cancellationToken).ConfigureAwait(false);
+                remainingRetries = remainingRetriesValue - 1;
+                continue;
+            }
+            return response;
+        }
     }
 
     private static void ThrowForTimeout(TimeSpan timeSpan, CancellationToken cancellationToken)
