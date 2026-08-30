@@ -62,51 +62,99 @@ public abstract class HtmlArtifactTool : HttpArtifactTool
     #region Main API
 
     /// <summary>
-    /// Opens a new document loaded from the provided address.
+    /// Opens a new document using the specified delegate.
     /// </summary>
-    /// <param name="content">Content to load.</param>
+    /// <param name="request">Content to load.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task returning the loaded document.</returns>
-    public async Task<IDocument> OpenStringAsync(string content, CancellationToken cancellationToken = default)
-    {
-        NotDisposed();
-        return Document = await Browser.OpenAsync(r => r.Content(content), cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Opens a new document loaded from the provided address.
-    /// </summary>
-    /// <param name="address">Address to load.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>Task returning the loaded document.</returns>
-    public async Task<IDocument> OpenAsync(string address, CancellationToken cancellationToken = default)
-    {
-        NotDisposed();
-        return Document = await Browser.OpenAsync(address, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Opens a new document loaded from the provided address.
-    /// </summary>
-    /// <param name="address">Address to load.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>Task returning the loaded document.</returns>
-    public async Task<IDocument> OpenAsync(Url address, CancellationToken cancellationToken = default)
-    {
-        NotDisposed();
-        return Document = await Browser.OpenAsync(address, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Opens a new document loaded from the provided request.
-    /// </summary>
-    /// <param name="request">Request to load.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>Task returning the loaded document.</returns>
-    public async Task<IDocument> OpenAsync(DocumentRequest request, CancellationToken cancellationToken = default)
+    /// <remarks>This member sets the <see cref="Document"/> property, and the document will be available at both <see cref="Document"/> and <see cref="DocumentNotNull"/>.</remarks>
+    public async Task<IDocument> OpenAsync(Action<VirtualResponse> request, CancellationToken cancellationToken = default)
     {
         NotDisposed();
         return Document = await Browser.OpenAsync(request, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Opens a new document loaded from the provided address.
+    /// </summary>
+    /// <param name="address">Address to load.</param>
+    /// <param name="httpRequestConfig">Request configuration.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Task returning the loaded document.</returns>
+    /// <remarks>This member sets the <see cref="Document"/> property, and the document will be available at both <see cref="Document"/> and <see cref="DocumentNotNull"/>.</remarks>
+    public Task<IDocument> OpenAsync(string address, HttpRequestConfig? httpRequestConfig = null, CancellationToken cancellationToken = default)
+    {
+        NotDisposed();
+        return OpenViaHttpClientAsync(new Uri(address), httpRequestConfig, cancellationToken);
+    }
+
+    /// <summary>
+    /// Opens a new document loaded from the provided address.
+    /// </summary>
+    /// <param name="address">Address to load.</param>
+    /// <param name="httpRequestConfig">Request configuration.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Task returning the loaded document.</returns>
+    /// <remarks>This member sets the <see cref="Document"/> property, and the document will be available at both <see cref="Document"/> and <see cref="DocumentNotNull"/>.</remarks>
+    public Task<IDocument> OpenAsync(Uri address, HttpRequestConfig? httpRequestConfig = null, CancellationToken cancellationToken = default)
+    {
+        NotDisposed();
+        return OpenViaHttpClientAsync(address, httpRequestConfig, cancellationToken);
+    }
+
+    /// <summary>
+    /// Opens a new document loaded from the provided address.
+    /// </summary>
+    /// <param name="address">Address to load.</param>
+    /// <param name="httpRequestConfig">Request configuration.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Task returning the loaded document.</returns>
+    /// <remarks>This member sets the <see cref="Document"/> property, and the document will be available at both <see cref="Document"/> and <see cref="DocumentNotNull"/>.</remarks>
+    public Task<IDocument> OpenAsync(Url address, HttpRequestConfig? httpRequestConfig = null, CancellationToken cancellationToken = default)
+    {
+        NotDisposed();
+        return OpenViaHttpClientAsync(address.ToUri(), httpRequestConfig, cancellationToken);
+    }
+
+    private async Task<IDocument> OpenViaHttpClientAsync(Uri uri, HttpRequestConfig? httpRequestConfig, CancellationToken cancellationToken = default)
+    {
+        using var response = await GetAsync(uri, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        ArtHttpResponseMessageException.EnsureSuccessStatusCode(response);
+        var headers = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+        foreach (var header in response.Headers)
+        {
+            if (header.Value.LastOrDefault() is { } value)
+            {
+                headers[header.Key] = value;
+            }
+        }
+        foreach (var header in response.Content.Headers)
+        {
+            if (header.Value.LastOrDefault() is { } value)
+            {
+                headers[header.Key] = value;
+            }
+        }
+        var contentCopyMs = response.Content.Headers.ContentLength is { } contentLength and > 0 and < int.MaxValue
+            ? new MemoryStream(capacity: (int)contentLength)
+            : new MemoryStream();
+        await response.Content.CopyToAsync(contentCopyMs, cancellationToken).ConfigureAwait(false);
+        contentCopyMs.Position = 0;
+        foreach (var header in response.TrailingHeaders)
+        {
+            if (header.Value.LastOrDefault() is { } value)
+            {
+                headers[header.Key] = value;
+            }
+        }
+        var status = response.StatusCode;
+        return Document = await Browser.OpenAsync(r =>
+        {
+            r.Address(uri);
+            r.Content(contentCopyMs);
+            r.Headers(headers);
+            r.Status(status);
+        }, cancel: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
