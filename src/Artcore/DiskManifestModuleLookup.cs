@@ -8,7 +8,7 @@ namespace Artcore;
 /// </summary>
 public class DiskManifestModuleLookup : IModuleLookup<ModuleManifest>
 {
-    private readonly Dictionary<string, ModuleManifest> _manifestsByAssemblyName = new(StringComparer.InvariantCultureIgnoreCase);
+    private readonly Dictionary<string, ModuleManifest> _manifestsByAssemblyName = new(StringComparer.OrdinalIgnoreCase);
     private readonly string _moduleDirectory;
     private readonly string _directorySuffix;
     private readonly string _fileNameSuffix;
@@ -51,7 +51,7 @@ public class DiskManifestModuleLookup : IModuleLookup<ModuleManifest>
             moduleLocation = null;
             return false;
         }
-        var tmpDict = new Dictionary<string, ModuleManifest>(StringComparer.InvariantCultureIgnoreCase);
+        var tmpDict = new Dictionary<string, ModuleManifest>(StringComparer.OrdinalIgnoreCase);
         foreach (string subDirectory in EnumerateModuleDirectories(_moduleDirectory))
         {
             LoadManifestsAtTarget(subDirectory, tmpDict);

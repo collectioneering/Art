@@ -120,7 +120,7 @@ public abstract class HtmlArtifactTool : HttpArtifactTool
     {
         using var response = await GetAsync(uri, httpRequestConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(response);
-        var headers = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+        var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var header in response.Headers)
         {
             if (header.Value.LastOrDefault() is { } value)

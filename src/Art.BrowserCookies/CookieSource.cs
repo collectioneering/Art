@@ -24,7 +24,7 @@ public abstract record CookieSource : ICookieSource
 
     ICookieSource ICookieSource.Resolve() => Resolve();
 
-    private static readonly Dictionary<string, BrowserInfo> s_info = new(StringComparer.InvariantCultureIgnoreCase);
+    private static readonly Dictionary<string, BrowserInfo> s_info = new(StringComparer.OrdinalIgnoreCase);
 
     static CookieSource()
     {

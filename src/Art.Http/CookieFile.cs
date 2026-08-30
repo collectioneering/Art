@@ -53,9 +53,9 @@ public static class CookieFile
             throw new InvalidDataException($"Line {i} had invalid number of elements {elem.Length}");
         }
         string domain = elem[0];
-        //bool access = elem[1].Equals("true", StringComparison.InvariantCultureIgnoreCase);
+        //bool access = elem[1].Equals("true", StringComparison.OrdinalIgnoreCase);
         string path = elem[2];
-        bool secure = elem[3].Equals("true", StringComparison.InvariantCultureIgnoreCase);
+        bool secure = elem[3].Equals("true", StringComparison.OrdinalIgnoreCase);
         long expiration = long.Parse(elem[4], CultureInfo.InvariantCulture);
         string name = elem[5];
         string? value = elem.Length < 7 ? null : elem[6];

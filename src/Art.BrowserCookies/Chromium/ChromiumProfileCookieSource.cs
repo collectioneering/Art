@@ -31,7 +31,7 @@ public abstract record ChromiumProfileCookieSource(string Profile = "Default") :
                 {
                     using var fs = File.OpenRead(preferences);
                     string name = (JsonSerializer.Deserialize(fs, SourceGenerationContext.SharedContext.ChromiumPreferences) ?? throw new InvalidDataException()).Profile.Name;
-                    if (name.Equals(Profile, StringComparison.InvariantCultureIgnoreCase))
+                    if (name.Equals(Profile, StringComparison.OrdinalIgnoreCase))
                     {
                         return this with { Profile = newProfile };
                     }

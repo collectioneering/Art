@@ -80,14 +80,14 @@ public static class ChecksumUtility
         }
         if (first != null && second != null)
         {
-            return string.Equals(first.Id, second.Id, StringComparison.InvariantCultureIgnoreCase) && first.Value.AsSpan().SequenceEqual(second.Value);
+            return string.Equals(first.Id, second.Id, StringComparison.OrdinalIgnoreCase) && first.Value.AsSpan().SequenceEqual(second.Value);
         }
         return true;
     }
 
     private static byte[] Dehex(ReadOnlySpan<char> hex)
     {
-        if (hex.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase))
+        if (hex.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
         {
             hex = hex[2..];
         }
