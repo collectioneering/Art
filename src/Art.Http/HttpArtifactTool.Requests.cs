@@ -21,9 +21,14 @@ public partial class HttpArtifactTool
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        HttpRequestMessage req = new(HttpMethod.Head, requestUri);
-        ConfigureHttpRequest(req);
-        return await HttpClient.SendAsync(req, GenericCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        return await HttpClient.SendAsync(CreateRequestMessage, GenericCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+
+        HttpRequestMessage CreateRequestMessage()
+        {
+            HttpRequestMessage req = new(HttpMethod.Head, requestUri);
+            ConfigureHttpRequest(req);
+            return req;
+        }
     }
 
     /// <summary>
@@ -41,9 +46,14 @@ public partial class HttpArtifactTool
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        HttpRequestMessage req = new(HttpMethod.Head, requestUri);
-        ConfigureHttpRequest(req);
-        return await HttpClient.SendAsync(req, GenericCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        return await HttpClient.SendAsync(CreateRequestMessage, GenericCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+
+        HttpRequestMessage CreateRequestMessage()
+        {
+            HttpRequestMessage req = new(HttpMethod.Head, requestUri);
+            ConfigureHttpRequest(req);
+            return req;
+        }
     }
 
     /// <summary>
@@ -61,9 +71,14 @@ public partial class HttpArtifactTool
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        HttpRequestMessage req = new(HttpMethod.Get, requestUri);
-        ConfigureHttpRequest(req);
-        return await HttpClient.SendAsync(req, GenericCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        return await HttpClient.SendAsync(CreateRequestMessage, GenericCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+
+        HttpRequestMessage CreateRequestMessage()
+        {
+            HttpRequestMessage req = new(HttpMethod.Get, requestUri);
+            ConfigureHttpRequest(req);
+            return req;
+        }
     }
 
     /// <summary>
@@ -81,27 +96,32 @@ public partial class HttpArtifactTool
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        HttpRequestMessage req = new(HttpMethod.Get, requestUri);
-        ConfigureHttpRequest(req);
-        return await HttpClient.SendAsync(req, GenericCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        return await HttpClient.SendAsync(CreateRequestMessage, GenericCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+
+        HttpRequestMessage CreateRequestMessage()
+        {
+            HttpRequestMessage req = new(HttpMethod.Get, requestUri);
+            ConfigureHttpRequest(req);
+            return req;
+        }
     }
 
     /// <summary>
     /// Sends an HTTP request.
     /// </summary>
-    /// <param name="requestMessage">Request.</param>
+    /// <param name="requestMessageDelegate">A delegate that creates a new instance of <see cref="System.Net.Http.HttpRequestMessage"/>.</param>
     /// <param name="httpRequestConfig">Custom request configuration.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task returning response (status left unchecked).</returns>
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
     /// <exception cref="HttpRequestException">Thrown for issues with request excluding non-success server responses.</exception>
     public async Task<HttpResponseMessage> SendAsync(
-        HttpRequestMessage requestMessage,
+        Func<HttpRequestMessage> requestMessageDelegate,
         HttpRequestConfig? httpRequestConfig = null,
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        return await HttpClient.SendAsync(requestMessage, GenericCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        return await HttpClient.SendAsync(requestMessageDelegate, GenericCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

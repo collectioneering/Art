@@ -30,9 +30,14 @@ public partial class HttpArtifactTool
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        HttpRequestMessage req = new(HttpMethod.Get, requestUri);
-        ConfigureHttpRequest(req);
-        return DownloadResourceAsync(req, stream, httpRequestConfig, exportOptions, cancellationToken);
+        return DownloadResourceAsync(CreateRequestMessage, stream, httpRequestConfig, exportOptions, cancellationToken);
+
+        HttpRequestMessage CreateRequestMessage()
+        {
+            HttpRequestMessage req = new(HttpMethod.Get, requestUri);
+            ConfigureHttpRequest(req);
+            return req;
+        }
     }
 
     /// <summary>
@@ -55,9 +60,15 @@ public partial class HttpArtifactTool
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        HttpRequestMessage req = new(HttpMethod.Get, requestUri);
-        ConfigureHttpRequest(req);
-        await DownloadResourceInternalAsync(req, httpRequestConfig, key, exportOptions, cancellationToken).ConfigureAwait(false);
+        await DownloadResourceInternalAsync(CreateRequestMessage, httpRequestConfig, key, exportOptions, cancellationToken).ConfigureAwait(false);
+        return;
+
+        HttpRequestMessage CreateRequestMessage()
+        {
+            HttpRequestMessage req = new(HttpMethod.Get, requestUri);
+            ConfigureHttpRequest(req);
+            return req;
+        }
     }
 
     /// <summary>
@@ -100,9 +111,14 @@ public partial class HttpArtifactTool
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        HttpRequestMessage req = new(HttpMethod.Get, requestUri);
-        ConfigureHttpRequest(req);
-        return GetResourceDownloadStreamAsync(req, httpRequestConfig, cancellationToken);
+        return GetResourceDownloadStreamAsync(CreateRequestMessage, httpRequestConfig, cancellationToken);
+
+        HttpRequestMessage CreateRequestMessage()
+        {
+            HttpRequestMessage req = new(HttpMethod.Get, requestUri);
+            ConfigureHttpRequest(req);
+            return req;
+        }
     }
 
     /// <summary>
@@ -125,9 +141,14 @@ public partial class HttpArtifactTool
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        HttpRequestMessage req = new(HttpMethod.Get, requestUri);
-        ConfigureHttpRequest(req);
-        return DownloadResourceAsync(req, stream, httpRequestConfig, exportOptions, cancellationToken);
+        return DownloadResourceAsync(CreateRequestMessage, stream, httpRequestConfig, exportOptions, cancellationToken);
+
+        HttpRequestMessage CreateRequestMessage()
+        {
+            HttpRequestMessage req = new(HttpMethod.Get, requestUri);
+            ConfigureHttpRequest(req);
+            return req;
+        }
     }
 
     /// <summary>
@@ -150,9 +171,15 @@ public partial class HttpArtifactTool
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        HttpRequestMessage req = new(HttpMethod.Get, requestUri);
-        ConfigureHttpRequest(req);
-        await DownloadResourceInternalAsync(req, httpRequestConfig, key, exportOptions, cancellationToken).ConfigureAwait(false);
+        await DownloadResourceInternalAsync(CreateRequestMessage, httpRequestConfig, key, exportOptions, cancellationToken).ConfigureAwait(false);
+        return;
+
+        HttpRequestMessage CreateRequestMessage()
+        {
+            HttpRequestMessage req = new(HttpMethod.Get, requestUri);
+            ConfigureHttpRequest(req);
+            return req;
+        }
     }
 
     /// <summary>
@@ -182,7 +209,7 @@ public partial class HttpArtifactTool
     /// <summary>
     /// Gets a download stream for a resource.
     /// </summary>
-    /// <param name="requestMessage">Request to send.</param>
+    /// <param name="requestMessageDelegate">A delegate that creates a new instance of <see cref="HttpRequestMessage"/>.</param>
     /// <param name="httpRequestConfig">Custom request configuration.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task returning stream.</returns>
@@ -190,13 +217,13 @@ public partial class HttpArtifactTool
     /// <exception cref="HttpRequestException">Thrown for issues with request excluding non-success server responses.</exception>
     /// <exception cref="ArtHttpResponseMessageException">Thrown on HTTP response indicating non-successful response.</exception>
     public async Task<Stream> GetResourceDownloadStreamAsync(
-        HttpRequestMessage requestMessage,
+        Func<HttpRequestMessage> requestMessageDelegate,
         HttpRequestConfig? httpRequestConfig = null,
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
         // M3U behaviour depends on members always using this instance's HttpClient.
-        HttpResponseMessage res = await HttpClient.SendAsync(requestMessage, DownloadCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        HttpResponseMessage res = await HttpClient.SendAsync(requestMessageDelegate, DownloadCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
         var stream = await res.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         return new DelegatingStreamWithDisposableContext(stream, res);
@@ -205,7 +232,7 @@ public partial class HttpArtifactTool
     /// <summary>
     /// Downloads a resource.
     /// </summary>
-    /// <param name="requestMessage">Request to send.</param>
+    /// <param name="requestMessageDelegate">A delegate that creates a new instance of <see cref="HttpRequestMessage"/>.</param>
     /// <param name="stream">Target stream.</param>
     /// <param name="httpRequestConfig">Custom request configuration.</param>
     /// <param name="exportOptions">Options to use for export operation.</param>
@@ -215,7 +242,7 @@ public partial class HttpArtifactTool
     /// <exception cref="HttpRequestException">Thrown for issues with request excluding non-success server responses.</exception>
     /// <exception cref="ArtHttpResponseMessageException">Thrown on HTTP response indicating non-successful response.</exception>
     public async Task DownloadResourceAsync(
-        HttpRequestMessage requestMessage,
+        Func<HttpRequestMessage> requestMessageDelegate,
         Stream stream,
         HttpRequestConfig? httpRequestConfig = null,
         ArtifactResourceExportOptions? exportOptions = null,
@@ -223,7 +250,7 @@ public partial class HttpArtifactTool
     {
         NotDisposed();
         // M3U behaviour depends on members always using this instance's HttpClient.
-        using HttpResponseMessage res = await HttpClient.SendAsync(requestMessage, DownloadCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage res = await HttpClient.SendAsync(requestMessageDelegate, DownloadCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
         await CopyStreamAsync(res, stream, exportOptions, cancellationToken).ConfigureAwait(false);
     }
@@ -231,7 +258,7 @@ public partial class HttpArtifactTool
     /// <summary>
     /// Downloads a resource.
     /// </summary>
-    /// <param name="requestMessage">Request to send.</param>
+    /// <param name="requestMessageDelegate">A delegate that creates a new instance of <see cref="HttpRequestMessage"/>.</param>
     /// <param name="key">Resource key.</param>
     /// <param name="httpRequestConfig">Custom request configuration.</param>
     /// <param name="exportOptions">Options to use for export operation.</param>
@@ -241,20 +268,20 @@ public partial class HttpArtifactTool
     /// <exception cref="HttpRequestException">Thrown for issues with request excluding non-success server responses.</exception>
     /// <exception cref="ArtHttpResponseMessageException">Thrown on HTTP response indicating non-successful response.</exception>
     public async Task DownloadResourceAsync(
-        HttpRequestMessage requestMessage,
+        Func<HttpRequestMessage> requestMessageDelegate,
         ArtifactResourceKey key,
         HttpRequestConfig? httpRequestConfig = null,
         ArtifactResourceExportOptions? exportOptions = null,
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        await DownloadResourceInternalAsync(requestMessage, httpRequestConfig, key, exportOptions, cancellationToken).ConfigureAwait(false);
+        await DownloadResourceInternalAsync(requestMessageDelegate, httpRequestConfig, key, exportOptions, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
     /// Downloads a resource.
     /// </summary>
-    /// <param name="requestMessage">Request to send.</param>
+    /// <param name="requestMessageDelegate">A delegate that creates a new instance of <see cref="HttpRequestMessage"/>.</param>
     /// <param name="file">Target filename.</param>
     /// <param name="key">Artifact key.</param>
     /// <param name="path">File path to prepend.</param>
@@ -266,7 +293,7 @@ public partial class HttpArtifactTool
     /// <exception cref="HttpRequestException">Thrown for issues with request excluding non-success server responses.</exception>
     /// <exception cref="ArtHttpResponseMessageException">Thrown on HTTP response indicating non-successful response.</exception>
     public Task DownloadResourceAsync(
-        HttpRequestMessage requestMessage,
+        Func<HttpRequestMessage> requestMessageDelegate,
         string file,
         ArtifactKey key,
         string path = "",
@@ -275,7 +302,7 @@ public partial class HttpArtifactTool
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        return DownloadResourceInternalAsync(requestMessage, httpRequestConfig, new ArtifactResourceKey(key, file, path), exportOptions, cancellationToken);
+        return DownloadResourceInternalAsync(requestMessageDelegate, httpRequestConfig, new ArtifactResourceKey(key, file, path), exportOptions, cancellationToken);
     }
 
     /// <summary>
@@ -284,13 +311,13 @@ public partial class HttpArtifactTool
     public virtual HttpCompletionOption DownloadCompletionOption => HttpCompletionOption.ResponseHeadersRead;
 
     private async Task DownloadResourceInternalAsync(
-        HttpRequestMessage requestMessage,
+        Func<HttpRequestMessage> requestMessageDelegate,
         HttpRequestConfig? httpRequestConfig,
         ArtifactResourceKey key,
         ArtifactResourceExportOptions? exportOptions,
         CancellationToken cancellationToken = default)
     {
-        using HttpResponseMessage res = await HttpClient.SendAsync(requestMessage, DownloadCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage res = await HttpClient.SendAsync(requestMessageDelegate, DownloadCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
         await StreamDownloadAsync(res, key, exportOptions, cancellationToken).ConfigureAwait(false);
     }

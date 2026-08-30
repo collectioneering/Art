@@ -30,11 +30,16 @@ public partial class HttpArtifactTool
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        HttpRequestMessage req = new(HttpMethod.Get, requestUri);
-        ConfigureJsonRequest(req);
-        using HttpResponseMessage res = await HttpClient.SendAsync(req, JsonCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage res = await HttpClient.SendAsync(CreateRequestMessage, JsonCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
         return await DeserializeJsonWithDebugAsync<T>(res, cancellationToken).ConfigureAwait(false);
+
+        HttpRequestMessage CreateRequestMessage()
+        {
+            HttpRequestMessage req = new(HttpMethod.Get, requestUri);
+            ConfigureJsonRequest(req);
+            return req;
+        }
     }
 
     /// <summary>
@@ -56,11 +61,16 @@ public partial class HttpArtifactTool
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        HttpRequestMessage req = new(HttpMethod.Get, requestUri);
-        ConfigureJsonRequest(req);
-        using HttpResponseMessage res = await HttpClient.SendAsync(req, JsonCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage res = await HttpClient.SendAsync(CreateRequestMessage, JsonCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
         return await DeserializeJsonWithDebugAsync(res, jsonTypeInfo, cancellationToken).ConfigureAwait(false);
+
+        HttpRequestMessage CreateRequestMessage()
+        {
+            HttpRequestMessage req = new(HttpMethod.Get, requestUri);
+            ConfigureJsonRequest(req);
+            return req;
+        }
     }
 
     /// <summary>
@@ -129,11 +139,16 @@ public partial class HttpArtifactTool
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        HttpRequestMessage req = new(HttpMethod.Get, requestUri);
-        ConfigureJsonRequest(req);
-        using HttpResponseMessage res = await HttpClient.SendAsync(req, JsonCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage res = await HttpClient.SendAsync(CreateRequestMessage, JsonCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
         return await DeserializeJsonWithDebugAsync<T>(res, jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
+
+        HttpRequestMessage CreateRequestMessage()
+        {
+            HttpRequestMessage req = new(HttpMethod.Get, requestUri);
+            ConfigureJsonRequest(req);
+            return req;
+        }
     }
 
     /// <summary>
@@ -180,11 +195,16 @@ public partial class HttpArtifactTool
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        HttpRequestMessage req = new(HttpMethod.Get, requestUri);
-        ConfigureJsonRequest(req);
-        using HttpResponseMessage res = await HttpClient.SendAsync(req, JsonCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage res = await HttpClient.SendAsync(CreateRequestMessage, JsonCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
         return await DeserializeJsonWithDebugAsync<T>(res, cancellationToken).ConfigureAwait(false);
+
+        HttpRequestMessage CreateRequestMessage()
+        {
+            HttpRequestMessage req = new(HttpMethod.Get, requestUri);
+            ConfigureJsonRequest(req);
+            return req;
+        }
     }
 
     /// <summary>
@@ -206,11 +226,16 @@ public partial class HttpArtifactTool
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        HttpRequestMessage req = new(HttpMethod.Get, requestUri);
-        ConfigureJsonRequest(req);
-        using HttpResponseMessage res = await HttpClient.SendAsync(req, JsonCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage res = await HttpClient.SendAsync(CreateRequestMessage, JsonCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
         return await DeserializeJsonWithDebugAsync(res, jsonTypeInfo, cancellationToken).ConfigureAwait(false);
+
+        HttpRequestMessage CreateRequestMessage()
+        {
+            HttpRequestMessage req = new(HttpMethod.Get, requestUri);
+            ConfigureJsonRequest(req);
+            return req;
+        }
     }
 
     /// <summary>
@@ -279,11 +304,16 @@ public partial class HttpArtifactTool
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        HttpRequestMessage req = new(HttpMethod.Get, requestUri);
-        ConfigureJsonRequest(req);
-        using HttpResponseMessage res = await HttpClient.SendAsync(req, JsonCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage res = await HttpClient.SendAsync(CreateRequestMessage, JsonCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
         return await DeserializeJsonWithDebugAsync<T>(res, jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
+
+        HttpRequestMessage CreateRequestMessage()
+        {
+            HttpRequestMessage req = new(HttpMethod.Get, requestUri);
+            ConfigureJsonRequest(req);
+            return req;
+        }
     }
 
     /// <summary>
@@ -313,7 +343,7 @@ public partial class HttpArtifactTool
     /// Retrieves deserialized JSON using a <see cref="HttpRequestMessage"/>.
     /// </summary>
     /// <typeparam name="T">Data type.</typeparam>
-    /// <param name="requestMessage">Request to send.</param>
+    /// <param name="requestMessageDelegate">A delegate that creates a new instance of <see cref="System.Net.Http.HttpRequestMessage"/>.</param>
     /// <param name="httpRequestConfig">Custom request configuration.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task returning deserialized data.</returns>
@@ -325,12 +355,12 @@ public partial class HttpArtifactTool
     /// </remarks>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved.")]
     public async Task<T?> RetrieveDeserializedJsonAsync<T>(
-        HttpRequestMessage requestMessage,
+        Func<HttpRequestMessage> requestMessageDelegate,
         HttpRequestConfig? httpRequestConfig = null,
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        using HttpResponseMessage res = await HttpClient.SendAsync(requestMessage, JsonCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage res = await HttpClient.SendAsync(requestMessageDelegate, JsonCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
         return await DeserializeJsonAsync<T>(await res.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false), JsonOptions, cancellationToken).ConfigureAwait(false);
     }
@@ -339,7 +369,7 @@ public partial class HttpArtifactTool
     /// Retrieves deserialized JSON using a <see cref="HttpRequestMessage"/>.
     /// </summary>
     /// <typeparam name="T">Data type.</typeparam>
-    /// <param name="requestMessage">Request to send.</param>
+    /// <param name="requestMessageDelegate">A delegate that creates a new instance of <see cref="System.Net.Http.HttpRequestMessage"/>.</param>
     /// <param name="jsonTypeInfo">JSON type info.</param>
     /// <param name="httpRequestConfig">Custom request configuration.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -348,13 +378,13 @@ public partial class HttpArtifactTool
     /// <exception cref="HttpRequestException">Thrown for issues with request excluding non-success server responses.</exception>
     /// <exception cref="ArtHttpResponseMessageException">Thrown on HTTP response indicating non-successful response.</exception>
     public async Task<T?> RetrieveDeserializedJsonAsync<T>(
-        HttpRequestMessage requestMessage,
+        Func<HttpRequestMessage> requestMessageDelegate,
         JsonTypeInfo<T> jsonTypeInfo,
         HttpRequestConfig? httpRequestConfig = null,
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        using HttpResponseMessage res = await HttpClient.SendAsync(requestMessage, JsonCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage res = await HttpClient.SendAsync(requestMessageDelegate, JsonCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
         return await DeserializeJsonAsync(await res.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false), jsonTypeInfo, cancellationToken).ConfigureAwait(false);
     }
@@ -363,7 +393,7 @@ public partial class HttpArtifactTool
     /// Retrieves deserialized JSON using a <see cref="HttpRequestMessage"/>.
     /// </summary>
     /// <typeparam name="T">Data type.</typeparam>
-    /// <param name="requestMessage">Request to send.</param>
+    /// <param name="requestMessageDelegate">A delegate that creates a new instance of <see cref="System.Net.Http.HttpRequestMessage"/>.</param>
     /// <param name="httpRequestConfig">Custom request configuration.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task returning deserialized data.</returns>
@@ -376,18 +406,18 @@ public partial class HttpArtifactTool
     /// </remarks>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved.")]
     public async Task<T> RetrieveDeserializedRequiredJsonAsync<T>(
-        HttpRequestMessage requestMessage,
+        Func<HttpRequestMessage> requestMessageDelegate,
         HttpRequestConfig? httpRequestConfig = null,
         CancellationToken cancellationToken = default)
     {
-        return await RetrieveDeserializedJsonAsync<T>(requestMessage, httpRequestConfig, cancellationToken).ConfigureAwait(false) ?? throw new NullJsonDataException();
+        return await RetrieveDeserializedJsonAsync<T>(requestMessageDelegate, httpRequestConfig, cancellationToken).ConfigureAwait(false) ?? throw new NullJsonDataException();
     }
 
     /// <summary>
     /// Retrieves deserialized JSON using a <see cref="HttpRequestMessage"/>.
     /// </summary>
     /// <typeparam name="T">Data type.</typeparam>
-    /// <param name="requestMessage">Request to send.</param>
+    /// <param name="requestMessageDelegate">A delegate that creates a new instance of <see cref="System.Net.Http.HttpRequestMessage"/>.</param>
     /// <param name="jsonTypeInfo">JSON type info.</param>
     /// <param name="httpRequestConfig">Custom request configuration.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -397,19 +427,19 @@ public partial class HttpArtifactTool
     /// <exception cref="ArtHttpResponseMessageException">Thrown on HTTP response indicating non-successful response.</exception>
     /// <exception cref="NullJsonDataException">Thrown for null JSON value.</exception>
     public async Task<T> RetrieveDeserializedRequiredJsonAsync<T>(
-        HttpRequestMessage requestMessage,
+        Func<HttpRequestMessage> requestMessageDelegate,
         JsonTypeInfo<T> jsonTypeInfo,
         HttpRequestConfig? httpRequestConfig = null,
         CancellationToken cancellationToken = default)
     {
-        return await RetrieveDeserializedJsonAsync(requestMessage, jsonTypeInfo, httpRequestConfig, cancellationToken).ConfigureAwait(false) ?? throw new NullJsonDataException();
+        return await RetrieveDeserializedJsonAsync(requestMessageDelegate, jsonTypeInfo, httpRequestConfig, cancellationToken).ConfigureAwait(false) ?? throw new NullJsonDataException();
     }
 
     /// <summary>
     /// Retrieves deserialized JSON using a <see cref="HttpRequestMessage"/> and <see cref="JsonSerializerOptions"/>.
     /// </summary>
     /// <typeparam name="T">Data type.</typeparam>
-    /// <param name="requestMessage">Request to send.</param>
+    /// <param name="requestMessageDelegate">A delegate that creates a new instance of <see cref="System.Net.Http.HttpRequestMessage"/>.</param>
     /// <param name="jsonSerializerOptions">Optional deserialization options.</param>
     /// <param name="httpRequestConfig">Custom request configuration.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -419,13 +449,13 @@ public partial class HttpArtifactTool
     /// <exception cref="ArtHttpResponseMessageException">Thrown on HTTP response indicating non-successful response.</exception>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved.")]
     public async Task<T?> RetrieveDeserializedJsonAsync<T>(
-        HttpRequestMessage requestMessage,
+        Func<HttpRequestMessage> requestMessageDelegate,
         JsonSerializerOptions? jsonSerializerOptions,
         HttpRequestConfig? httpRequestConfig = null,
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        using HttpResponseMessage res = await HttpClient.SendAsync(requestMessage, JsonCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage res = await HttpClient.SendAsync(requestMessageDelegate, JsonCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
         return await DeserializeJsonAsync<T>(await res.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false), jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
     }
@@ -434,7 +464,7 @@ public partial class HttpArtifactTool
     /// Retrieves deserialized JSON using a <see cref="HttpRequestMessage"/> and <see cref="JsonSerializerOptions"/>.
     /// </summary>
     /// <typeparam name="T">Data type.</typeparam>
-    /// <param name="requestMessage">Request to send.</param>
+    /// <param name="requestMessageDelegate">A delegate that creates a new instance of <see cref="System.Net.Http.HttpRequestMessage"/>.</param>
     /// <param name="jsonSerializerOptions">Optional deserialization options.</param>
     /// <param name="httpRequestConfig">Custom request configuration.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -445,12 +475,12 @@ public partial class HttpArtifactTool
     /// <exception cref="NullJsonDataException">Thrown for null JSON value.</exception>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved.")]
     public async Task<T> RetrieveDeserializedRequiredJsonAsync<T>(
-        HttpRequestMessage requestMessage,
+        Func<HttpRequestMessage> requestMessageDelegate,
         JsonSerializerOptions? jsonSerializerOptions,
         HttpRequestConfig? httpRequestConfig = null,
         CancellationToken cancellationToken = default)
     {
-        return await RetrieveDeserializedJsonAsync<T>(requestMessage, jsonSerializerOptions, httpRequestConfig, cancellationToken).ConfigureAwait(false) ?? throw new NullJsonDataException();
+        return await RetrieveDeserializedJsonAsync<T>(requestMessageDelegate, jsonSerializerOptions, httpRequestConfig, cancellationToken).ConfigureAwait(false) ?? throw new NullJsonDataException();
     }
 
     /// <summary>
