@@ -2,9 +2,27 @@
 
 namespace Art.Http;
 
-internal static class HttpClientExtensions
+/// <summary>
+/// Provides extensions for <see cref="HttpClient"/>.
+/// </summary>
+public static class HttpClientExtensions
 {
-    internal static async Task<HttpResponseMessage> SendAsync(this HttpClient httpClient, Func<HttpRequestEx> requestDelegate, HttpCompletionOption defaultCompletionOption, HttpRequestMetaConfig? requestMetaConfig, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Sends an HTTP request via a <see cref="HttpClient"/>.
+    /// </summary>
+    /// <param name="httpClient">Client to use to send request.</param>
+    /// <param name="requestDelegate">Delegate to create instance of <see cref="HttpRequestMessage"/> and, if applicable, a <see cref="HttpRequestConfig"/>.</param>
+    /// <param name="defaultCompletionOption">Completion option to use if not specified in <see cref="HttpRequestConfig"/> returned by <paramref name="requestDelegate"/>.</param>
+    /// <param name="requestMetaConfig">Metaconfiguration to apply for request.</param>
+    /// <param name="cancellationToken">Cancellation token, if applicable.</param>
+    /// <returns>An instance of <see cref="HttpResponseMessage"/> representing the response sent by the host.</returns>
+    /// <exception cref="TaskCanceledException">Thrown if HTTP request has timed out, following the semantics of <see cref="HttpClient"/>.</exception>
+    public static async Task<HttpResponseMessage> SendAsync(
+        this HttpClient httpClient,
+        Func<HttpRequestEx> requestDelegate,
+        HttpCompletionOption defaultCompletionOption,
+        HttpRequestMetaConfig? requestMetaConfig,
+        CancellationToken cancellationToken = default)
     {
         RetryConfig retryConfig = requestMetaConfig != null ? new RetryConfig(RetryCount: requestMetaConfig.RetryCount, RetryTime: requestMetaConfig.RetryTime, OverrideRetryTime: requestMetaConfig.OverrideRetryTime) : new RetryConfig();
         if (requestMetaConfig != null)
