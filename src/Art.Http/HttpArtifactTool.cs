@@ -285,10 +285,17 @@ public abstract partial class HttpArtifactTool : ArtifactTool
     }
 
     /// <summary>
-    /// Creates an <see cref="HttpMessageHandler"/> instance.
+    /// Creates an <see cref="System.Net.Http.HttpMessageHandler"/> instance.
     /// </summary>
-    /// <returns>Cookie container.</returns>
-    public virtual HttpMessageHandler CreateHttpMessageHandler() => new HttpClientHandler { AutomaticDecompression = DecompressionMethods.All, CookieContainer = _cookieContainer };
+    /// <returns>Instance of <see cref="System.Net.Http.HttpMessageHandler"/>.</returns>
+    public virtual HttpMessageHandler CreateHttpMessageHandler()
+    {
+        if (SocketsHttpHandler.IsSupported)
+        {
+            return new SocketsHttpHandler { AutomaticDecompression = DecompressionMethods.All, CookieContainer = _cookieContainer };
+        }
+        return new HttpClientHandler { AutomaticDecompression = DecompressionMethods.All, CookieContainer = _cookieContainer };
+    }
 
     /// <summary>
     /// Creates an <see cref="System.Net.Http.HttpClient"/> instance configured to use the specified message handler.
