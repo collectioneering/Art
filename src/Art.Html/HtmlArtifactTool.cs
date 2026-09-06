@@ -78,47 +78,50 @@ public abstract class HtmlArtifactTool : HttpArtifactTool
     /// Opens a new document loaded from the provided address.
     /// </summary>
     /// <param name="address">Address to load.</param>
-    /// <param name="httpRequestConfig">Request configuration.</param>
+    /// <param name="httpRequestConfigDelegate">Delegate to create custom request configuration.</param>
+    /// <param name="httpRequestMetaConfig">Custom request metaconfiguration.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task returning the loaded document.</returns>
     /// <remarks>This member sets the <see cref="Document"/> property, and the document will be available at both <see cref="Document"/> and <see cref="DocumentNotNull"/>.</remarks>
-    public Task<IDocument> OpenAsync(string address, HttpRequestConfig? httpRequestConfig = null, CancellationToken cancellationToken = default)
+    public Task<IDocument> OpenAsync(string address, Func<HttpRequestConfig?>? httpRequestConfigDelegate = null, HttpRequestMetaConfig? httpRequestMetaConfig = null, CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        return OpenViaHttpClientAsync(new Uri(address), httpRequestConfig, cancellationToken);
+        return OpenViaHttpClientAsync(new Uri(address), httpRequestConfigDelegate, httpRequestMetaConfig, cancellationToken);
     }
 
     /// <summary>
     /// Opens a new document loaded from the provided address.
     /// </summary>
     /// <param name="address">Address to load.</param>
-    /// <param name="httpRequestConfig">Request configuration.</param>
+    /// <param name="httpRequestConfigDelegate">Delegate to create custom request configuration.</param>
+    /// <param name="httpRequestMetaConfig">Custom request metaconfiguration.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task returning the loaded document.</returns>
     /// <remarks>This member sets the <see cref="Document"/> property, and the document will be available at both <see cref="Document"/> and <see cref="DocumentNotNull"/>.</remarks>
-    public Task<IDocument> OpenAsync(Uri address, HttpRequestConfig? httpRequestConfig = null, CancellationToken cancellationToken = default)
+    public Task<IDocument> OpenAsync(Uri address, Func<HttpRequestConfig?>? httpRequestConfigDelegate = null, HttpRequestMetaConfig? httpRequestMetaConfig = null, CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        return OpenViaHttpClientAsync(address, httpRequestConfig, cancellationToken);
+        return OpenViaHttpClientAsync(address, httpRequestConfigDelegate, httpRequestMetaConfig, cancellationToken);
     }
 
     /// <summary>
     /// Opens a new document loaded from the provided address.
     /// </summary>
     /// <param name="address">Address to load.</param>
-    /// <param name="httpRequestConfig">Request configuration.</param>
+    /// <param name="httpRequestConfigDelegate">Delegate to create custom request configuration.</param>
+    /// <param name="httpRequestMetaConfig">Custom request metaconfiguration.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task returning the loaded document.</returns>
     /// <remarks>This member sets the <see cref="Document"/> property, and the document will be available at both <see cref="Document"/> and <see cref="DocumentNotNull"/>.</remarks>
-    public Task<IDocument> OpenAsync(Url address, HttpRequestConfig? httpRequestConfig = null, CancellationToken cancellationToken = default)
+    public Task<IDocument> OpenAsync(Url address, Func<HttpRequestConfig?>? httpRequestConfigDelegate = null, HttpRequestMetaConfig? httpRequestMetaConfig = null, CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        return OpenViaHttpClientAsync(address.ToUri(), httpRequestConfig, cancellationToken);
+        return OpenViaHttpClientAsync(address.ToUri(), httpRequestConfigDelegate, httpRequestMetaConfig, cancellationToken);
     }
 
-    private async Task<IDocument> OpenViaHttpClientAsync(Uri uri, HttpRequestConfig? httpRequestConfig, CancellationToken cancellationToken = default)
+    private async Task<IDocument> OpenViaHttpClientAsync(Uri uri, Func<HttpRequestConfig?>? httpRequestConfigDelegate, HttpRequestMetaConfig? httpRequestMetaConfig, CancellationToken cancellationToken = default)
     {
-        using var response = await GetAsync(uri, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        using var response = await GetAsync(uri, httpRequestConfigDelegate, httpRequestMetaConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(response);
         var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var header in response.Headers)

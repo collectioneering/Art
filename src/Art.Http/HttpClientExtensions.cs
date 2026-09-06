@@ -4,19 +4,19 @@ namespace Art.Http;
 
 internal static class HttpClientExtensions
 {
-    internal static async Task<HttpResponseMessage> SendAsync(this HttpClient httpClient, Func<HttpRequestMessage> requestDelegate, HttpCompletionOption defaultCompletionOption, HttpRequestConfig? httpRequestConfig, CancellationToken cancellationToken = default)
+    internal static async Task<HttpResponseMessage> SendAsync(this HttpClient httpClient, Func<HttpRequestEx> requestDelegate, HttpCompletionOption defaultCompletionOption, HttpRequestMetaConfig? requestMetaConfig, CancellationToken cancellationToken = default)
     {
-        RetryConfig retryConfig = httpRequestConfig != null ? new RetryConfig(RetryCount: httpRequestConfig.RetryCount, RetryTime: httpRequestConfig.RetryTime, OverrideRetryTime: httpRequestConfig.OverrideRetryTime) : new RetryConfig();
-        if (httpRequestConfig != null)
+        RetryConfig retryConfig = requestMetaConfig != null ? new RetryConfig(RetryCount: requestMetaConfig.RetryCount, RetryTime: requestMetaConfig.RetryTime, OverrideRetryTime: requestMetaConfig.OverrideRetryTime) : new RetryConfig();
+        if (requestMetaConfig != null)
         {
-            if (httpRequestConfig.Timeout is { } timeout)
+            if (requestMetaConfig.Timeout is { } timeout)
             {
                 using var cts = new CancellationTokenSource(timeout);
                 using var lcts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 var localCancellationToken = lcts.Token;
                 try
                 {
-                    return await SendWithRetryAsync(httpClient, CreateRequest, httpRequestConfig.HttpCompletionOption ?? defaultCompletionOption, retryConfig, localCancellationToken).ConfigureAwait(false);
+                    return await SendWithRetryAsync(httpClient, CreateRequest, requestMetaConfig.HttpCompletionOption ?? defaultCompletionOption, retryConfig, localCancellationToken).ConfigureAwait(false);
                 }
                 catch (TaskCanceledException)
                 {
@@ -36,13 +36,13 @@ internal static class HttpClientExtensions
                     throw;
                 }
             }
-            return await SendWithRetryAsync(httpClient, CreateRequest, httpRequestConfig.HttpCompletionOption ?? defaultCompletionOption, retryConfig, cancellationToken).ConfigureAwait(false);
+            return await SendWithRetryAsync(httpClient, CreateRequest, requestMetaConfig.HttpCompletionOption ?? defaultCompletionOption, retryConfig, cancellationToken).ConfigureAwait(false);
         }
         return await SendWithRetryAsync(httpClient, CreateRequest, defaultCompletionOption, retryConfig, cancellationToken).ConfigureAwait(false);
 
         HttpRequestMessage CreateRequest()
         {
-            var httpRequestMessage = requestDelegate();
+            (HttpRequestMessage httpRequestMessage, HttpRequestConfig? httpRequestConfig) = requestDelegate();
             if (httpRequestConfig != null)
             {
                 httpRequestMessage.SetOriginAndReferrer(httpRequestConfig.Origin, httpRequestConfig.Referrer);

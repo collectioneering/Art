@@ -13,12 +13,14 @@ namespace Art.Http.Resources;
 /// <param name="Retrieved">Date this resource was retrieved.</param>
 /// <param name="Version">Version.</param>
 /// <param name="Checksum">Checksum.</param>
-/// <param name="HttpRequestConfig">Custom request configuration.</param>
+/// <param name="HttpRequestConfigDelegate">Delegate to create custom request configuration.</param>
+/// <param name="HttpRequestMetaConfig">Custom request configuration.</param>
 /// <param name="DynamicFileNameFunction">Function to use for transforming retrieved filename.</param>
 public record UriArtifactResourceInfo(
     HttpArtifactTool ArtifactTool,
     Uri Uri,
-    HttpRequestConfig? HttpRequestConfig,
+    Func<HttpRequestConfig?>? HttpRequestConfigDelegate,
+    HttpRequestMetaConfig? HttpRequestMetaConfig,
     ArtifactResourceKey Key,
     string? ContentType = "application/octet-stream",
     DateTimeOffset? Updated = null,
@@ -41,7 +43,7 @@ public record UriArtifactResourceInfo(
     public override async ValueTask ExportStreamAsync(Stream targetStream, ArtifactResourceExportOptions? exportOptions = null, CancellationToken cancellationToken = default)
     {
         // M3U behaviour depends on calling this member, or any overload targeting the contained HttpClient. Don't change this.
-        await ArtifactTool.DownloadResourceAsync(Uri, targetStream, HttpRequestConfig, exportOptions, cancellationToken).ConfigureAwait(false);
+        await ArtifactTool.DownloadResourceAsync(Uri, targetStream, HttpRequestConfigDelegate, HttpRequestMetaConfig, exportOptions, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -50,7 +52,7 @@ public record UriArtifactResourceInfo(
     /// <exception cref="ArtHttpResponseMessageException">Thrown on HTTP response indicating non-successful response.</exception>
     public override async ValueTask<Stream> GetStreamAsync(CancellationToken cancellationToken = default)
     {
-        return await ArtifactTool.GetResourceDownloadStreamAsync(Uri, HttpRequestConfig, cancellationToken).ConfigureAwait(false);
+        return await ArtifactTool.GetResourceDownloadStreamAsync(Uri, HttpRequestConfigDelegate, HttpRequestMetaConfig, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -60,7 +62,7 @@ public record UriArtifactResourceInfo(
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
     public override async ValueTask<ArtifactResourceInfo> WithMetadataAsync(CancellationToken cancellationToken = default)
     {
-        HttpResponseMessage res = await ArtifactTool.HeadAsync(Uri, HttpRequestConfig, cancellationToken).ConfigureAwait(false);
+        HttpResponseMessage res = await ArtifactTool.HeadAsync(Uri, HttpRequestConfigDelegate, HttpRequestMetaConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
         return WithMetadata(res);
     }
@@ -80,7 +82,8 @@ public partial class HttpArtifactDataExtensions
     /// <param name="retrieved">Date this resource was retrieved.</param>
     /// <param name="version">Version.</param>
     /// <param name="checksum">Checksum.</param>
-    /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="httpRequestConfigDelegate">Delegate to create custom request configuration.</param>
+    /// <param name="httpRequestMetaConfig">Custom request configuration.</param>
     /// <param name="dynamicFileNameFunction">Function to use for transforming retrieved filename.</param>
     public static ArtifactDataResource Uri(this ArtifactData artifactData,
         HttpArtifactTool artifactTool,
@@ -91,9 +94,22 @@ public partial class HttpArtifactDataExtensions
         DateTimeOffset? retrieved = null,
         string? version = null,
         Checksum? checksum = null,
-        HttpRequestConfig? httpRequestConfig = null,
+        Func<HttpRequestConfig?>? httpRequestConfigDelegate = null,
+        HttpRequestMetaConfig? httpRequestMetaConfig = null,
         Func<string, string>? dynamicFileNameFunction = null)
-        => new(artifactData, new UriArtifactResourceInfo(artifactTool, uri, httpRequestConfig, key, contentType, updated, retrieved, version, checksum, dynamicFileNameFunction));
+        => new(
+            artifactData,
+            new UriArtifactResourceInfo(artifactTool,
+                uri,
+                httpRequestConfigDelegate,
+                httpRequestMetaConfig,
+                key,
+                contentType,
+                updated,
+                retrieved,
+                version,
+                checksum,
+                dynamicFileNameFunction));
 
     /// <summary>
     /// Creates a <see cref="UriArtifactResourceInfo"/> resource.
@@ -108,7 +124,8 @@ public partial class HttpArtifactDataExtensions
     /// <param name="retrieved">Date this resource was retrieved.</param>
     /// <param name="version">Version.</param>
     /// <param name="checksum">Checksum.</param>
-    /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="httpRequestConfigDelegate">Delegate to create custom request configuration.</param>
+    /// <param name="httpRequestMetaConfig">Custom request configuration.</param>
     /// <param name="dynamicFileNameFunction">Function to use for transforming retrieved filename.</param>
     public static ArtifactDataResource Uri(this ArtifactData artifactData,
         HttpArtifactTool artifactTool,
@@ -120,9 +137,24 @@ public partial class HttpArtifactDataExtensions
         DateTimeOffset? retrieved = null,
         string? version = null,
         Checksum? checksum = null,
-        HttpRequestConfig? httpRequestConfig = null,
+        Func<HttpRequestConfig?>? httpRequestConfigDelegate = null,
+        HttpRequestMetaConfig? httpRequestMetaConfig = null,
         Func<string, string>? dynamicFileNameFunction = null)
-        => new(artifactData, new UriArtifactResourceInfo(artifactTool, uri, httpRequestConfig, new ArtifactResourceKey(artifactData.Info.Key, file, path), contentType, updated, retrieved, version, checksum, dynamicFileNameFunction));
+        => new(
+            artifactData,
+            new UriArtifactResourceInfo(artifactTool,
+                uri,
+                httpRequestConfigDelegate,
+                httpRequestMetaConfig,
+                new ArtifactResourceKey(artifactData.Info.Key,
+                    file,
+                    path),
+                contentType,
+                updated,
+                retrieved,
+                version,
+                checksum,
+                dynamicFileNameFunction));
 
     /// <summary>
     /// Creates a <see cref="UriArtifactResourceInfo"/> resource.
@@ -135,7 +167,8 @@ public partial class HttpArtifactDataExtensions
     /// <param name="retrieved">Date this resource was retrieved.</param>
     /// <param name="version">Version.</param>
     /// <param name="checksum">Checksum.</param>
-    /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="httpRequestConfigDelegate">Delegate to create custom request configuration.</param>
+    /// <param name="httpRequestMetaConfig">Custom request configuration.</param>
     /// <param name="dynamicFileNameFunction">Function to use for transforming retrieved filename.</param>
     public static ArtifactDataResource Uri(this ArtifactData artifactData,
         Uri uri,
@@ -145,9 +178,21 @@ public partial class HttpArtifactDataExtensions
         DateTimeOffset? retrieved = null,
         string? version = null,
         Checksum? checksum = null,
-        HttpRequestConfig? httpRequestConfig = null,
+        Func<HttpRequestConfig?>? httpRequestConfigDelegate = null,
+        HttpRequestMetaConfig? httpRequestMetaConfig = null,
         Func<string, string>? dynamicFileNameFunction = null)
-        => artifactData.Uri(artifactData.GetArtifactTool<HttpArtifactTool>(), uri, key, contentType, updated, retrieved, version, checksum, httpRequestConfig, dynamicFileNameFunction);
+        => artifactData.Uri(
+            artifactData.GetArtifactTool<HttpArtifactTool>(),
+            uri,
+            key,
+            contentType,
+            updated,
+            retrieved,
+            version,
+            checksum,
+            httpRequestConfigDelegate,
+            httpRequestMetaConfig,
+            dynamicFileNameFunction);
 
     /// <summary>
     /// Creates a <see cref="UriArtifactResourceInfo"/> resource.
@@ -161,7 +206,8 @@ public partial class HttpArtifactDataExtensions
     /// <param name="retrieved">Date this resource was retrieved.</param>
     /// <param name="version">Version.</param>
     /// <param name="checksum">Checksum.</param>
-    /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="httpRequestConfigDelegate">Delegate to create custom request configuration.</param>
+    /// <param name="httpRequestMetaConfig">Custom request configuration.</param>
     /// <param name="dynamicFileNameFunction">Function to use for transforming retrieved filename.</param>
     public static ArtifactDataResource Uri(this ArtifactData artifactData,
         Uri uri,
@@ -172,9 +218,22 @@ public partial class HttpArtifactDataExtensions
         DateTimeOffset? retrieved = null,
         string? version = null,
         Checksum? checksum = null,
-        HttpRequestConfig? httpRequestConfig = null,
+        Func<HttpRequestConfig?>? httpRequestConfigDelegate = null,
+        HttpRequestMetaConfig? httpRequestMetaConfig = null,
         Func<string, string>? dynamicFileNameFunction = null)
-        => artifactData.Uri(artifactData.GetArtifactTool<HttpArtifactTool>(), uri, file, path, contentType, updated, retrieved, version, checksum, httpRequestConfig, dynamicFileNameFunction);
+        => artifactData.Uri(
+            artifactData.GetArtifactTool<HttpArtifactTool>(),
+            uri,
+            file,
+            path,
+            contentType,
+            updated,
+            retrieved,
+            version,
+            checksum,
+            httpRequestConfigDelegate,
+            httpRequestMetaConfig,
+            dynamicFileNameFunction);
 
     /// <summary>
     /// Creates a <see cref="UriArtifactResourceInfo"/> resource.
@@ -188,7 +247,8 @@ public partial class HttpArtifactDataExtensions
     /// <param name="retrieved">Date this resource was retrieved.</param>
     /// <param name="version">Version.</param>
     /// <param name="checksum">Checksum.</param>
-    /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="httpRequestConfigDelegate">Delegate to create custom request configuration.</param>
+    /// <param name="httpRequestMetaConfig">Custom request configuration.</param>
     /// <param name="dynamicFileNameFunction">Function to use for transforming retrieved filename.</param>
     public static ArtifactDataResource Uri(this ArtifactData artifactData,
         HttpArtifactTool artifactTool,
@@ -199,9 +259,22 @@ public partial class HttpArtifactDataExtensions
         DateTimeOffset? retrieved = null,
         string? version = null,
         Checksum? checksum = null,
-        HttpRequestConfig? httpRequestConfig = null,
+        Func<HttpRequestConfig?>? httpRequestConfigDelegate = null,
+        HttpRequestMetaConfig? httpRequestMetaConfig = null,
         Func<string, string>? dynamicFileNameFunction = null)
-        => new(artifactData, new UriArtifactResourceInfo(artifactTool, new Uri(uri), httpRequestConfig, key, contentType, updated, retrieved, version, checksum, dynamicFileNameFunction));
+        => new(
+            artifactData,
+            new UriArtifactResourceInfo(artifactTool,
+                new Uri(uri),
+                httpRequestConfigDelegate,
+                httpRequestMetaConfig,
+                key,
+                contentType,
+                updated,
+                retrieved,
+                version,
+                checksum,
+                dynamicFileNameFunction));
 
     /// <summary>
     /// Creates a <see cref="UriArtifactResourceInfo"/> resource.
@@ -216,7 +289,8 @@ public partial class HttpArtifactDataExtensions
     /// <param name="retrieved">Date this resource was retrieved.</param>
     /// <param name="version">Version.</param>
     /// <param name="checksum">Checksum.</param>
-    /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="httpRequestConfigDelegate">Delegate to create custom request configuration.</param>
+    /// <param name="httpRequestMetaConfig">Custom request configuration.</param>
     /// <param name="dynamicFileNameFunction">Function to use for transforming retrieved filename.</param>
     public static ArtifactDataResource Uri(this ArtifactData artifactData,
         HttpArtifactTool artifactTool,
@@ -228,9 +302,24 @@ public partial class HttpArtifactDataExtensions
         DateTimeOffset? retrieved = null,
         string? version = null,
         Checksum? checksum = null,
-        HttpRequestConfig? httpRequestConfig = null,
+        Func<HttpRequestConfig?>? httpRequestConfigDelegate = null,
+        HttpRequestMetaConfig? httpRequestMetaConfig = null,
         Func<string, string>? dynamicFileNameFunction = null)
-        => new(artifactData, new UriArtifactResourceInfo(artifactTool, new Uri(uri), httpRequestConfig, new ArtifactResourceKey(artifactData.Info.Key, file, path), contentType, updated, retrieved, version, checksum, dynamicFileNameFunction));
+        => new(
+            artifactData,
+            new UriArtifactResourceInfo(artifactTool,
+                new Uri(uri),
+                httpRequestConfigDelegate,
+                httpRequestMetaConfig,
+                new ArtifactResourceKey(artifactData.Info.Key,
+                    file,
+                    path),
+                contentType,
+                updated,
+                retrieved,
+                version,
+                checksum,
+                dynamicFileNameFunction));
 
     /// <summary>
     /// Creates a <see cref="UriArtifactResourceInfo"/> resource.
@@ -243,7 +332,8 @@ public partial class HttpArtifactDataExtensions
     /// <param name="retrieved">Date this resource was retrieved.</param>
     /// <param name="version">Version.</param>
     /// <param name="checksum">Checksum.</param>
-    /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="httpRequestConfigDelegate">Delegate to create custom request configuration.</param>
+    /// <param name="httpRequestMetaConfig">Custom request configuration.</param>
     /// <param name="dynamicFileNameFunction">Function to use for transforming retrieved filename.</param>
     public static ArtifactDataResource Uri(this ArtifactData artifactData,
         string uri,
@@ -253,9 +343,21 @@ public partial class HttpArtifactDataExtensions
         DateTimeOffset? retrieved = null,
         string? version = null,
         Checksum? checksum = null,
-        HttpRequestConfig? httpRequestConfig = null,
+        Func<HttpRequestConfig?>? httpRequestConfigDelegate = null,
+        HttpRequestMetaConfig? httpRequestMetaConfig = null,
         Func<string, string>? dynamicFileNameFunction = null)
-        => artifactData.Uri(artifactData.GetArtifactTool<HttpArtifactTool>(), uri, key, contentType, updated, retrieved, version, checksum, httpRequestConfig, dynamicFileNameFunction);
+        => artifactData.Uri(
+            artifactData.GetArtifactTool<HttpArtifactTool>(),
+            uri,
+            key,
+            contentType,
+            updated,
+            retrieved,
+            version,
+            checksum,
+            httpRequestConfigDelegate,
+            httpRequestMetaConfig,
+            dynamicFileNameFunction);
 
     /// <summary>
     /// Creates a <see cref="UriArtifactResourceInfo"/> resource.
@@ -269,7 +371,8 @@ public partial class HttpArtifactDataExtensions
     /// <param name="retrieved">Date this resource was retrieved.</param>
     /// <param name="version">Version.</param>
     /// <param name="checksum">Checksum.</param>
-    /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="httpRequestConfigDelegate">Delegate to create custom request configuration.</param>
+    /// <param name="httpRequestMetaConfig">Custom request configuration.</param>
     /// <param name="dynamicFileNameFunction">Function to use for transforming retrieved filename.</param>
     public static ArtifactDataResource Uri(this ArtifactData artifactData,
         string uri,
@@ -280,7 +383,20 @@ public partial class HttpArtifactDataExtensions
         DateTimeOffset? retrieved = null,
         string? version = null,
         Checksum? checksum = null,
-        HttpRequestConfig? httpRequestConfig = null,
+        Func<HttpRequestConfig?>? httpRequestConfigDelegate = null,
+        HttpRequestMetaConfig? httpRequestMetaConfig = null,
         Func<string, string>? dynamicFileNameFunction = null)
-        => artifactData.Uri(artifactData.GetArtifactTool<HttpArtifactTool>(), uri, file, path, contentType, updated, retrieved, version, checksum, httpRequestConfig, dynamicFileNameFunction);
+        => artifactData.Uri(
+            artifactData.GetArtifactTool<HttpArtifactTool>(),
+            uri,
+            file,
+            path,
+            contentType,
+            updated,
+            retrieved,
+            version,
+            checksum,
+            httpRequestConfigDelegate,
+            httpRequestMetaConfig,
+            dynamicFileNameFunction);
 }

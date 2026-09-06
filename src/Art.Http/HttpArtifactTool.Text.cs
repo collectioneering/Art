@@ -10,7 +10,8 @@ public partial class HttpArtifactTool
     /// Retrieves text using a uri.
     /// </summary>
     /// <param name="requestUri">Request URI.</param>
-    /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="httpRequestConfigDelegate">Delegate to create custom request configuration.</param>
+    /// <param name="httpRequestMetaConfig">Custom request metaconfiguration.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task returning text.</returns>
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
@@ -18,19 +19,20 @@ public partial class HttpArtifactTool
     /// <exception cref="ArtHttpResponseMessageException">Thrown on HTTP response indicating non-successful response.</exception>
     public async Task<string> GetHttpTextAsync(
         string requestUri,
-        HttpRequestConfig? httpRequestConfig = null,
+        Func<HttpRequestConfig?>? httpRequestConfigDelegate = null,
+        HttpRequestMetaConfig? httpRequestMetaConfig = null,
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        using HttpResponseMessage res = await HttpClient.SendAsync(CreateRequestMessage, TextCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage res = await HttpClient.SendAsync(CreateRequest, TextCompletionOption, httpRequestMetaConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
         return await res.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
-        HttpRequestMessage CreateRequestMessage()
+        HttpRequestEx CreateRequest()
         {
             HttpRequestMessage req = new(HttpMethod.Get, requestUri);
             ConfigureTextRequest(req);
-            return req;
+            return new HttpRequestEx(req, httpRequestConfigDelegate?.Invoke());
         }
     }
 
@@ -38,7 +40,8 @@ public partial class HttpArtifactTool
     /// Retrieves text using a <see cref="Uri"/>.
     /// </summary>
     /// <param name="requestUri">Request URI.</param>
-    /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="httpRequestConfigDelegate">Delegate to create custom request configuration.</param>
+    /// <param name="httpRequestMetaConfig">Custom request metaconfiguration.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task returning text.</returns>
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
@@ -46,39 +49,40 @@ public partial class HttpArtifactTool
     /// <exception cref="ArtHttpResponseMessageException">Thrown on HTTP response indicating non-successful response.</exception>
     public async Task<string> GetHttpTextAsync(
         Uri requestUri,
-        HttpRequestConfig? httpRequestConfig = null,
+        Func<HttpRequestConfig?>? httpRequestConfigDelegate = null,
+        HttpRequestMetaConfig? httpRequestMetaConfig = null,
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        using HttpResponseMessage res = await HttpClient.SendAsync(CreateRequestMessage, TextCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage res = await HttpClient.SendAsync(CreateRequest, TextCompletionOption, httpRequestMetaConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
         return await res.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
-        HttpRequestMessage CreateRequestMessage()
+        HttpRequestEx CreateRequest()
         {
             HttpRequestMessage req = new(HttpMethod.Get, requestUri);
             ConfigureTextRequest(req);
-            return req;
+            return new HttpRequestEx(req, httpRequestConfigDelegate?.Invoke());
         }
     }
 
     /// <summary>
-    /// Retrieves text using a <see cref="HttpRequestMessage"/>.
+    /// Retrieves text using a <see cref="HttpRequestEx"/>.
     /// </summary>
-    /// <param name="requestMessageDelegate">A delegate that creates a new instance of <see cref="System.Net.Http.HttpRequestMessage"/>.</param>
-    /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="requestDelegate">A delegate that creates a new instance of <see cref="HttpRequestEx"/>.</param>
+    /// <param name="httpRequestMetaConfig">Custom request metaconfiguration.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task returning text.</returns>
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
     /// <exception cref="HttpRequestException">Thrown for issues with request excluding non-success server responses.</exception>
     /// <exception cref="ArtHttpResponseMessageException">Thrown on HTTP response indicating non-successful response.</exception>
     public async Task<string> RetrieveHttpTextAsync(
-        Func<HttpRequestMessage> requestMessageDelegate,
-        HttpRequestConfig? httpRequestConfig = null,
+        Func<HttpRequestEx> requestDelegate,
+        HttpRequestMetaConfig? httpRequestMetaConfig = null,
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        using HttpResponseMessage res = await HttpClient.SendAsync(requestMessageDelegate, TextCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage res = await HttpClient.SendAsync(requestDelegate, TextCompletionOption, httpRequestMetaConfig, cancellationToken).ConfigureAwait(false);
         ArtHttpResponseMessageException.EnsureSuccessStatusCode(res);
         return await res.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
     }

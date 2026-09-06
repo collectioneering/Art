@@ -1,3 +1,5 @@
+using Art.Http;
+
 namespace Art.M3U;
 
 /// <summary>
@@ -25,4 +27,32 @@ public record M3UDownloaderConfig(
     string? Referrer = null,
     string? Origin = null,
     IReadOnlyCollection<KeyValuePair<string, string>>? Headers = null,
-    M3UTiming? Timing = null);
+    M3UTiming? Timing = null)
+{
+    /// <summary>
+    /// Initializes an instance of <see cref="HttpRequestConfig"/>.
+    /// </summary>
+    /// <returns></returns>
+    public HttpRequestConfig CreateHttpRequestConfig()
+    {
+        // TODO dynamic referrer/origin?
+        return new HttpRequestConfig(Referrer: Referrer, Origin: Origin, RequestAction: CreateRequestAction(this));
+    }
+
+    private static Action<HttpRequestMessage>? CreateRequestAction(M3UDownloaderConfig config)
+    {
+        if (config.Headers == null)
+        {
+            return null;
+        }
+        return SetupRequest;
+
+        void SetupRequest(HttpRequestMessage hrm)
+        {
+            foreach (var v in config.Headers)
+            {
+                hrm.Headers.Add(v.Key, v.Value);
+            }
+        }
+    }
+}

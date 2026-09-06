@@ -10,24 +10,26 @@ public partial class HttpArtifactTool
     /// Sends an HTTP HEAD request.
     /// </summary>
     /// <param name="requestUri">Request.</param>
-    /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="httpRequestConfigDelegate">Delegate to create custom request configuration.</param>
+    /// <param name="httpRequestMetaConfig">Custom request metaconfiguration.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task returning response (status left unchecked).</returns>
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
     /// <exception cref="HttpRequestException">Thrown for issues with request excluding non-success server responses.</exception>
     public async Task<HttpResponseMessage> HeadAsync(
         string requestUri,
-        HttpRequestConfig? httpRequestConfig = null,
+        Func<HttpRequestConfig?>? httpRequestConfigDelegate = null,
+        HttpRequestMetaConfig? httpRequestMetaConfig = null,
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        return await HttpClient.SendAsync(CreateRequestMessage, GenericCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        return await HttpClient.SendAsync(CreateRequest, GenericCompletionOption, httpRequestMetaConfig, cancellationToken).ConfigureAwait(false);
 
-        HttpRequestMessage CreateRequestMessage()
+        HttpRequestEx CreateRequest()
         {
             HttpRequestMessage req = new(HttpMethod.Head, requestUri);
             ConfigureHttpRequest(req);
-            return req;
+            return new HttpRequestEx(req, httpRequestConfigDelegate?.Invoke());
         }
     }
 
@@ -35,24 +37,26 @@ public partial class HttpArtifactTool
     /// Sends an HTTP HEAD request.
     /// </summary>
     /// <param name="requestUri">Request.</param>
-    /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="httpRequestConfigDelegate">Delegate to create custom request configuration.</param>
+    /// <param name="httpRequestMetaConfig">Custom request metaconfiguration.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task returning response (status left unchecked).</returns>
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
     /// <exception cref="HttpRequestException">Thrown for issues with request excluding non-success server responses.</exception>
     public async Task<HttpResponseMessage> HeadAsync(
         Uri requestUri,
-        HttpRequestConfig? httpRequestConfig = null,
+        Func<HttpRequestConfig?>? httpRequestConfigDelegate = null,
+        HttpRequestMetaConfig? httpRequestMetaConfig = null,
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        return await HttpClient.SendAsync(CreateRequestMessage, GenericCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        return await HttpClient.SendAsync(CreateRequest, GenericCompletionOption, httpRequestMetaConfig, cancellationToken).ConfigureAwait(false);
 
-        HttpRequestMessage CreateRequestMessage()
+        HttpRequestEx CreateRequest()
         {
             HttpRequestMessage req = new(HttpMethod.Head, requestUri);
             ConfigureHttpRequest(req);
-            return req;
+            return new HttpRequestEx(req, httpRequestConfigDelegate?.Invoke());
         }
     }
 
@@ -60,24 +64,26 @@ public partial class HttpArtifactTool
     /// Sends an HTTP GET request.
     /// </summary>
     /// <param name="requestUri">Request.</param>
-    /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="httpRequestConfigDelegate">Delegate to create custom request configuration.</param>
+    /// <param name="httpRequestMetaConfig">Custom request metaconfiguration.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task returning response (status left unchecked).</returns>
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
     /// <exception cref="HttpRequestException">Thrown for issues with request excluding non-success server responses.</exception>
     public async Task<HttpResponseMessage> GetAsync(
         string requestUri,
-        HttpRequestConfig? httpRequestConfig = null,
+        Func<HttpRequestConfig?>? httpRequestConfigDelegate = null,
+        HttpRequestMetaConfig? httpRequestMetaConfig = null,
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        return await HttpClient.SendAsync(CreateRequestMessage, GenericCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        return await HttpClient.SendAsync(CreateRequest, GenericCompletionOption, httpRequestMetaConfig, cancellationToken).ConfigureAwait(false);
 
-        HttpRequestMessage CreateRequestMessage()
+        HttpRequestEx CreateRequest()
         {
             HttpRequestMessage req = new(HttpMethod.Get, requestUri);
             ConfigureHttpRequest(req);
-            return req;
+            return new HttpRequestEx(req, httpRequestConfigDelegate?.Invoke());
         }
     }
 
@@ -85,43 +91,45 @@ public partial class HttpArtifactTool
     /// Sends an HTTP GET request.
     /// </summary>
     /// <param name="requestUri">Request.</param>
-    /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="httpRequestConfigDelegate">Delegate to create custom request configuration.</param>
+    /// <param name="httpRequestMetaConfig">Custom request metaconfiguration.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task returning response (status left unchecked).</returns>
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
     /// <exception cref="HttpRequestException">Thrown for issues with request excluding non-success server responses.</exception>
     public async Task<HttpResponseMessage> GetAsync(
         Uri requestUri,
-        HttpRequestConfig? httpRequestConfig = null,
+        Func<HttpRequestConfig?>? httpRequestConfigDelegate = null,
+        HttpRequestMetaConfig? httpRequestMetaConfig = null,
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        return await HttpClient.SendAsync(CreateRequestMessage, GenericCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        return await HttpClient.SendAsync(CreateRequest, GenericCompletionOption, httpRequestMetaConfig, cancellationToken).ConfigureAwait(false);
 
-        HttpRequestMessage CreateRequestMessage()
+        HttpRequestEx CreateRequest()
         {
             HttpRequestMessage req = new(HttpMethod.Get, requestUri);
             ConfigureHttpRequest(req);
-            return req;
+            return new HttpRequestEx(req, httpRequestConfigDelegate?.Invoke());
         }
     }
 
     /// <summary>
     /// Sends an HTTP request.
     /// </summary>
-    /// <param name="requestMessageDelegate">A delegate that creates a new instance of <see cref="System.Net.Http.HttpRequestMessage"/>.</param>
-    /// <param name="httpRequestConfig">Custom request configuration.</param>
+    /// <param name="requestDelegate">A delegate that creates a new instance of <see cref="HttpRequestEx"/>.</param>
+    /// <param name="httpRequestMetaConfig">Custom request metaconfiguration.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task returning response (status left unchecked).</returns>
     /// <exception cref="TaskCanceledException">Thrown with <see cref="TimeoutException"/> <see cref="Exception.InnerException"/> for a timeout.</exception>
     /// <exception cref="HttpRequestException">Thrown for issues with request excluding non-success server responses.</exception>
     public async Task<HttpResponseMessage> SendAsync(
-        Func<HttpRequestMessage> requestMessageDelegate,
-        HttpRequestConfig? httpRequestConfig = null,
+        Func<HttpRequestEx> requestDelegate,
+        HttpRequestMetaConfig? httpRequestMetaConfig = null,
         CancellationToken cancellationToken = default)
     {
         NotDisposed();
-        return await HttpClient.SendAsync(requestMessageDelegate, GenericCompletionOption, httpRequestConfig, cancellationToken).ConfigureAwait(false);
+        return await HttpClient.SendAsync(requestDelegate, GenericCompletionOption, httpRequestMetaConfig, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
