@@ -325,7 +325,7 @@ public partial class M3UDownloaderContext
     /// <param name="segmentFilter">Optional segment filter.</param>
     /// <param name="extraOperation">Extra operation to invoke during down time.</param>
     /// <returns>Downloader.</returns>
-    public M3UDownloaderContextStandardSaver CreateStandardSaver(bool oneOff, TimeSpan timeout, Func<Uri, SegmentSettings>? segmentFilter = null, IExtraSaverOperation? extraOperation = null) => new(this, oneOff, timeout, segmentFilter, extraOperation);
+    public M3UDownloaderContextStandardSaver CreateStandardSaver(bool oneOff, TimeSpan timeout, SegmentFilterDelegate? segmentFilter = null, IExtraSaverOperation? extraOperation = null) => new(this, oneOff, timeout, segmentFilter, extraOperation);
 
     /// <summary>
     /// Creates a basic stream output downloader.
@@ -334,7 +334,7 @@ public partial class M3UDownloaderContext
     /// <param name="timeout">Timeout when waiting for new entries.</param>
     /// <param name="segmentFilter">Optional segment filter.</param>
     /// <returns>Downloader.</returns>
-    public M3UDownloaderContextStreamOutputSaver CreateStreamOutputSaver(bool oneOff, TimeSpan timeout, Func<Uri, SegmentSettings>? segmentFilter = null) => new(this, oneOff, timeout, segmentFilter);
+    public M3UDownloaderContextStreamOutputSaver CreateStreamOutputSaver(bool oneOff, TimeSpan timeout, SegmentFilterDelegate? segmentFilter = null) => new(this, oneOff, timeout, segmentFilter);
 
     /// <summary>
     /// Downloads a segment with an associated media sequence number.

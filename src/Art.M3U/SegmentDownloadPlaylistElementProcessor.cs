@@ -15,11 +15,11 @@ internal class SegmentDownloadPlaylistElementProcessor : IPlaylistElementProcess
     {
         if (itemNo?.GetMessage() is { } itemNumberText)
         {
-            _context.Tool.LogInformation($"[{_context.Name}] Downloading segment {itemNumberText} {segmentName ?? "???"}");
+            _context.Tool.LogInformation($"[{_context.Name}] Downloading segment {itemNumberText} {segmentName ?? "???"} at {uri}");
         }
         else
         {
-            _context.Tool.LogInformation($"[{_context.Name}] Downloading segment {segmentName ?? "???"}");
+            _context.Tool.LogInformation($"[{_context.Name}] Downloading segment {segmentName ?? "???"} at {uri}");
         }
         return _context.DownloadSegmentAsync(uri, file, mediaSequenceNumber, segmentSettings, cancellationToken);
     }

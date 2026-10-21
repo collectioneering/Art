@@ -12,9 +12,9 @@ public class M3UDownloaderContextStandardSaver : M3UDownloaderContextSaver
     /// Extra operation to apply.
     /// </summary>
     public IExtraSaverOperation? ExtraOperation { get; set; }
-    private readonly Func<Uri, SegmentSettings>? _segmentFilter;
+    private readonly SegmentFilterDelegate? _segmentFilter;
 
-    internal M3UDownloaderContextStandardSaver(M3UDownloaderContext context, bool oneOff, TimeSpan timeout, Func<Uri, SegmentSettings>? segmentFilter, IExtraSaverOperation? extraOperation) : base(context)
+    internal M3UDownloaderContextStandardSaver(M3UDownloaderContext context, bool oneOff, TimeSpan timeout, SegmentFilterDelegate? segmentFilter, IExtraSaverOperation? extraOperation) : base(context)
     {
         _oneOff = oneOff;
         _timeout = timeout;

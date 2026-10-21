@@ -26,7 +26,7 @@ public abstract class M3UDownloaderContextProcessor
     /// <summary>
     /// Callback to identify actions to take before handling segment.
     /// </summary>
-    public Func<PreSegmentAction>? PreSegmentActionCallback { get; set; }
+    public PreSegmentActionDelegate? PreSegmentActionCallback { get; set; }
 
     /// <summary>
     /// Parent context.
@@ -160,7 +160,7 @@ public abstract class M3UDownloaderContextProcessor
         bool oneOff,
         TimeSpan timeout,
         IPlaylistElementProcessor playlistElementProcessor,
-        Func<Uri, SegmentSettings>? segmentFilter,
+        SegmentFilterDelegate? segmentFilter,
         Func<IExtraSaverOperation?>? extraOperationSource = null,
         CancellationToken cancellationToken = default)
     {
@@ -235,9 +235,11 @@ public abstract class M3UDownloaderContextProcessor
                 int i = 0, j = 0;
                 foreach (string entry in m3.DataLines)
                 {
+                    long msn = m3.FirstMediaSequenceNumber + i;
+                    var entryUri = UriUtil.CombineUri(Context.MainUri(), entry);
                     if (PreSegmentActionCallback is { } preSegmentActionCallback)
                     {
-                        var actions = preSegmentActionCallback();
+                        var actions = preSegmentActionCallback(entryUri, msn);
                         if (actions.RunHeartbeat)
                         {
                             if (HeartbeatCallback != null)
@@ -246,12 +248,12 @@ public abstract class M3UDownloaderContextProcessor
                             }
                         }
                     }
-                    long msn = m3.FirstMediaSequenceNumber + i++;
-                    var entryUri = UriUtil.CombineUri(Context.MainUri(), entry);
+                    i++;
+                    entryUri = UriUtil.CombineUri(Context.MainUri(), entry);
                     SegmentSettings? segmentSettings = null;
                     if (segmentFilter != null)
                     {
-                        segmentSettings = segmentFilter.Invoke(entryUri);
+                        segmentSettings = segmentFilter.Invoke(entryUri, msn);
                         if (segmentSettings.Skip)
                         {
                             continue;

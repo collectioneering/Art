@@ -9,9 +9,9 @@ public class M3UDownloaderContextStreamOutputSaver : M3UDownloaderContextProcess
 {
     private readonly bool _oneOff;
     private readonly TimeSpan _timeout;
-    private readonly Func<Uri, SegmentSettings>? _segmentFilter;
+    private readonly SegmentFilterDelegate? _segmentFilter;
 
-    internal M3UDownloaderContextStreamOutputSaver(M3UDownloaderContext context, bool oneOff, TimeSpan timeout, Func<Uri,SegmentSettings>? segmentFilter) : base(context)
+    internal M3UDownloaderContextStreamOutputSaver(M3UDownloaderContext context, bool oneOff, TimeSpan timeout, SegmentFilterDelegate? segmentFilter) : base(context)
     {
         _oneOff = oneOff;
         _timeout = timeout;
